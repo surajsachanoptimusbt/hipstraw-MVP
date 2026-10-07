@@ -1,0 +1,15 @@
+{
+  "matchKey": "https://gregslist.com/atlanta/software-companies-type/b2b-saas/",
+  "request": {
+    "url": "https://gregslist.com/atlanta/software-companies-type/b2b-saas/"
+  },
+  "response": {
+    "status": 301,
+    "headers": {
+      "content-type": "",
+      "location": "/"
+    },
+    "text": "",
+    "fetchedAt": "2026-10-07T13:18:56.323672+00:00"
+  }
+}

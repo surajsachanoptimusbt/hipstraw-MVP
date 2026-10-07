@@ -1,0 +1,1394 @@
+{
+  "matchKey": "SaaS companies Atlanta",
+  "request": {
+    "url": "https://api.search.brave.com/res/v1/web/search",
+    "params": {
+      "q": "SaaS companies Atlanta",
+      "count": 10
+    }
+  },
+  "response": {
+    "type": "search",
+    "query": {
+      "original": "SaaS companies Atlanta",
+      "show_strict_warning": false,
+      "is_navigational": false,
+      "is_geolocal": true,
+      "local_decision": "mix",
+      "local_locations_idx": 1,
+      "is_news_breaking": false,
+      "spellcheck_off": false,
+      "country": "us",
+      "bad_results": false,
+      "should_fallback": false,
+      "postal_code": "",
+      "city": "",
+      "header_country": "",
+      "more_results_available": true,
+      "state": "",
+      "related_queries": [
+        "top software companies in atlanta",
+        "software companies in atlanta georgia",
+        "highest paying tech companies in atlanta",
+        "top saas companies",
+        "fastest growing tech companies in atlanta",
+        "faang companies in atlanta",
+        "best software companies to work for in atlanta",
+        "tech companies in atlanta 2022",
+        "top saas companies atlanta",
+        "mailchimp"
+      ]
+    },
+    "faq": {
+      "type": "faq",
+      "results": [
+        {
+          "question": "How many SaaS companies in Atlanta are funded?",
+          "answer": "As of January 2026, 374 <strong>companies</strong> have received funding in this sector.",
+          "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends ...",
+          "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "tracxn.com",
+            "hostname": "tracxn.com",
+            "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+            "path": "  › discover  › explore  › saas startups in atlanta, united states"
+          }
+        },
+        {
+          "question": "What is included in this saas companies in Atlanta list?",
+          "answer": "It includes 50 <strong>company</strong> records with available <strong>company</strong> names, websites, locations, LinkedIn links, employee estimates, and contact signals when those fields are present.",
+          "title": "Top 50 Saas Companies in Atlanta - Emails & Contacts",
+          "url": "https://aeroleads.com/list/top-saas-companies-in-atlanta",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "aeroleads.com",
+            "hostname": "aeroleads.com",
+            "favicon": "https://imgs.search.brave.com/3wueLVGf2hJxfJpopW1VbPd9dV4E_CMvTd7Tpscoua0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZGI3YTQ1MGY4/MjYzMmU0MmQ1NGI4/MjY5NzE0NDJhMDk1/MDBjNGI3ZjUzMzJm/YzEzYmM0OGY1NDM1/NDJmZmUzYy9hZXJv/bGVhZHMuY29tLw",
+            "path": "  › home  › top saas companies in atlanta"
+          }
+        },
+        {
+          "question": "Who are the top investors in SaaS companies in Atlanta?",
+          "answer": "The top investors in <strong>SaaS</strong> <strong>companies</strong> <strong>in</strong> <strong>Atlanta</strong> by number of investments are Accel-KKR and Harbert Management.",
+          "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends ...",
+          "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "tracxn.com",
+            "hostname": "tracxn.com",
+            "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+            "path": "  › discover  › explore  › saas startups in atlanta, united states"
+          }
+        },
+        {
+          "question": "How many total SaaS companies are there in Atlanta?",
+          "answer": "As of January 2026, <strong>Atlanta</strong> has 1046 active <strong>SaaS</strong> <strong>companies</strong>.",
+          "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends ...",
+          "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "tracxn.com",
+            "hostname": "tracxn.com",
+            "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+            "path": "  › discover  › explore  › saas startups in atlanta, united states"
+          }
+        },
+        {
+          "question": "How many exits have occurred in SaaS companies in Atlanta?",
+          "answer": "<strong>SaaS</strong> sector in <strong>Atlanta</strong> has seen 155 acquisitions and 14 IPOs.",
+          "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends ...",
+          "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "tracxn.com",
+            "hostname": "tracxn.com",
+            "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+            "path": "  › discover  › explore  › saas startups in atlanta, united states"
+          }
+        },
+        {
+          "question": "What are the biggest SaaS startups in Atlanta?",
+          "answer": "Intuit Mailchimp, Massive and Calendly are the most-used <strong>SaaS</strong> products founded in <strong>Atlanta</strong>, based on real purchasing data from <strong>companies</strong> on Cledara. Last updated 4 September 2026, 13:10 UTC.",
+          "title": "47 Atlanta SaaS Companies Ranked by Real Usage (2026)",
+          "url": "https://data.cledara.com/startups/united-states/atlanta",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "data.cledara.com",
+            "hostname": "data.cledara.com",
+            "favicon": "https://imgs.search.brave.com/VuOmfrkJiHNf5kvl6R-S8DImywJFSzrbpA2lbNg0S_g/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvYmM0ODUzZGI4/OGJjZDg1NGY2YjZk/NzE1ZWZkOTU0NDE1/ZmViMzEzYjIxNWY2/YzkyNzBkNjdhYjY2/MTUyMzIyNS9kYXRh/LmNsZWRhcmEuY29t/Lw",
+            "path": "  › home  › united states  › atlanta"
+          }
+        },
+        {
+          "question": "Which is the highest funded SaaS company in Atlanta?",
+          "answer": "As of January 2026, OneTrust has raised $1.13B in funding, highest among the funded <strong>SaaS</strong> <strong>companies</strong> <strong>in</strong> <strong>Atlanta</strong>.",
+          "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends ...",
+          "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "tracxn.com",
+            "hostname": "tracxn.com",
+            "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+            "path": "  › discover  › explore  › saas startups in atlanta, united states"
+          }
+        },
+        {
+          "question": "What is the total funding raised by SaaS companies in Atlanta?",
+          "answer": "<strong>SaaS</strong> <strong>companies</strong> <strong>in</strong> <strong>Atlanta</strong> have collectively raised $11.1B in funding till date.",
+          "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends ...",
+          "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "tracxn.com",
+            "hostname": "tracxn.com",
+            "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+            "path": "  › discover  › explore  › saas startups in atlanta, united states"
+          }
+        },
+        {
+          "question": "How are saas startups in Atlanta ranked?",
+          "answer": "Each <strong>company</strong> gets a Seedtable Score from 0 to 100, built from total funding, how recently it raised, its funding stage and growth signals. The <strong>saas</strong> <strong>in</strong> <strong>Atlanta</strong> ranking is sorted by that score and refreshes continuously as new rounds close.",
+          "title": "Best SaaS Startups in Atlanta (2026) | Seedtable",
+          "url": "https://seedtable.com/best-saas-startups-in-atlanta",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "seedtable.com",
+            "hostname": "seedtable.com",
+            "favicon": "https://imgs.search.brave.com/PB05UL2MaCuP1DbX3Imd5G_CTxxT2wAcKreJIYEGOy0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvOThjYjkxZDgz/NjRjNDY4YTQ1ZTRj/ZDNkMTJkYmRhMzA2/MmRiNWQ4YTgwNDNh/NDc2ODNkZWIyNDlk/MGQ3NGRlYy9zZWVk/dGFibGUuY29tLw",
+            "path": "  › home  › best startups  › best saas startups  › best saas startups in atlanta"
+          }
+        },
+        {
+          "question": "What are the top saas startups in Atlanta in 2026?",
+          "answer": "Sunday, Digitail, Onpay and others lead Seedtable's 2026 ranking of <strong>saas</strong> startups in <strong>Atlanta</strong>, scored on funding raised, round recency, stage and momentum.",
+          "title": "Best SaaS Startups in Atlanta (2026) | Seedtable",
+          "url": "https://seedtable.com/best-saas-startups-in-atlanta",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "seedtable.com",
+            "hostname": "seedtable.com",
+            "favicon": "https://imgs.search.brave.com/PB05UL2MaCuP1DbX3Imd5G_CTxxT2wAcKreJIYEGOy0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvOThjYjkxZDgz/NjRjNDY4YTQ1ZTRj/ZDNkMTJkYmRhMzA2/MmRiNWQ4YTgwNDNh/NDc2ODNkZWIyNDlk/MGQ3NGRlYy9zZWVk/dGFibGUuY29tLw",
+            "path": "  › home  › best startups  › best saas startups  › best saas startups in atlanta"
+          }
+        },
+        {
+          "question": "How much funding have saas startups in Atlanta raised?",
+          "answer": "The 60 top-ranked <strong>saas</strong> startups in <strong>Atlanta</strong> on Seedtable have raised $4.9B between them, led by Sunday. Funding totals update continuously as new rounds close.",
+          "title": "Best SaaS Startups in Atlanta (2026) | Seedtable",
+          "url": "https://seedtable.com/best-saas-startups-in-atlanta",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "seedtable.com",
+            "hostname": "seedtable.com",
+            "favicon": "https://imgs.search.brave.com/PB05UL2MaCuP1DbX3Imd5G_CTxxT2wAcKreJIYEGOy0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvOThjYjkxZDgz/NjRjNDY4YTQ1ZTRj/ZDNkMTJkYmRhMzA2/MmRiNWQ4YTgwNDNh/NDc2ODNkZWIyNDlk/MGQ3NGRlYy9zZWVk/dGFibGUuY29tLw",
+            "path": "  › home  › best startups  › best saas startups  › best saas startups in atlanta"
+          }
+        },
+        {
+          "question": "How many saas startups in Atlanta does Seedtable track?",
+          "answer": "Seedtable tracks 102 funded <strong>saas</strong> <strong>companies</strong> <strong>in</strong> <strong>Atlanta</strong>, with funding, stage, location and the people behind each one.",
+          "title": "Best SaaS Startups in Atlanta (2026) | Seedtable",
+          "url": "https://seedtable.com/best-saas-startups-in-atlanta",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "seedtable.com",
+            "hostname": "seedtable.com",
+            "favicon": "https://imgs.search.brave.com/PB05UL2MaCuP1DbX3Imd5G_CTxxT2wAcKreJIYEGOy0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvOThjYjkxZDgz/NjRjNDY4YTQ1ZTRj/ZDNkMTJkYmRhMzA2/MmRiNWQ4YTgwNDNh/NDc2ODNkZWIyNDlk/MGQ3NGRlYy9zZWVk/dGFibGUuY29tLw",
+            "path": "  › home  › best startups  › best saas startups  › best saas startups in atlanta"
+          }
+        },
+        {
+          "question": "Which listed saas companies has the largest employee estimate?",
+          "answer": "Katalon has the largest populated employee estimate in the current list at 751. Employee figures are source estimates and may change.",
+          "title": "Top 50 Saas Companies in Atlanta - Emails & Contacts",
+          "url": "https://aeroleads.com/list/top-saas-companies-in-atlanta",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "aeroleads.com",
+            "hostname": "aeroleads.com",
+            "favicon": "https://imgs.search.brave.com/3wueLVGf2hJxfJpopW1VbPd9dV4E_CMvTd7Tpscoua0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZGI3YTQ1MGY4/MjYzMmU0MmQ1NGI4/MjY5NzE0NDJhMDk1/MDBjNGI3ZjUzMzJm/YzEzYmM0OGY1NDM1/NDJmZmUzYy9hZXJv/bGVhZHMuY29tLw",
+            "path": "  › home  › top saas companies in atlanta"
+          }
+        },
+        {
+          "question": "How many SaaS unicorns are there in Atlanta?",
+          "answer": "<strong>Atlanta</strong> has produced 6 unicorns in the <strong>SaaS</strong> sector till date.",
+          "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends ...",
+          "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "tracxn.com",
+            "hostname": "tracxn.com",
+            "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+            "path": "  › discover  › explore  › saas startups in atlanta, united states"
+          }
+        },
+        {
+          "question": "Which Atlanta startups are growing fastest?",
+          "answer": "Maxio and FullStory show the strongest rank gains among <strong>Atlanta</strong>-founded products over the last 90 days.",
+          "title": "47 Atlanta SaaS Companies Ranked by Real Usage (2026)",
+          "url": "https://data.cledara.com/startups/united-states/atlanta",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "data.cledara.com",
+            "hostname": "data.cledara.com",
+            "favicon": "https://imgs.search.brave.com/VuOmfrkJiHNf5kvl6R-S8DImywJFSzrbpA2lbNg0S_g/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvYmM0ODUzZGI4/OGJjZDg1NGY2YjZk/NzE1ZWZkOTU0NDE1/ZmViMzEzYjIxNWY2/YzkyNzBkNjdhYjY2/MTUyMzIyNS9kYXRh/LmNsZWRhcmEuY29t/Lw",
+            "path": "  › home  › united states  › atlanta"
+          }
+        },
+        {
+          "question": "What Atlanta industries?",
+          "answer": "Fintech and Payments, B2B <strong>SaaS</strong>, Cybersecurity, Healthcare, Logistics.",
+          "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate ...",
+          "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "lemniscategrowth.com",
+            "hostname": "lemniscategrowth.com",
+            "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+            "path": "› atlanta  › saas-lead-gen-agency.html"
+          }
+        },
+        {
+          "question": "Do you serve Atlanta?",
+          "answer": "Yes. We serve B2B <strong>companies</strong> across <strong>Atlanta</strong> and surrounding areas. India operations deliver <strong>Atlanta</strong>-quality at 70-80% lower cost.",
+          "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate ...",
+          "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "lemniscategrowth.com",
+            "hostname": "lemniscategrowth.com",
+            "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+            "path": "› atlanta  › saas-lead-gen-agency.html"
+          }
+        },
+        {
+          "question": "How is this different from other Atlanta startup lists?",
+          "answer": "Most lists rank <strong>Atlanta</strong> startups by funding raised or valuation. This one ranks them by adoption — how many <strong>companies</strong> actually pay for each product — measured monthly from Cledara's purchasing data.",
+          "title": "47 Atlanta SaaS Companies Ranked by Real Usage (2026)",
+          "url": "https://data.cledara.com/startups/united-states/atlanta",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "data.cledara.com",
+            "hostname": "data.cledara.com",
+            "favicon": "https://imgs.search.brave.com/VuOmfrkJiHNf5kvl6R-S8DImywJFSzrbpA2lbNg0S_g/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvYmM0ODUzZGI4/OGJjZDg1NGY2YjZk/NzE1ZWZkOTU0NDE1/ZmViMzEzYjIxNWY2/YzkyNzBkNjdhYjY2/MTUyMzIyNS9kYXRh/LmNsZWRhcmEuY29t/Lw",
+            "path": "  › home  › united states  › atlanta"
+          }
+        },
+        {
+          "question": "How does AeroLeads choose companies for this page?",
+          "answer": "<strong>Companies</strong> are included when AeroLeads source records match <strong>saas</strong> <strong>companies</strong> <strong>in</strong> <strong>Atlanta</strong>; empty fields are hidden so the page shows only available evidence.",
+          "title": "Top 50 Saas Companies in Atlanta - Emails & Contacts",
+          "url": "https://aeroleads.com/list/top-saas-companies-in-atlanta",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "aeroleads.com",
+            "hostname": "aeroleads.com",
+            "favicon": "https://imgs.search.brave.com/3wueLVGf2hJxfJpopW1VbPd9dV4E_CMvTd7Tpscoua0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZGI3YTQ1MGY4/MjYzMmU0MmQ1NGI4/MjY5NzE0NDJhMDk1/MDBjNGI3ZjUzMzJm/YzEzYmM0OGY1NDM1/NDJmZmUzYy9hZXJv/bGVhZHMuY29tLw",
+            "path": "  › home  › top saas companies in atlanta"
+          }
+        },
+        {
+          "question": "Which companies are examples from this list?",
+          "answer": "Representative records include FullStory, Ledgible, and Goodr.",
+          "title": "Top 50 Saas Companies in Atlanta - Emails & Contacts",
+          "url": "https://aeroleads.com/list/top-saas-companies-in-atlanta",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "aeroleads.com",
+            "hostname": "aeroleads.com",
+            "favicon": "https://imgs.search.brave.com/3wueLVGf2hJxfJpopW1VbPd9dV4E_CMvTd7Tpscoua0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZGI3YTQ1MGY4/MjYzMmU0MmQ1NGI4/MjY5NzE0NDJhMDk1/MDBjNGI3ZjUzMzJm/YzEzYmM0OGY1NDM1/NDJmZmUzYy9hZXJv/bGVhZHMuY29tLw",
+            "path": "  › home  › top saas companies in atlanta"
+          }
+        },
+        {
+          "question": "Minimum engagement?",
+          "answer": "$1,000/month (Ignite). $2,750/month (Scale) for full 5-Pillar.",
+          "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate ...",
+          "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "lemniscategrowth.com",
+            "hostname": "lemniscategrowth.com",
+            "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+            "path": "› atlanta  › saas-lead-gen-agency.html"
+          }
+        },
+        {
+          "question": "Understand local culture?",
+          "answer": "Yes. Every touchpoint calibrated for <strong>Atlanta</strong>'s buyer preferences.",
+          "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate ...",
+          "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "lemniscategrowth.com",
+            "hostname": "lemniscategrowth.com",
+            "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+            "path": "› atlanta  › saas-lead-gen-agency.html"
+          }
+        },
+        {
+          "question": "Multiple markets?",
+          "answer": "Separate strategies within <strong>Atlanta</strong>. Different ICPs per micro-market.",
+          "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate ...",
+          "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "lemniscategrowth.com",
+            "hostname": "lemniscategrowth.com",
+            "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+            "path": "› atlanta  › saas-lead-gen-agency.html"
+          }
+        },
+        {
+          "question": "Timeline?",
+          "answer": "Pipeline signals in 60-90 days. Sustainable in 12-16 months.",
+          "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate ...",
+          "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "lemniscategrowth.com",
+            "hostname": "lemniscategrowth.com",
+            "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+            "path": "› atlanta  › saas-lead-gen-agency.html"
+          }
+        },
+        {
+          "question": "How are you different?",
+          "answer": "Pipeline-focused, AI across 5 pillars, 70-80% lower cost.",
+          "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate ...",
+          "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "lemniscategrowth.com",
+            "hostname": "lemniscategrowth.com",
+            "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+            "path": "› atlanta  › saas-lead-gen-agency.html"
+          }
+        }
+      ]
+    },
+    "locations": {
+      "type": "locations",
+      "results": [
+        {
+          "title": "JHMG | Enterprise B2B SaaS & Software Guidance & Execution",
+          "url": "https://jhmediagroup.com/",
+          "is_source_local": false,
+          "is_source_both": false,
+          "family_friendly": true,
+          "type": "location_result",
+          "provider_url": "",
+          "coordinates": [
+            33.761674,
+            -84.35974999999999
+          ],
+          "zoom_level": 7,
+          "postal_address": {
+            "type": "PostalAddress",
+            "displayAddress": "245 N Highland Ave NE ste 230-184, Atlanta, GA 30307"
+          },
+          "opening_hours": {
+            "current_day": [
+              {
+                "abbr_name": "Wed",
+                "full_name": "Wednesday",
+                "opens": "09:00",
+                "closes": "17:30"
+              }
+            ],
+            "days": [
+              [
+                {
+                  "abbr_name": "Mon",
+                  "full_name": "Monday",
+                  "opens": "09:00",
+                  "closes": "17:30"
+                }
+              ],
+              [
+                {
+                  "abbr_name": "Tue",
+                  "full_name": "Tuesday",
+                  "opens": "09:00",
+                  "closes": "17:30"
+                }
+              ],
+              [
+                {
+                  "abbr_name": "Thu",
+                  "full_name": "Thursday",
+                  "opens": "09:00",
+                  "closes": "17:30"
+                }
+              ],
+              [
+                {
+                  "abbr_name": "Fri",
+                  "full_name": "Friday",
+                  "opens": "09:00",
+                  "closes": "17:30"
+                }
+              ]
+            ]
+          },
+          "contact": {
+            "telephone": "+17064251976"
+          },
+          "profiles": [],
+          "categories": [
+            "service"
+          ],
+          "icon_category": "service",
+          "timezone": "America/New_York",
+          "timezone_offset": -240,
+          "id": "loc4KQNZZCD64FAEAGRP3USAMF2VYBAI7BCBAAAAAAA="
+        },
+        {
+          "title": "Beech Valley Solutions",
+          "url": "https://beechvalley.com/",
+          "is_source_local": false,
+          "is_source_both": false,
+          "family_friendly": true,
+          "type": "location_result",
+          "provider_url": "",
+          "coordinates": [
+            33.760314199999996,
+            -84.3612388
+          ],
+          "zoom_level": 7,
+          "postal_address": {
+            "type": "PostalAddress",
+            "displayAddress": "834 Inman Vlg Pkwy NE Ste 230, Atlanta, GA 30307"
+          },
+          "opening_hours": {
+            "current_day": [
+              {
+                "abbr_name": "Wed",
+                "full_name": "Wednesday",
+                "opens": "08:00",
+                "closes": "21:00"
+              }
+            ],
+            "days": [
+              [
+                {
+                  "abbr_name": "Mon",
+                  "full_name": "Monday",
+                  "opens": "08:00",
+                  "closes": "21:00"
+                }
+              ],
+              [
+                {
+                  "abbr_name": "Tue",
+                  "full_name": "Tuesday",
+                  "opens": "08:00",
+                  "closes": "21:00"
+                }
+              ],
+              [
+                {
+                  "abbr_name": "Thu",
+                  "full_name": "Thursday",
+                  "opens": "08:00",
+                  "closes": "21:00"
+                }
+              ],
+              [
+                {
+                  "abbr_name": "Fri",
+                  "full_name": "Friday",
+                  "opens": "08:00",
+                  "closes": "21:00"
+                }
+              ],
+              [
+                {
+                  "abbr_name": "Sat",
+                  "full_name": "Saturday",
+                  "opens": "08:00",
+                  "closes": "21:00"
+                }
+              ],
+              [
+                {
+                  "abbr_name": "Sun",
+                  "full_name": "Sunday",
+                  "opens": "08:00",
+                  "closes": "21:00"
+                }
+              ]
+            ]
+          },
+          "contact": {
+            "telephone": "+14044580488"
+          },
+          "profiles": [],
+          "categories": [],
+          "icon_category": "commercial",
+          "timezone": "America/New_York",
+          "timezone_offset": -240,
+          "id": "loc4TLL4P6KR4FAEB5QCLCER4F2VYDZENFMWAAAAAAA="
+        }
+      ]
+    },
+    "mixed": {
+      "type": "mixed",
+      "main": [
+        {
+          "type": "web",
+          "index": 0,
+          "all": false
+        },
+        {
+          "type": "locations",
+          "all": true
+        },
+        {
+          "type": "web",
+          "index": 1,
+          "all": false
+        },
+        {
+          "type": "faq",
+          "all": true
+        },
+        {
+          "type": "web",
+          "index": 2,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 3,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 4,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 5,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 6,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 7,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 8,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 9,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 10,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 11,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 12,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 13,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 14,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 15,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 16,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 17,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 18,
+          "all": false
+        },
+        {
+          "type": "web",
+          "index": 19,
+          "all": false
+        }
+      ],
+      "top": [],
+      "side": []
+    },
+    "web": {
+      "type": "search",
+      "results": [
+        {
+          "title": "B2B SaaS Software Companies in Atlanta, GA - Gregslist",
+          "url": "https://gregslist.com/atlanta/software-companies-type/b2b-saas/",
+          "is_source_local": false,
+          "is_source_both": false,
+          "description": "Comprehensive and up-to-date list of up and coming B2B saas software companies near Atlanta, Georgia.",
+          "profile": {
+            "name": "Gregslist",
+            "url": "https://gregslist.com/atlanta/software-companies-type/b2b-saas/",
+            "long_name": "gregslist.com",
+            "img": "https://imgs.search.brave.com/JKgftgupfrHzIyRhzBRARrAWdIVn5nR3Iz_S--VBZys/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvMmEzYTQzMGE3/MDM4YmE3ZDYwZjU4/NTIxZWRiM2MyNjU1/NGRkNTBhZDZhYmIw/MGRjMGZlMTVlMzg3/ZjUzYjg4NS9ncmVn/c2xpc3QuY29tLw"
+          },
+          "language": "en",
+          "family_friendly": true,
+          "type": "search_result",
+          "subtype": "generic",
+          "is_live": false,
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "gregslist.com",
+            "hostname": "gregslist.com",
+            "favicon": "https://imgs.search.brave.com/JKgftgupfrHzIyRhzBRARrAWdIVn5nR3Iz_S--VBZys/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvMmEzYTQzMGE3/MDM4YmE3ZDYwZjU4/NTIxZWRiM2MyNjU1/NGRkNTBhZDZhYmIw/MGRjMGZlMTVlMzg3/ZjUzYjg4NS9ncmVn/c2xpc3QuY29tLw",
+            "path": "  › home  › b2b saas"
+          },
+          "thumbnail": {
+            "src": "https://imgs.search.brave.com/eLFMscyjLIP4EEqy8flRVrieyXZ2U5qx_e0ybZThj98/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9ncmVn/c2xpc3QuY29tL2F0/bGFudGEvd3AtY29u/dGVudC91cGxvYWRz/L3NpdGVzLzE1LzIw/MjAvMDEvU29jaWFs/LXNoYXJlLWltYWdl/LWZvci1BdGxhbnRh/LnBuZw",
+            "original": "https://gregslist.com/atlanta/wp-content/uploads/sites/15/2020/01/Social-share-image-for-Atlanta.png",
+            "logo": false
+          },
+          "organization": {
+            "type": "organization",
+            "name": "Gregslist",
+            "contact_points": []
+          },
+          "extra_snippets": [
+            "“The list of all up and coming B2B SaaS companies located near Atlanta, GA is shown below.",
+            "Gregslist is the comprehensive and up-to-date list of software and SaaS companies located in select cities in North America."
+          ]
+        },
+        {
+          "title": "Best SaaS Companies to Work for in Atlanta, GA 2026 | Wellfound",
+          "url": "https://wellfound.com/startups/l/atlanta/saas",
+          "is_source_local": false,
+          "is_source_both": false,
+          "description": "Find the best SaaS companies and startups to work in Atlanta, GA on Wellfound - See company jobs, overviews, benefits, funding info, employee reviews, and more.",
+          "profile": {
+            "name": "Wellfound",
+            "url": "https://wellfound.com/startups/l/atlanta/saas",
+            "long_name": "wellfound.com",
+            "img": "https://imgs.search.brave.com/J5_Uo_L6zzooRejqc4c5OvjLbQrlvNtNtSHCgUKTSBg/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvMjBlOTdiZDg5/ODJiZGRlZDYxOTBh/YTk4YWViZDgzODQz/ZTNiNTEwY2E4MjIw/ZTVhNDhlZmUxZWFi/NThlMDZkNi93ZWxs/Zm91bmQuY29tLw"
+          },
+          "language": "en",
+          "family_friendly": true,
+          "type": "search_result",
+          "subtype": "generic",
+          "is_live": false,
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "wellfound.com",
+            "hostname": "wellfound.com",
+            "favicon": "https://imgs.search.brave.com/J5_Uo_L6zzooRejqc4c5OvjLbQrlvNtNtSHCgUKTSBg/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvMjBlOTdiZDg5/ODJiZGRlZDYxOTBh/YTk4YWViZDgzODQz/ZTNiNTEwY2E4MjIw/ZTVhNDhlZmUxZWFi/NThlMDZkNi93ZWxs/Zm91bmQuY29tLw",
+            "path": "› startups  › l  › atlanta  › saas"
+          },
+          "thumbnail": {
+            "src": "https://imgs.search.brave.com/9vA1BqHea1yEDqB4y05aa_8p2_WFlDLvlaZUh-iCd3c/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9hc3Nl/dHMud2VsbGZvdW5k/LmNvbS9sb2NhdGlv/bnMvaGVyby1qb2Jz/LnBuZw",
+            "original": "https://assets.wellfound.com/locations/hero-jobs.png",
+            "logo": false
+          },
+          "extra_snippets": [
+            "Atlanta, Austin, Chicago, New York City, Philadelphia, San Francisco, Palo Alto, London, Toronto, Amsterdam, Melbourne, Paris, Bengaluru, Berlin, New York, Sydney, Bellevue, Tokyo, Dublin, Vienna, Plano, Woburn, Lombard, Alcobendas, München, Frankfurt am Main Süd, Milano, Álvaro Obregón, Gurugram",
+            "Atlanta, Chicago, Dallas, Hong Kong, Los Angeles, New York City, Seattle, San Francisco, Vancouver, Amsterdam, Hamburg, Shanghai, New York, Shenzhen, Playa Vista",
+            "Flexport is building the platform for global logistics, empowering buyers, sellers and their logistics partners with the technology and services to grow and innovate. Today, companies of all sizes—from emerging brands to Fortune 500s—use Flexport technology to move more than $19B of merchandise across 112 countries every year.",
+            "We’ve created a new paradigm for enterprise artificial intelligence with a breakthrough technology called Organizational Memory (OM1). It’s fundamentally reshaping how people do work. Unlike any other AI product, OM1 builds “a brain” for companies–knows what’s happening in real time across the whole business, and has all the output capabilities of a human employee."
+          ]
+        },
+        {
+          "title": "Atlanta, United States SaaS Companies | GetLatka",
+          "url": "https://getlatka.com/companies/countries/united-states/cities/atlanta",
+          "is_source_local": false,
+          "is_source_both": false,
+          "description": "As of July 2026, there are 321 SaaS companies based in Atlanta. They have combined revenues of $6B and employ 11.5M employees.",
+          "profile": {
+            "name": "Getlatka",
+            "url": "https://getlatka.com/companies/countries/united-states/cities/atlanta",
+            "long_name": "getlatka.com",
+            "img": "https://imgs.search.brave.com/8VrUz32u8wGQ1EwhsZwbYkZQ9qjsNrQkFaiOWStRPZs/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvNThmNDVhMTM2/YjhiYTYwMmI2OTRh/ZDFkNTMyN2NhNzQz/NGI1MjQwYTVkMTdj/MTEyOTdjYTczNDA0/OGFiNDA1NS9nZXRs/YXRrYS5jb20v"
+          },
+          "language": "en",
+          "family_friendly": true,
+          "type": "search_result",
+          "subtype": "generic",
+          "is_live": false,
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "getlatka.com",
+            "hostname": "getlatka.com",
+            "favicon": "https://imgs.search.brave.com/8VrUz32u8wGQ1EwhsZwbYkZQ9qjsNrQkFaiOWStRPZs/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvNThmNDVhMTM2/YjhiYTYwMmI2OTRh/ZDFkNTMyN2NhNzQz/NGI1MjQwYTVkMTdj/MTEyOTdjYTczNDA0/OGFiNDA1NS9nZXRs/YXRrYS5jb20v",
+            "path": "› companies  › countries  › united-states  › cities  › atlanta"
+          },
+          "thumbnail": {
+            "src": "https://imgs.search.brave.com/J41q8QYCmBtlICzacniBsRacofDind0dtNt9oHUCE4U/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9nZXRs/YXRrYS5jb20vb3Bl/bmdyYXBoLWltYWdl/LnBuZw",
+            "original": "https://getlatka.com/opengraph-image.png",
+            "logo": false
+          },
+          "extra_snippets": [
+            "As of July 2026, there are 321 SaaS companies based in Atlanta. They have combined revenues of $6B and employ 11.5M employees.",
+            "Show me AI companies with high growthFind startups founded after 2020Companies with revenue over 50MMarketing and social media toolsLarge teams with 100+ employees ... Each Tuesday, we reverse-engineer a real SaaS company's revenue, profit, CAC, funnels, and its top growth tactic."
+          ]
+        },
+        {
+          "title": "Best SaaS Startups in Atlanta (2026) | Seedtable",
+          "url": "https://seedtable.com/best-saas-startups-in-atlanta",
+          "is_source_local": false,
+          "is_source_both": false,
+          "description": "The 60 top-ranked SaaS companies have raised $4.9B between them. Most sit at Series A and Series B stage. Sunday, <strong>Digitail and Onpay</strong> lead the 2026 ranking, in a field mostly founded since 2009.",
+          "profile": {
+            "name": "Seedtable",
+            "url": "https://seedtable.com/best-saas-startups-in-atlanta",
+            "long_name": "seedtable.com",
+            "img": "https://imgs.search.brave.com/PB05UL2MaCuP1DbX3Imd5G_CTxxT2wAcKreJIYEGOy0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvOThjYjkxZDgz/NjRjNDY4YTQ1ZTRj/ZDNkMTJkYmRhMzA2/MmRiNWQ4YTgwNDNh/NDc2ODNkZWIyNDlk/MGQ3NGRlYy9zZWVk/dGFibGUuY29tLw"
+          },
+          "language": "en",
+          "family_friendly": true,
+          "type": "search_result",
+          "subtype": "faq",
+          "is_live": false,
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "seedtable.com",
+            "hostname": "seedtable.com",
+            "favicon": "https://imgs.search.brave.com/PB05UL2MaCuP1DbX3Imd5G_CTxxT2wAcKreJIYEGOy0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvOThjYjkxZDgz/NjRjNDY4YTQ1ZTRj/ZDNkMTJkYmRhMzA2/MmRiNWQ4YTgwNDNh/NDc2ODNkZWIyNDlk/MGQ3NGRlYy9zZWVk/dGFibGUuY29tLw",
+            "path": "  › home  › best startups  › best saas startups  › best saas startups in atlanta"
+          },
+          "thumbnail": {
+            "src": "https://imgs.search.brave.com/DnJgsTwG9oXkCWr5JMHqFRotKGzqrxx_EmWJIv_mWMk/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9zZWVk/dGFibGUuY29tL29n/L2NhdGVnb3J5L3Nh/YXM_dD1TYWFT",
+            "original": "https://seedtable.com/og/category/saas?t=SaaS",
+            "logo": false
+          },
+          "faq": {
+            "items": [
+              {
+                "question": "What are the top saas startups in Atlanta in 2026?",
+                "answer": "Sunday, Digitail, Onpay and others lead Seedtable's 2026 ranking of saas startups in Atlanta, scored on funding raised, round recency, stage and momentum.",
+                "title": "Best SaaS Startups in Atlanta (2026) | Seedtable",
+                "url": "https://seedtable.com/best-saas-startups-in-atlanta",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "seedtable.com",
+                  "hostname": "seedtable.com",
+                  "favicon": "https://imgs.search.brave.com/PB05UL2MaCuP1DbX3Imd5G_CTxxT2wAcKreJIYEGOy0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvOThjYjkxZDgz/NjRjNDY4YTQ1ZTRj/ZDNkMTJkYmRhMzA2/MmRiNWQ4YTgwNDNh/NDc2ODNkZWIyNDlk/MGQ3NGRlYy9zZWVk/dGFibGUuY29tLw",
+                  "path": "  › home  › best startups  › best saas startups  › best saas startups in atlanta"
+                }
+              },
+              {
+                "question": "How are saas startups in Atlanta ranked?",
+                "answer": "Each company gets a Seedtable Score from 0 to 100, built from total funding, how recently it raised, its funding stage and growth signals. The saas in Atlanta ranking is sorted by that score and refreshes continuously as new rounds close.",
+                "title": "Best SaaS Startups in Atlanta (2026) | Seedtable",
+                "url": "https://seedtable.com/best-saas-startups-in-atlanta",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "seedtable.com",
+                  "hostname": "seedtable.com",
+                  "favicon": "https://imgs.search.brave.com/PB05UL2MaCuP1DbX3Imd5G_CTxxT2wAcKreJIYEGOy0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvOThjYjkxZDgz/NjRjNDY4YTQ1ZTRj/ZDNkMTJkYmRhMzA2/MmRiNWQ4YTgwNDNh/NDc2ODNkZWIyNDlk/MGQ3NGRlYy9zZWVk/dGFibGUuY29tLw",
+                  "path": "  › home  › best startups  › best saas startups  › best saas startups in atlanta"
+                }
+              },
+              {
+                "question": "How many saas startups in Atlanta does Seedtable track?",
+                "answer": "Seedtable tracks 102 funded saas companies in Atlanta, with funding, stage, location and the people behind each one.",
+                "title": "Best SaaS Startups in Atlanta (2026) | Seedtable",
+                "url": "https://seedtable.com/best-saas-startups-in-atlanta",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "seedtable.com",
+                  "hostname": "seedtable.com",
+                  "favicon": "https://imgs.search.brave.com/PB05UL2MaCuP1DbX3Imd5G_CTxxT2wAcKreJIYEGOy0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvOThjYjkxZDgz/NjRjNDY4YTQ1ZTRj/ZDNkMTJkYmRhMzA2/MmRiNWQ4YTgwNDNh/NDc2ODNkZWIyNDlk/MGQ3NGRlYy9zZWVk/dGFibGUuY29tLw",
+                  "path": "  › home  › best startups  › best saas startups  › best saas startups in atlanta"
+                }
+              },
+              {
+                "question": "How much funding have saas startups in Atlanta raised?",
+                "answer": "The 60 top-ranked saas startups in Atlanta on Seedtable have raised $4.9B between them, led by Sunday. Funding totals update continuously as new rounds close.",
+                "title": "Best SaaS Startups in Atlanta (2026) | Seedtable",
+                "url": "https://seedtable.com/best-saas-startups-in-atlanta",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "seedtable.com",
+                  "hostname": "seedtable.com",
+                  "favicon": "https://imgs.search.brave.com/PB05UL2MaCuP1DbX3Imd5G_CTxxT2wAcKreJIYEGOy0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvOThjYjkxZDgz/NjRjNDY4YTQ1ZTRj/ZDNkMTJkYmRhMzA2/MmRiNWQ4YTgwNDNh/NDc2ODNkZWIyNDlk/MGQ3NGRlYy9zZWVk/dGFibGUuY29tLw",
+                  "path": "  › home  › best startups  › best saas startups  › best saas startups in atlanta"
+                }
+              }
+            ]
+          },
+          "organization": {
+            "type": "organization",
+            "name": "Seedtable",
+            "contact_points": []
+          },
+          "extra_snippets": [
+            "The top saas startups in Atlanta, ranked by Seedtable Score — funding, stage, and the teams behind them. Updated continuously. ... The full ranked list is below — get new saas startups and the rounds they raise in your inbox each week. Free weekly. No spam — unsubscribe anytime. ... Create a free account to see which investors fund companies like yours — and track their activity.Find investors free",
+            "Seedtable tracks 102 funded SaaS startups in Atlanta, ranked by the Seedtable Score from real funding, stage and traction data. The 60 top-ranked SaaS companies have raised $4.9B between them. Most sit at Series A and Series B stage. Sunday, Digitail and Onpay lead the 2026 ranking, in a field mostly founded since 2009.",
+            "Each entry links to the full profile — funding history, founders and investors — so you can see which saas companies are raising and growing right now. What are the top saas startups in Atlanta in 2026?",
+            "How many saas startups in Atlanta does Seedtable track? Seedtable tracks 102 funded saas companies in Atlanta, with funding, stage, location and the people behind each one."
+          ]
+        },
+        {
+          "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends - Tracxn",
+          "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+          "is_source_local": false,
+          "is_source_both": false,
+          "description": "SalesLoft is the top SaaS company in Atlanta, United States, ranked using Tracxn Score (what&#x27;s this?). Here are 5 of the top SaaS companies in Atlanta, United States:",
+          "page_age": "2026-01-09T10:33:09",
+          "profile": {
+            "name": "Tracxn",
+            "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+            "long_name": "tracxn.com",
+            "img": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw"
+          },
+          "language": "en",
+          "family_friendly": true,
+          "type": "search_result",
+          "subtype": "faq",
+          "is_live": false,
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "tracxn.com",
+            "hostname": "tracxn.com",
+            "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+            "path": "  › discover  › explore  › saas startups in atlanta, united states"
+          },
+          "thumbnail": {
+            "src": "https://imgs.search.brave.com/Hyy2FDnG-g9r7NxOR9RqwuFP--k44niZKEBhsKt2FuE/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9jZG4u/dHJhY3huLmNvbS9p/bWFnZXMvc2VvL3Nv/Y2lhbC9leHBsb3Jl/L3NhYXMtc3RhcnR1/cHMtaW4tYXRsYW50/YS11bml0ZWQtc3Rh/dGVzLW92ZXJ2aWV3/LTE3MzIzOTgwNDE1/MDIud2VicA",
+            "original": "https://cdn.tracxn.com/images/seo/social/explore/saas-startups-in-atlanta-united-states-overview-1732398041502.webp",
+            "logo": false
+          },
+          "age": "January 9, 2026",
+          "faq": {
+            "items": [
+              {
+                "question": "How many total SaaS companies are there in Atlanta?",
+                "answer": "As of January 2026, Atlanta has 1046 active SaaS companies.",
+                "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends ...",
+                "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "tracxn.com",
+                  "hostname": "tracxn.com",
+                  "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+                  "path": "  › discover  › explore  › saas startups in atlanta, united states"
+                }
+              },
+              {
+                "question": "How many SaaS companies in Atlanta are funded?",
+                "answer": "As of January 2026, 374 companies have received funding in this sector.",
+                "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends ...",
+                "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "tracxn.com",
+                  "hostname": "tracxn.com",
+                  "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+                  "path": "  › discover  › explore  › saas startups in atlanta, united states"
+                }
+              },
+              {
+                "question": "What is the total funding raised by SaaS companies in Atlanta?",
+                "answer": "SaaS companies in Atlanta have collectively raised $11.1B in funding till date.",
+                "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends ...",
+                "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "tracxn.com",
+                  "hostname": "tracxn.com",
+                  "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+                  "path": "  › discover  › explore  › saas startups in atlanta, united states"
+                }
+              },
+              {
+                "question": "Who are the top investors in SaaS companies in Atlanta?",
+                "answer": "The top investors in SaaS companies in Atlanta by number of investments are Accel-KKR and Harbert Management.",
+                "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends ...",
+                "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "tracxn.com",
+                  "hostname": "tracxn.com",
+                  "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+                  "path": "  › discover  › explore  › saas startups in atlanta, united states"
+                }
+              },
+              {
+                "question": "Which is the highest funded SaaS company in Atlanta?",
+                "answer": "As of January 2026, OneTrust has raised $1.13B in funding, highest among the funded SaaS companies in Atlanta.",
+                "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends ...",
+                "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "tracxn.com",
+                  "hostname": "tracxn.com",
+                  "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+                  "path": "  › discover  › explore  › saas startups in atlanta, united states"
+                }
+              },
+              {
+                "question": "How many exits have occurred in SaaS companies in Atlanta?",
+                "answer": "SaaS sector in Atlanta has seen 155 acquisitions and 14 IPOs.",
+                "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends ...",
+                "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "tracxn.com",
+                  "hostname": "tracxn.com",
+                  "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+                  "path": "  › discover  › explore  › saas startups in atlanta, united states"
+                }
+              },
+              {
+                "question": "How many SaaS unicorns are there in Atlanta?",
+                "answer": "Atlanta has produced 6 unicorns in the SaaS sector till date.",
+                "title": "SaaS in Atlanta, United States - 2026 Market & Investments Trends ...",
+                "url": "https://tracxn.com/d/explore/saas-startups-in-atlanta-united-states/__S_qz9CJqBzA8zlTToNM6Ek_8QPw4qVwFN4ql9MmE3aM",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "tracxn.com",
+                  "hostname": "tracxn.com",
+                  "favicon": "https://imgs.search.brave.com/nzB0_WjyGC_evkqvO7ZEs5xI6dVUXnxuwSiKDcsNo2Q/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTJjNDdiZmI3/MDk3MzllZTFkZGU1/M2Y1NTZiNmFhZjhi/YTAzNzhmOGU0MDM5/YTRmZDhkMmZiN2Yw/ODg5MTcxYy90cmFj/eG4uY29tLw",
+                  "path": "  › discover  › explore  › saas startups in atlanta, united states"
+                }
+              }
+            ]
+          },
+          "extra_snippets": [
+            "SalesLoft is the top SaaS company in Atlanta, United States, ranked using Tracxn Score (what's this?). Here are 5 of the top SaaS companies in Atlanta, United States:",
+            "The SaaS sector in Atlanta saw a total funding of more than $8.69B in the last 10 years. The most amount of funding was in 2021 at more than $1.39B. ... In the year 2025, till December 2025, SaaS companies in Atlanta have raised $612M in equity funding across 24 rounds.",
+            "Most number of SaaS startups in Atlanta have been founded by alumni from Duke University, Stanford University and Harvard University. In the last 10 years, The Wharton School graduates' SaaS companies in Atlanta have raised the most funding among top colleges.",
+            "KBB: New-Vehicle Average Transaction Price Declines as EV Sales Stall and Incentives DropMetro Atlanta CEO•Dec 02, 2025•Cox Automotive ... Mailchimp Recognized as Top SMS Marketing Service for Customer Engagement in 2025PR Newswire•Nov 30, 2025•MailChimp ... Mailchimp Recognized as Best Marketing Automation Platform (2025) by Expert ConsumersPR Newswire•Nov 30, 2025•MailChimpView all Top News for SaaS companies in Atlanta"
+          ]
+        },
+        {
+          "title": "39 Software Companies Helping Atlanta Achieve Tech Hub Status | Built In",
+          "url": "https://builtin.com/articles/software-companies-in-atlanta",
+          "is_source_local": false,
+          "is_source_both": false,
+          "description": "They develop in-house software products for healthcare, financial, and digital companies, helping them integrate cloud services and analytical research into their customer engagement strategies. ... What they do: BetterCloud is a management tool for the various SaaS applications used in the workplace. Headquartered in NYC, BetterCloud has offices in Atlanta and San Francisco assisting their 2500+ customers.",
+          "profile": {
+            "name": "Built In",
+            "url": "https://builtin.com/articles/software-companies-in-atlanta",
+            "long_name": "builtin.com",
+            "img": "https://imgs.search.brave.com/vJRqbEbBgIVhcn7VjIAVFouNy78uT9-Sb8H8jIJO3Yo/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvMzlhMWMxZWMw/MmY5NDE1NDk3NzFl/ZmNmYTg0ZTYxZWNk/MzcxNmEwYjY0MzZl/NzQ0NDlkYzNhMTgy/NzdlMmI1OS9idWls/dGluLmNvbS8"
+          },
+          "language": "en",
+          "family_friendly": true,
+          "type": "search_result",
+          "subtype": "generic",
+          "is_live": false,
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "builtin.com",
+            "hostname": "builtin.com",
+            "favicon": "https://imgs.search.brave.com/vJRqbEbBgIVhcn7VjIAVFouNy78uT9-Sb8H8jIJO3Yo/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvMzlhMWMxZWMw/MmY5NDE1NDk3NzFl/ZmNmYTg0ZTYxZWNk/MzcxNmEwYjY0MzZl/NzQ0NDlkYzNhMTgy/NzdlMmI1OS9idWls/dGluLmNvbS8",
+            "path": "› articles  › software-companies-in-atlanta"
+          },
+          "thumbnail": {
+            "src": "https://imgs.search.brave.com/mutPiymFrbbqzt-asbAAGBjGcACl_KDvKrGICjDAxbY/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9jZG4u/YnVpbHRpbi5jb20v/Y2RuLWNnaS9pbWFn/ZS9mPWF1dG8sZml0/PWNvdmVyLHc9MTIw/MCxoPTYzNSxxPTgw/L3NpdGVzL3d3dy5i/dWlsdGluLmNvbS9m/aWxlcy9hdGxhbnRh/LXNvZnR3YXJlLWNv/bXBhbmllcy5qcGc",
+            "original": "https://cdn.builtin.com/cdn-cgi/image/f=auto,fit=cover,w=1200,h=635,q=80/sites/www.builtin.com/files/atlanta-software-companies.jpg",
+            "logo": false
+          },
+          "extra_snippets": [
+            "The company has a multinational reach that extends beyond their Midtown Atlanta office, with locations in New York, Indianapolis, London and Guadalajara. ... What they do: Ebix works with companies in finance, e-learning, healthcare and other industries to develop enterprise software solutions for infrastructural management questions. Their SaaS model allows them to collaborate on building tailored CRMs, risk compliance software, and other back-end systems for companies across the globe.",
+            "They develop in-house software products for healthcare, financial, and digital companies, helping them integrate cloud services and analytical research into their customer engagement strategies. ... What they do: BetterCloud is a management tool for the various SaaS applications used in the workplace. Headquartered in NYC, BetterCloud has offices in Atlanta and San Francisco assisting their 2500+ customers.",
+            "Already a cultural and artistic hub, Atlanta is also swiftly becoming a tech epicenter with some help from these software companies.",
+            "What they do: PeopleStrategy helps companies recruit and retain top talent through a suite of software resources built to centralize the management of benefits, compensation, and other HR operations. Enterprises that work with PeopleStrategy can automate administrative HR tasks in order to better focus on building relationships with new employees and set their teams up for success. ... What they do: PagerDuty makes a SaaS platform used by IT departments to monitor, prevent and manage outages and disruptions that occur across websites and apps."
+          ]
+        },
+        {
+          "title": "Top 50 Saas Companies in Atlanta - Emails & Contacts",
+          "url": "https://aeroleads.com/list/top-saas-companies-in-atlanta",
+          "is_source_local": false,
+          "is_source_both": false,
+          "description": "This page covers 50 saas companies in Atlanta. Featured records include FullStory, Ledgible, and Goodr.",
+          "page_age": "2026-07-29T00:00:00",
+          "profile": {
+            "name": "AeroLeads",
+            "url": "https://aeroleads.com/list/top-saas-companies-in-atlanta",
+            "long_name": "aeroleads.com",
+            "img": "https://imgs.search.brave.com/3wueLVGf2hJxfJpopW1VbPd9dV4E_CMvTd7Tpscoua0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZGI3YTQ1MGY4/MjYzMmU0MmQ1NGI4/MjY5NzE0NDJhMDk1/MDBjNGI3ZjUzMzJm/YzEzYmM0OGY1NDM1/NDJmZmUzYy9hZXJv/bGVhZHMuY29tLw"
+          },
+          "language": "en",
+          "family_friendly": true,
+          "type": "search_result",
+          "subtype": "faq",
+          "is_live": false,
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "aeroleads.com",
+            "hostname": "aeroleads.com",
+            "favicon": "https://imgs.search.brave.com/3wueLVGf2hJxfJpopW1VbPd9dV4E_CMvTd7Tpscoua0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZGI3YTQ1MGY4/MjYzMmU0MmQ1NGI4/MjY5NzE0NDJhMDk1/MDBjNGI3ZjUzMzJm/YzEzYmM0OGY1NDM1/NDJmZmUzYy9hZXJv/bGVhZHMuY29tLw",
+            "path": "  › home  › top saas companies in atlanta"
+          },
+          "thumbnail": {
+            "src": "https://imgs.search.brave.com/_fRTERZyZDde_b65ZVuu6TNcBuUu7rLxcHZkoXEyrrM/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9hZXJv/bGVhZHMuY29tL1By/b21vLnBuZw",
+            "original": "https://aeroleads.com/Promo.png",
+            "logo": false
+          },
+          "age": "July 29, 2026",
+          "faq": {
+            "items": [
+              {
+                "question": "What is included in this saas companies in Atlanta list?",
+                "answer": "It includes 50 company records with available company names, websites, locations, LinkedIn links, employee estimates, and contact signals when those fields are present.",
+                "title": "Top 50 Saas Companies in Atlanta - Emails & Contacts",
+                "url": "https://aeroleads.com/list/top-saas-companies-in-atlanta",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "aeroleads.com",
+                  "hostname": "aeroleads.com",
+                  "favicon": "https://imgs.search.brave.com/3wueLVGf2hJxfJpopW1VbPd9dV4E_CMvTd7Tpscoua0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZGI3YTQ1MGY4/MjYzMmU0MmQ1NGI4/MjY5NzE0NDJhMDk1/MDBjNGI3ZjUzMzJm/YzEzYmM0OGY1NDM1/NDJmZmUzYy9hZXJv/bGVhZHMuY29tLw",
+                  "path": "  › home  › top saas companies in atlanta"
+                }
+              },
+              {
+                "question": "How does AeroLeads choose companies for this page?",
+                "answer": "Companies are included when AeroLeads source records match saas companies in Atlanta; empty fields are hidden so the page shows only available evidence.",
+                "title": "Top 50 Saas Companies in Atlanta - Emails & Contacts",
+                "url": "https://aeroleads.com/list/top-saas-companies-in-atlanta",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "aeroleads.com",
+                  "hostname": "aeroleads.com",
+                  "favicon": "https://imgs.search.brave.com/3wueLVGf2hJxfJpopW1VbPd9dV4E_CMvTd7Tpscoua0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZGI3YTQ1MGY4/MjYzMmU0MmQ1NGI4/MjY5NzE0NDJhMDk1/MDBjNGI3ZjUzMzJm/YzEzYmM0OGY1NDM1/NDJmZmUzYy9hZXJv/bGVhZHMuY29tLw",
+                  "path": "  › home  › top saas companies in atlanta"
+                }
+              },
+              {
+                "question": "Which companies are examples from this list?",
+                "answer": "Representative records include FullStory, Ledgible, and Goodr.",
+                "title": "Top 50 Saas Companies in Atlanta - Emails & Contacts",
+                "url": "https://aeroleads.com/list/top-saas-companies-in-atlanta",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "aeroleads.com",
+                  "hostname": "aeroleads.com",
+                  "favicon": "https://imgs.search.brave.com/3wueLVGf2hJxfJpopW1VbPd9dV4E_CMvTd7Tpscoua0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZGI3YTQ1MGY4/MjYzMmU0MmQ1NGI4/MjY5NzE0NDJhMDk1/MDBjNGI3ZjUzMzJm/YzEzYmM0OGY1NDM1/NDJmZmUzYy9hZXJv/bGVhZHMuY29tLw",
+                  "path": "  › home  › top saas companies in atlanta"
+                }
+              },
+              {
+                "question": "Which listed saas companies has the largest employee estimate?",
+                "answer": "Katalon has the largest populated employee estimate in the current list at 751. Employee figures are source estimates and may change.",
+                "title": "Top 50 Saas Companies in Atlanta - Emails & Contacts",
+                "url": "https://aeroleads.com/list/top-saas-companies-in-atlanta",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "aeroleads.com",
+                  "hostname": "aeroleads.com",
+                  "favicon": "https://imgs.search.brave.com/3wueLVGf2hJxfJpopW1VbPd9dV4E_CMvTd7Tpscoua0/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZGI3YTQ1MGY4/MjYzMmU0MmQ1NGI4/MjY5NzE0NDJhMDk1/MDBjNGI3ZjUzMzJm/YzEzYmM0OGY1NDM1/NDJmZmUzYy9hZXJv/bGVhZHMuY29tLw",
+                  "path": "  › home  › top saas companies in atlanta"
+                }
+              }
+            ]
+          },
+          "organization": {
+            "type": "organization",
+            "name": "Stord",
+            "contact_points": []
+          },
+          "extra_snippets": [
+            "Across the current source records, commonly observed industries include Developer Tools, SaaS, Software, Analytics, E-Commerce, Internet, Marketing, and Accounting, Bitcoin, Blockchain, Cryptocurrency and the most frequent recorded locations are Atlanta, Georgia, USA. Representative companies include FullStory, Ledgible, and Goodr.",
+            "Which listed saas companies has the largest employee estimate? Katalon has the largest populated employee estimate in the current list at 751. Employee figures are source estimates and may change. Top UX Design Companies In Atlanta Top Hotel Companies In Atlanta Top Food Delivery Companies In Atlanta Top Saas Companies In Hampshire Top Saas Companies In Saint Louis Top Saas Companies In Santa Cruz",
+            "Browse 50 saas companies in Atlanta, including 50 with websites, 49 with employee estimates, 50 with contact signals.",
+            "This page covers 50 saas companies in Atlanta. Featured records include FullStory, Ledgible, and Goodr."
+          ]
+        },
+        {
+          "title": "SaaS Companies in Atlanta • • Atlanta Startups List",
+          "url": "https://atlanta.startups-list.com/startups/SaaS",
+          "is_source_local": false,
+          "is_source_both": false,
+          "description": "Create better software with agile testing tools QASymphony is one the fastest growing companies in Atlanta and taking the testing industry by storm. We are looking for a dynamic and forward thinking product manager to join our team.",
+          "profile": {
+            "name": "Startups-list",
+            "url": "https://atlanta.startups-list.com/startups/SaaS",
+            "long_name": "atlanta.startups-list.com",
+            "img": "https://imgs.search.brave.com/QlKidds-LE7hjM1dQ2VZ6CshErHzZ6a43vBYW8ZC9_A/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvMjcwZjc0ZjU2/ZDFiNzY5ZmIyMjE4/MzczOGVmMzI0Yjk3/M2QyZmFkZThiMzI0/YjhiZDJiODA2MTFm/MjczZWFjMy9hdGxh/bnRhLnN0YXJ0dXBz/LWxpc3QuY29tLw"
+          },
+          "language": "en",
+          "family_friendly": true,
+          "type": "search_result",
+          "subtype": "generic",
+          "is_live": false,
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "atlanta.startups-list.com",
+            "hostname": "atlanta.startups-list.com",
+            "favicon": "https://imgs.search.brave.com/QlKidds-LE7hjM1dQ2VZ6CshErHzZ6a43vBYW8ZC9_A/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvMjcwZjc0ZjU2/ZDFiNzY5ZmIyMjE4/MzczOGVmMzI0Yjk3/M2QyZmFkZThiMzI0/YjhiZDJiODA2MTFm/MjczZWFjMy9hdGxh/bnRhLnN0YXJ0dXBz/LWxpc3QuY29tLw",
+            "path": "  › companies  › saas"
+          },
+          "thumbnail": {
+            "src": "https://imgs.search.brave.com/Na2fdRQqyYeGeCOs4ELQmaSPSafhC4SEVVHs7s7lhUg/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9hdGxh/bnRhLnN0YXJ0dXBz/LWxpc3QuY29tL2lt/Zy90YjIvYXRsYW50/YS5qcGc",
+            "original": "https://atlanta.startups-list.com/img/tb2/atlanta.jpg",
+            "logo": false
+          },
+          "extra_snippets": [
+            "Tech startup companies built in Atlanta, the people behind them, the events they organize.",
+            "The top and newest startup companies based and built in Atlanta. Young and energetic city with incredible transportation connections. Atlanta is a great place for consumer E-Commerce! We like to say \"git r done\".",
+            "Create better software with agile testing tools QASymphony is one the fastest growing companies in Atlanta and taking the testing industry by storm. We are looking for a dynamic and forward thinking product manager to join our team.",
+            "We also use our experience with business automation to build custom solutions for small to medium sized publicly traded companies. ... Web Based Performance Management for Construction Construx/Live is a web based schedule and performance management system specifically designed for the construction industry. Our customers are medium to large construction managers, general contractors and specialty trade contractors that specialize in structural, ... ... Advanced Analytics SaaS Illuminate360's InsightFactory generates insight from big data at the pace, precision, and scale of your business."
+          ]
+        },
+        {
+          "title": "47 Atlanta SaaS Companies Ranked by Real Usage (2026)",
+          "url": "https://data.cledara.com/startups/united-states/atlanta",
+          "is_source_local": false,
+          "is_source_both": false,
+          "description": "The 47 most-used SaaS companies founded in Atlanta, ranked by real usage — <strong>Intuit Mailchimp</strong>, Massive &amp; Calendly. Free from Cledara. Updated monthly.",
+          "page_age": "2026-09-04T13:10:31",
+          "profile": {
+            "name": "Cledara",
+            "url": "https://data.cledara.com/startups/united-states/atlanta",
+            "long_name": "data.cledara.com",
+            "img": "https://imgs.search.brave.com/VuOmfrkJiHNf5kvl6R-S8DImywJFSzrbpA2lbNg0S_g/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvYmM0ODUzZGI4/OGJjZDg1NGY2YjZk/NzE1ZWZkOTU0NDE1/ZmViMzEzYjIxNWY2/YzkyNzBkNjdhYjY2/MTUyMzIyNS9kYXRh/LmNsZWRhcmEuY29t/Lw"
+          },
+          "language": "en",
+          "family_friendly": true,
+          "type": "search_result",
+          "subtype": "faq",
+          "is_live": false,
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "data.cledara.com",
+            "hostname": "data.cledara.com",
+            "favicon": "https://imgs.search.brave.com/VuOmfrkJiHNf5kvl6R-S8DImywJFSzrbpA2lbNg0S_g/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvYmM0ODUzZGI4/OGJjZDg1NGY2YjZk/NzE1ZWZkOTU0NDE1/ZmViMzEzYjIxNWY2/YzkyNzBkNjdhYjY2/MTUyMzIyNS9kYXRh/LmNsZWRhcmEuY29t/Lw",
+            "path": "  › home  › united states  › atlanta"
+          },
+          "thumbnail": {
+            "src": "https://imgs.search.brave.com/t7fBRD5TObVyjCuUbHNZZVNm49d6Z731R4n6t6qFMw8/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9kYXRh/LmNsZWRhcmEuY29t/L2FwaS9vZy9zdGFy/dHVwcy91bml0ZWQt/c3RhdGVzL2F0bGFu/dGE",
+            "original": "https://data.cledara.com/api/og/startups/united-states/atlanta",
+            "logo": false
+          },
+          "age": "September 4, 2026",
+          "faq": {
+            "items": [
+              {
+                "question": "What are the biggest SaaS startups in Atlanta?",
+                "answer": "Intuit Mailchimp, Massive and Calendly are the most-used SaaS products founded in Atlanta, based on real purchasing data from companies on Cledara. Last updated 4 September 2026, 13:10 UTC.",
+                "title": "47 Atlanta SaaS Companies Ranked by Real Usage (2026)",
+                "url": "https://data.cledara.com/startups/united-states/atlanta",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "data.cledara.com",
+                  "hostname": "data.cledara.com",
+                  "favicon": "https://imgs.search.brave.com/VuOmfrkJiHNf5kvl6R-S8DImywJFSzrbpA2lbNg0S_g/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvYmM0ODUzZGI4/OGJjZDg1NGY2YjZk/NzE1ZWZkOTU0NDE1/ZmViMzEzYjIxNWY2/YzkyNzBkNjdhYjY2/MTUyMzIyNS9kYXRh/LmNsZWRhcmEuY29t/Lw",
+                  "path": "  › home  › united states  › atlanta"
+                }
+              },
+              {
+                "question": "How many SaaS companies are based in Atlanta?",
+                "answer": "47 SaaS and AI products founded in Atlanta are actively bought by companies tracked on Cledara. Aggregators list more registered startups; this ranking counts only products with real, current usage.",
+                "title": "47 Atlanta SaaS Companies Ranked by Real Usage (2026)",
+                "url": "https://data.cledara.com/startups/united-states/atlanta",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "data.cledara.com",
+                  "hostname": "data.cledara.com",
+                  "favicon": "https://imgs.search.brave.com/VuOmfrkJiHNf5kvl6R-S8DImywJFSzrbpA2lbNg0S_g/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvYmM0ODUzZGI4/OGJjZDg1NGY2YjZk/NzE1ZWZkOTU0NDE1/ZmViMzEzYjIxNWY2/YzkyNzBkNjdhYjY2/MTUyMzIyNS9kYXRh/LmNsZWRhcmEuY29t/Lw",
+                  "path": "  › home  › united states  › atlanta"
+                }
+              },
+              {
+                "question": "Which Atlanta startups are growing fastest?",
+                "answer": "Maxio and FullStory show the strongest rank gains among Atlanta-founded products over the last 90 days.",
+                "title": "47 Atlanta SaaS Companies Ranked by Real Usage (2026)",
+                "url": "https://data.cledara.com/startups/united-states/atlanta",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "data.cledara.com",
+                  "hostname": "data.cledara.com",
+                  "favicon": "https://imgs.search.brave.com/VuOmfrkJiHNf5kvl6R-S8DImywJFSzrbpA2lbNg0S_g/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvYmM0ODUzZGI4/OGJjZDg1NGY2YjZk/NzE1ZWZkOTU0NDE1/ZmViMzEzYjIxNWY2/YzkyNzBkNjdhYjY2/MTUyMzIyNS9kYXRh/LmNsZWRhcmEuY29t/Lw",
+                  "path": "  › home  › united states  › atlanta"
+                }
+              },
+              {
+                "question": "How is this different from other Atlanta startup lists?",
+                "answer": "Most lists rank Atlanta startups by funding raised or valuation. This one ranks them by adoption — how many companies actually pay for each product — measured monthly from Cledara's purchasing data.",
+                "title": "47 Atlanta SaaS Companies Ranked by Real Usage (2026)",
+                "url": "https://data.cledara.com/startups/united-states/atlanta",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "data.cledara.com",
+                  "hostname": "data.cledara.com",
+                  "favicon": "https://imgs.search.brave.com/VuOmfrkJiHNf5kvl6R-S8DImywJFSzrbpA2lbNg0S_g/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvYmM0ODUzZGI4/OGJjZDg1NGY2YjZk/NzE1ZWZkOTU0NDE1/ZmViMzEzYjIxNWY2/YzkyNzBkNjdhYjY2/MTUyMzIyNS9kYXRh/LmNsZWRhcmEuY29t/Lw",
+                  "path": "  › home  › united states  › atlanta"
+                }
+              }
+            ]
+          },
+          "organization": {
+            "type": "organization",
+            "name": "Cledara",
+            "contact_points": []
+          },
+          "extra_snippets": [
+            "The 47 most-used SaaS companies founded in Atlanta, ranked by real usage — Intuit Mailchimp, Massive & Calendly. Free from Cledara. Updated monthly.",
+            "Atlanta is home to 47 SaaS and AI products actively bought by companies on Cledara, led by Intuit Mailchimp (0.30% market share). This ranking is built from real purchasing data — what companies actually pay for, not funding announcements — and updates monthly.",
+            "Most lists rank Atlanta startups by funding raised or valuation. This one ranks them by adoption — how many companies actually pay for each product — measured monthly from Cledara's purchasing data. ... Cledara SaaS Market Data, \"The 47 Most Popular SaaS Startups from Atlanta (2026)\", data.cledara.com, updated 4 September 2026, 13:10 UTC.",
+            "Atlanta's SaaS scene skews toward Marketing & Growth — 9 of its 47 tracked companies build marketing & growth software."
+          ]
+        },
+        {
+          "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate Growth",
+          "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+          "is_source_local": false,
+          "is_source_both": false,
+          "description": "Your trusted SaaS lead-generation agency in Atlanta, helping you drive demos, trials, and a qualified pipeline.",
+          "profile": {
+            "name": "Lemniscate Growth",
+            "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+            "long_name": "lemniscategrowth.com",
+            "img": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8"
+          },
+          "language": "en",
+          "family_friendly": true,
+          "type": "search_result",
+          "subtype": "faq",
+          "is_live": false,
+          "meta_url": {
+            "scheme": "https",
+            "netloc": "lemniscategrowth.com",
+            "hostname": "lemniscategrowth.com",
+            "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+            "path": "› atlanta  › saas-lead-gen-agency.html"
+          },
+          "faq": {
+            "items": [
+              {
+                "question": "Do you serve Atlanta?",
+                "answer": "Yes. We serve B2B companies across Atlanta and surrounding areas. India operations deliver Atlanta-quality at 70-80% lower cost.",
+                "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate ...",
+                "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "lemniscategrowth.com",
+                  "hostname": "lemniscategrowth.com",
+                  "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+                  "path": "› atlanta  › saas-lead-gen-agency.html"
+                }
+              },
+              {
+                "question": "What Atlanta industries?",
+                "answer": "Fintech and Payments, B2B SaaS, Cybersecurity, Healthcare, Logistics.",
+                "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate ...",
+                "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "lemniscategrowth.com",
+                  "hostname": "lemniscategrowth.com",
+                  "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+                  "path": "› atlanta  › saas-lead-gen-agency.html"
+                }
+              },
+              {
+                "question": "How are you different?",
+                "answer": "Pipeline-focused, AI across 5 pillars, 70-80% lower cost.",
+                "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate ...",
+                "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "lemniscategrowth.com",
+                  "hostname": "lemniscategrowth.com",
+                  "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+                  "path": "› atlanta  › saas-lead-gen-agency.html"
+                }
+              },
+              {
+                "question": "Minimum engagement?",
+                "answer": "$1,000/month (Ignite). $2,750/month (Scale) for full 5-Pillar.",
+                "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate ...",
+                "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "lemniscategrowth.com",
+                  "hostname": "lemniscategrowth.com",
+                  "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+                  "path": "› atlanta  › saas-lead-gen-agency.html"
+                }
+              },
+              {
+                "question": "Timeline?",
+                "answer": "Pipeline signals in 60-90 days. Sustainable in 12-16 months.",
+                "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate ...",
+                "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "lemniscategrowth.com",
+                  "hostname": "lemniscategrowth.com",
+                  "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+                  "path": "› atlanta  › saas-lead-gen-agency.html"
+                }
+              },
+              {
+                "question": "Understand local culture?",
+                "answer": "Yes. Every touchpoint calibrated for Atlanta's buyer preferences.",
+                "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate ...",
+                "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "lemniscategrowth.com",
+                  "hostname": "lemniscategrowth.com",
+                  "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+                  "path": "› atlanta  › saas-lead-gen-agency.html"
+                }
+              },
+              {
+                "question": "Multiple markets?",
+                "answer": "Separate strategies within Atlanta. Different ICPs per micro-market.",
+                "title": "SaaS Lead Generation Agency Atlanta | Pipeline-Focused | Lemniscate ...",
+                "url": "https://lemniscategrowth.com/atlanta/saas-lead-gen-agency.html",
+                "meta_url": {
+                  "scheme": "https",
+                  "netloc": "lemniscategrowth.com",
+                  "hostname": "lemniscategrowth.com",
+                  "favicon": "https://imgs.search.brave.com/iPvwUbX8nNIYFsxy9kZLj_5P07x-O7hNUbXNoJ9gGAY/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvZTU3NTAwNTg2/MmU4ODZjODIyYzYy/YzgzOWM0NThkNDBl/YWJlZDRmMjk2YjY2/NzM1OTMxMWI5YjVh/NDlmNjMyOS9sZW1u/aXNjYXRlZ3Jvd3Ro/LmNvbS8",
+                  "path": "› atlanta  › saas-lead-gen-agency.html"
+                }
+              }
+            ]
+          },
+          "extra_snippets": [
+            "Yes. We serve B2B companies across Atlanta and surrounding areas. India operations deliver Atlanta-quality at 70-80% lower cost. Fintech and Payments, B2B SaaS, Cybersecurity, Healthcare, Logistics.",
+            "SaaS Lead Generation Agency in Atlanta. Pipeline-focused B2B marketing. $6M+ avg pipeline. 5-Pillar AI + Human Strategy.",
+            "Your trusted SaaS lead-generation agency in Atlanta, helping you drive demos, trials, and a qualified pipeline.",
+            "Atlanta agencies optimize for creative, not pipeline."
+          ]
+        }
+      ],
+      "family_friendly": true
+    }
+  }
+}

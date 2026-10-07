@@ -1,0 +1,12 @@
+{
+  "query": "SaaS companies Atlanta",
+  "pageUrl": "https://gregslist.com/atlanta/software-companies-type/b2b-saas/",
+  "userAgent": "HipStrawMM/0.1 (+https://hipstraw.example/bot)",
+  "modelKeys": {
+    "QueryPlan": "real",
+    "ListingExtraction": "https://gregslist.com/atlanta/software-companies-type/b2b-saas/",
+    "HomepageIdentity": "https://gregslist.com/atlanta/software-companies-type/b2b-saas/",
+    "CompanyEvidence": "gregslist.com",
+    "ReviewJudgement": "real-synthetic"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "matchKey": "QueryPlan:real",
+  "request": {
+    "model": "gpt-4o",
+    "schema": "QueryPlan",
+    "promptVersion": "record-real",
+    "messages": [
+      {
+        "role": "system",
+        "content": "Use only the text provided by the user. Copy every excerpt verbatim from that text, at most 300 characters. Never output person fields, email addresses, or phone numbers. Return only the schema."
+      },
+      {
+        "role": "user",
+        "content": "Plan at most 3 web search queries that find small SaaS companies headquartered in Atlanta.\n\n{\"maxQueries\": 3}"
+      }
+    ]
+  },
+  "response": {
+    "content": "{\"queries\":[{\"query\":\"small SaaS companies headquartered in Atlanta\",\"purpose\":\"Find small SaaS companies based in Atlanta.\"},{\"query\":\"Atlanta based SaaS startups\",\"purpose\":\"Identify SaaS startups located in Atlanta.\"},{\"query\":\"list of small SaaS businesses in Atlanta\",\"purpose\":\"Compile a list of small SaaS businesses headquartered in Atlanta.\"}]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "gpt-4o-2024-08-06"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "matchKey": "https://gregslist.com/robots.txt",
+  "request": {
+    "url": "https://gregslist.com/robots.txt"
+  },
+  "response": {
+    "status": 200,
+    "text": "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /auth\nDisallow: /mcp\nDisallow: /submit\nDisallow: /people/\n\n# Block SEO/scraper bots entirely\nUser-agent: AhrefsBot\nDisallow: /\n\nUser-agent: SemrushBot\nDisallow: /\n\nUser-agent: Amazonbot\nDisallow: /\n\nUser-agent: meta-externalagent\nDisallow: /\n\nUser-agent: meta-webindexer\nDisallow: /\n\nUser-agent: YandexBot\nDisallow: /\n\nUser-agent: MJ12bot\nDisallow: /\n\nUser-agent: DataForSeoBot\nDisallow: /\n\nUser-agent: Bytespider\nDisallow: /\n\nUser-agent: PetalBot\nDisallow: /\n\nUser-agent: DotBot\nDisallow: /\n\nUser-agent: Sogou\nDisallow: /\n\nUser-agent: Sogou web spider\nDisallow: /\n\nUser-agent: Awario\nDisallow: /\n\nUser-agent: AwarioBot\nDisallow: /\n\nUser-agent: LeadHunter\nDisallow: /\n\nUser-agent: ev-crawler\nDisallow: /\n\nUser-agent: Qlyze\nDisallow: /\n\nUser-agent: ShapBot\nDisallow: /\n\nSitemap: https://gregslist.com/sitemap.xml\n",
+    "headers": {
+      "content-type": "text/plain; charset=utf-8"
+    }
+  }
+}

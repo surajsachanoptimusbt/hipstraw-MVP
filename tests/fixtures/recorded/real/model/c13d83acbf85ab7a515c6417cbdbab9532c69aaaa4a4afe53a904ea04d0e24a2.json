@@ -1,0 +1,24 @@
+{
+  "matchKey": "ReviewJudgement:real-synthetic",
+  "request": {
+    "model": "gpt-4o",
+    "schema": "ReviewJudgement",
+    "promptVersion": "record-real",
+    "messages": [
+      {
+        "role": "system",
+        "content": "Use only the text provided by the user. Copy every excerpt verbatim from that text, at most 300 characters. Never output person fields, email addresses, or phone numbers. Return only the schema."
+      },
+      {
+        "role": "user",
+        "content": "Judge whether the fit holds and whether the falsifier is met, citing only these evidence IDs.\n\n{\"company\": \"Example Ledger Co (synthetic)\", \"falsifier\": \"The company is a subsidiary of a Fortune 500 enterprise.\", \"evidence\": [{\"evidenceId\": \"ev_synthetic_1\", \"claimField\": \"hq\", \"claimValue\": \"Atlanta, GA\", \"excerpt\": \"Headquartered in Atlanta, GA\"}, {\"evidenceId\": \"ev_synthetic_2\", \"claimField\": \"signal_pain\", \"claimValue\": \"AP hiring\", \"excerpt\": \"We are hiring an Accounts Payable Specialist\"}]}"
+      }
+    ]
+  },
+  "response": {
+    "content": "{\"falsifierMet\":false,\"fitHolds\":false,\"citedEvidenceIds\":[],\"reason\":\"The evidence provided does not contain any information regarding the company being a subsidiary of a Fortune 500 enterprise. Therefore, the falsifier is not met, and without relevant evidence, the fit cannot be evaluated.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "gpt-4o-2024-08-06"
+  }
+}
