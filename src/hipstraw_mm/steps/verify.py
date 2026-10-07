@@ -332,7 +332,7 @@ class _Verification:
                 self.counts["citationsFailed"] += 1
                 continue
             value = claim.claimValue if claim.claimField in STRUCTURED_FIELDS else None
-            check = check_excerpt(claim.excerpt, page.text or "", value)
+            check = check_excerpt(claim.excerpt, page.text or "", value, claim_field=claim.claimField)
             evidence_id = self._store_evidence(
                 record_id, claim.claimField, claim.claimValue, page, claim.excerpt, check
             )

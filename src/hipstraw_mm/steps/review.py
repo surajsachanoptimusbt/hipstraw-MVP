@@ -68,16 +68,16 @@ def rule_gate(record: Doc, evidence_by_id: dict[str, Doc]) -> GateResult:
     results.append(({"rule": "existence", "outcome": existence[0], "evidenceIds": existence_ids}, existence[1]))
 
     hq = record.get("hq") or {}
-    place = ", ".join(p for p in (hq.get("city"), hq.get("state")) if p)
-    hq_outcome = {"met": "pass", "not_met": "fail"}.get(hq.get("status", ""), "unknown")
+    hq_ids = hq.get("evidenceIds", [])
+    cited = " and ".join(dict.fromkeys(evidence_by_id[i]["claimValue"] for i in hq_ids if i in evidence_by_id))
+    place = cited or ", ".join(p for p in (hq.get("city"), hq.get("state")) if p)
+    hq_outcome = {"met": "pass", "not_met": "fail", "conflict": "conflict"}.get(hq.get("status", ""), "unknown")
     if hq_outcome == "fail":
         hq_detail = f"headquarters {place} is outside the metros in force"
+    elif hq_outcome == "conflict":
+        hq_detail = f"headquarters citations disagree, inside and outside the metros ({place})"
     elif hq_outcome == "unknown":
-        hq_detail = (
-            f"headquarters {place} is not on the metro place lists"
-            if hq.get("evidenceIds")
-            else "no passing headquarters citation"
-        )
+        hq_detail = f"headquarters {place} names no city" if hq_ids else "no passing headquarters citation"
     else:
         hq_detail = ""
     results.append(({"rule": "hq", "outcome": hq_outcome, "evidenceIds": hq.get("evidenceIds", [])}, hq_detail))

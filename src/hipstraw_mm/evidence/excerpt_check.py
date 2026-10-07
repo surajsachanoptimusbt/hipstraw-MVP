@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from hipstraw_mm.evidence.states import STATE_NAMES, state_code
+
 MAX_EXCERPT_CHARS = 300
 WITHHELD_EXCERPT = "[withheld: contact data]"
 
@@ -53,7 +55,21 @@ def contains_contact_data(text: str) -> bool:
     return bool(_EMAIL.search(text) or _PHONE.search(text.translate(_TYPOGRAPHY)))
 
 
-def check_excerpt(excerpt: str, page_text: str, claim_value: str | None = None) -> CheckResult:
+def value_variants(claim_value: str, claim_field: str | None) -> list[str]:
+    """The ways a claimed value may be written. For a headquarters claim, a state's code and its full
+    name are equal ("Addison, TX" = "Addison, Texas", FR-007, 2026-10-07); nothing else is relaxed."""
+    if claim_field != "hq" or "," not in claim_value:
+        return [claim_value]
+    city, _, state_text = claim_value.rpartition(",")
+    code = state_code(state_text)
+    if code is None or not city.strip():
+        return [claim_value]
+    return [claim_value, f"{city.strip()}, {code}", f"{city.strip()}, {STATE_NAMES[code]}"]
+
+
+def check_excerpt(
+    excerpt: str, page_text: str, claim_value: str | None = None, *, claim_field: str | None = None
+) -> CheckResult:
     """Pass only if the excerpt appears in the page text and, for structured claims, holds the value."""
     if not excerpt or not excerpt.strip():
         return CheckResult("fail", "excerpt_not_found")
@@ -65,7 +81,7 @@ def check_excerpt(excerpt: str, page_text: str, claim_value: str | None = None) 
     if normalized_excerpt not in normalize(page_text):
         return CheckResult("fail", "excerpt_not_found")
     if claim_value is not None:
-        normalized_value = normalize(claim_value)
-        if not normalized_value or normalized_value not in normalized_excerpt:
+        variants = [normalize(v) for v in value_variants(claim_value, claim_field)]
+        if not variants[0] or not any(v in normalized_excerpt for v in variants):
             return CheckResult("fail", "value_not_in_excerpt")
     return CheckResult("pass", None)

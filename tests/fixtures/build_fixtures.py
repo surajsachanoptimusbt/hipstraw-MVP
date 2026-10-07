@@ -207,7 +207,7 @@ def build(scenario_path: Path, out_dir: Path) -> int:
             if claim["page"] not in source_ids:
                 raise ScenarioError(f"{where}: {claim['page']} is not one of the pages given to the model")
             value = claim["claimValue"] if claim["claimField"] in STRUCTURED_FIELDS else None
-            result = check_excerpt(claim["excerpt"], pages[claim["page"]][0], value)
+            result = check_excerpt(claim["excerpt"], pages[claim["page"]][0], value, claim_field=claim["claimField"])
             if claim["verbatim"] and result.status != "pass":
                 raise ScenarioError(f"{where}: verbatim excerpt fails ({result.reason})")
             if not claim["verbatim"] and result.status == "pass":

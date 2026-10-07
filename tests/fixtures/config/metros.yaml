@@ -1,4 +1,5 @@
-# Test copy of config/metros.yaml (same places).
+# A small hand-made subset for the tests, in the same shape as config/metros.yaml. The real lists are
+# complete and generated from Census files by scripts/build_metro_places.py (T052).
 
 metros:
 - id: atlanta

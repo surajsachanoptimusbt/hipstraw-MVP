@@ -508,7 +508,7 @@ acceptance scenarios 1–9 and US2 scenarios 9–10, using recorded responses.
   - Implement `website_status` in `src/hipstraw_mm/evidence/existence.py` and add `unreadable` to `IdentifierStatus`.
   - In `src/hipstraw_mm/steps/verify.py`, an `unreadable` website gets no page fetches, no `CompanyEvidence` call, and no signal searches; its unknowns say why.
   - In `src/hipstraw_mm/steps/review.py`, `fails` → `exclude`, and `unreadable` → `needs_verification` with the cause. Build `us1_sites`.
-- [ ] T052 [P] [US1] **Headquarters outside the metros** (research R5 as revised), making T046 and T079's headquarters rows pass:
+- [x] T052 [P] [US1] **Headquarters outside the metros** (research R5 as revised), making T046 and T079's headquarters rows pass:
   - The location rules and the state-keyed `Metro` shape are brought forward into T082.
   - **State names in headquarters claim checks** (added at the T051 review): in `src/hipstraw_mm/evidence/excerpt_check.py`, an `hq` claim's value passes when it appears in the excerpt with its state written as either the code or the full name ("Addison, TX" against "Addison, Texas"). Tests: `TestHeadquartersStateNames` in `tests/unit/test_excerpt_check.py`. The builder passes the claim field too.
   - Add `conflict` to the `hq` status.
