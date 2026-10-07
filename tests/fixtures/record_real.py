@@ -32,6 +32,14 @@ ROOT = Path(__file__).resolve().parents[2]
 REAL_DIR = Path(__file__).resolve().parent / "recorded" / "real"
 QUERY = "SaaS companies Atlanta"
 MAX_TEXT = 6000
+# The inputs the v2 listing and homepage calls receive (research R19), so the recorded shapes match.
+POSITION = {
+    "segment": "B2B SaaS companies under 500 employees in the Atlanta, San Francisco, or New York metro",
+    "companyArchetype": "Growing subscription software company that pays many recurring vendors",
+    "buyer": "Head of finance or accounts payable lead",
+    "problem": "Recurring SaaS and services invoices drift from contracted terms",
+    "trigger": "Hiring accounts payable or procurement staff",
+}
 
 SYSTEM = (
     "Use only the text provided by the user. Copy every excerpt verbatim from that text, at most 300 "
@@ -94,6 +102,7 @@ def main() -> int:
     # 3. One parse per schema.
     llm = LLMClient(model=os.environ["LLM_MODEL"], replay=recorder)
     domain = site_host(page.final_url or page_url)
+    metros = [m.name for m in config.metros_in_force()]
     keys = {
         "QueryPlan": "real",
         "ListingExtraction": page_url,
@@ -112,13 +121,22 @@ def main() -> int:
     )
     llm.parse(
         llm_schemas.ListingExtraction,
-        _messages("List the companies named on this page.", {"url": page_url, "text": text, "links": links}),
+        _messages(
+            "List the companies named on this page. For each, give the location the page states for it (or "
+            "null), whether that location is in one of the metros (in, out, or unknown), and how well the "
+            "page's words about it match the position (strong, partial, or weak).",
+            {"url": page_url, "text": text, "links": links, "position": POSITION, "metros": metros},
+        ),
         keys["ListingExtraction"],
         "record-real",
     )
     llm.parse(
         llm_schemas.HomepageIdentity,
-        _messages("Is this page a single company's own homepage?", {"url": page_url, "text": text}),
+        _messages(
+            "Is this page a single company's own homepage? Also give its stated location (or null), whether "
+            "that is in one of the metros, and how well it matches the position.",
+            {"url": page_url, "text": text, "position": POSITION, "metros": metros},
+        ),
         keys["HomepageIdentity"],
         "record-real",
     )
