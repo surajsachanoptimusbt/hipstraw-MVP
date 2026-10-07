@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://news.example.test/new-york-saas-2026",
+  "request": {
+    "url": "https://news.example.test/new-york-saas-2026",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>New York SaaS companies to watch</h1>\n<p>Juniper Payables, based in New York, NY, sells accounts payable software to mid-market firms. <a href=\"https://juniper-payables.test/\">Juniper Payables</a></p>\n<p>Kestrel AP, based in Brooklyn, NY, runs a consumer budgeting app. <a href=\"https://kestrel-ap.test/\">Kestrel AP</a></p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

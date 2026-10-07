@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Literal, TypeVar
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from hipstraw_mm.errors import ConfigError
 from hipstraw_mm.models import IdLabel, Reliability, SourceType, host_matches_domain, host_of
@@ -55,6 +55,8 @@ class Budgets(_Strict):
     discoveryQueries: int = Field(ge=1)
     resultsPerQuery: int = Field(ge=1, le=20)
     listingPagesFetched: int = Field(ge=1)
+    listingPagesPerSite: int = Field(ge=1)
+    listingPagesPerQuery: int = Field(ge=1)
     profileHopsPerRun: int = Field(ge=0)
     companiesKept: int = Field(ge=1, le=10)
     ownSitePagesPerCompany: int = Field(ge=0)
@@ -131,11 +133,14 @@ class SourcePolicy(_Strict):
 
 
 class Metro(_Strict):
+    """One CSA. `counties` and `places` are keyed by state code (contracts/config.md, 2026-10-07)."""
+
     id: str
     name: str
     csaCode: str
     states: list[str] = Field(min_length=1)
-    places: list[str] = Field(min_length=1)
+    counties: dict[str, list[str]] = {}
+    places: dict[str, list[str]]
 
     @field_validator("states")
     @classmethod
@@ -144,6 +149,16 @@ class Metro(_Strict):
             if not re.fullmatch(r"[A-Z]{2}", s):
                 raise ValueError(f"state must be a 2-letter code, got {s!r}")
         return v
+
+    @model_validator(mode="after")
+    def _keyed_by_its_states(self) -> Metro:
+        for field_name in ("counties", "places"):
+            extra = set(getattr(self, field_name)) - set(self.states)
+            if extra:
+                raise ValueError(f"{field_name} has states that are not in states: {sorted(extra)}")
+        if not any(self.places.values()):
+            raise ValueError("places must list at least one place")
+        return self
 
 
 class MetroConfig(_Strict):

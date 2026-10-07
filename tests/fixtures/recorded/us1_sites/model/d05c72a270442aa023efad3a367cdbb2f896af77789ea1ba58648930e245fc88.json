@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:quillpad.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_sites.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"New York, NY\",\"sourceId\":\"s2\",\"excerpt\":\"Larch Health Systems is headquartered in New York, NY.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"40\",\"sourceId\":\"s2\",\"excerpt\":\"Larch Health Systems has 40 employees.\"},{\"claimId\":\"c3\",\"claimField\":\"fit_problem\",\"claimValue\":\"vendor invoices for SaaS tools\",\"sourceId\":\"s3\",\"excerpt\":\"Larch Health Systems is hiring an Accounts Payable Coordinator to manage vendor invoices for our SaaS tools.\"},{\"claimId\":\"c4\",\"claimField\":\"signal_pain\",\"claimValue\":\"Accounts Payable Coordinator hiring\",\"sourceId\":\"s3\",\"excerpt\":\"Larch Health Systems is hiring an Accounts Payable Coordinator to manage vendor invoices for our SaaS tools.\"}],\"fitClaims\":[{\"aspect\":\"problem\",\"statement\":\"Larch Health Systems manages vendor invoices for its SaaS tools.\",\"primaryInterestIds\":[\"invoice_accuracy_entitlement\"],\"claimIds\":[\"c3\"]}],\"interestSignals\":[{\"kind\":\"pain\",\"statement\":\"Hiring an Accounts Payable Coordinator for SaaS vendor invoices.\",\"claimIds\":[\"c4\"]}],\"falsifier\":\"Larch Health Systems is a subsidiary of a large enterprise, or has 500 or more employees.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

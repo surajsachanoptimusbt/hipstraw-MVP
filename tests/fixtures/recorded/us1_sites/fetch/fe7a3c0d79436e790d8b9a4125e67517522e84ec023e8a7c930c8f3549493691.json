@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://rowan-down.test/",
+  "request": {
+    "url": "https://rowan-down.test/",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_sites.yaml"
+  },
+  "response": {
+    "status": 503,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Service unavailable</h1></body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

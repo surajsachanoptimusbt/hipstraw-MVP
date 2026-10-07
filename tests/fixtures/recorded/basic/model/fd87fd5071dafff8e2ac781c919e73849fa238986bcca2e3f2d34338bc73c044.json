@@ -6,7 +6,7 @@
     "scenario": "tests/fixtures/scenarios/basic.yaml"
   },
   "response": {
-    "content": "{\"companies\":[{\"name\":\"Zeta Holdings LLC\",\"linkId\":null,\"excerpt\":\"Zeta Holdings LLC. Status: Active. Registered in Georgia in 2015.\"},{\"name\":\"Alpha Ledger, Inc.\",\"linkId\":null,\"excerpt\":\"Alpha Ledger, Inc. Status: Active. Registered in Georgia in 2018.\"}]}",
+    "content": "{\"companies\":[{\"name\":\"Zeta Holdings LLC\",\"linkId\":null,\"excerpt\":\"Zeta Holdings LLC. Status: Active. Registered in Georgia in 2015.\",\"location\":null,\"metroMatch\":\"unknown\",\"positionMatch\":\"partial\"},{\"name\":\"Alpha Ledger, Inc.\",\"linkId\":null,\"excerpt\":\"Alpha Ledger, Inc. Status: Active. Registered in Georgia in 2018.\",\"location\":null,\"metroMatch\":\"unknown\",\"positionMatch\":\"partial\"}]}",
     "refusal": null,
     "finishReason": "stop",
     "model": "test-model"

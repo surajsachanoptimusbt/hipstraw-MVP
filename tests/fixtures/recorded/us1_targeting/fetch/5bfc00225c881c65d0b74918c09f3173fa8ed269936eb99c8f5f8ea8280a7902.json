@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://atl-weekly.test/saas-roundup",
+  "request": {
+    "url": "https://atl-weekly.test/saas-roundup",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Atlanta SaaS roundup</h1>\n<p>This week: three meetups for founders and a panel on pricing.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

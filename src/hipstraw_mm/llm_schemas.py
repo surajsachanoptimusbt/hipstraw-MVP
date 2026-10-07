@@ -25,10 +25,18 @@ class QueryPlan(_Strict):
     queries: list[PlannedQuery]
 
 
+MetroMatch = Literal["in", "out", "unknown"]
+PositionMatch = Literal["strong", "partial", "weak"]
+
+
 class ListedCompany(_Strict):
     name: str
     linkId: str | None
     excerpt: str
+    # Ranking inputs (research R19). The system checks `location` against the excerpt.
+    location: str | None
+    metroMatch: MetroMatch
+    positionMatch: PositionMatch
 
 
 class ListingExtraction(_Strict):
@@ -39,6 +47,9 @@ class HomepageIdentity(_Strict):
     isCompanyHomepage: bool
     name: str | None
     excerpt: str | None
+    location: str | None
+    metroMatch: MetroMatch
+    positionMatch: PositionMatch
 
 
 EvidenceClaimField = Literal[

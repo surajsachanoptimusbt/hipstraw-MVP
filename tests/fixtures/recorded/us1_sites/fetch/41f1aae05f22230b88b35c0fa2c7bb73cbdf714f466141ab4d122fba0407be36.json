@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://nettle-throttle.test/",
+  "request": {
+    "url": "https://nettle-throttle.test/",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_sites.yaml"
+  },
+  "response": {
+    "status": 429,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Too many requests</h1></body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

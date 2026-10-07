@@ -1,0 +1,31 @@
+{
+  "matchKey": "software companies A to Z",
+  "request": {
+    "params": {
+      "q": "software companies A to Z"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "web": {
+      "results": [
+        {
+          "url": "https://list.example.test/software-a-z",
+          "title": "Software companies A to Z",
+          "description": "Every software company, sorted by name."
+        },
+        {
+          "url": "https://list.example.test/software-a-z?page=2",
+          "title": "Software companies A to Z, page 2",
+          "description": "Skipped by the per-site cap."
+        },
+        {
+          "url": "https://list.example.test/software-a-z?page=3",
+          "title": "Software companies A to Z, page 3",
+          "description": "Skipped by the per-site cap."
+        }
+      ]
+    }
+  }
+}

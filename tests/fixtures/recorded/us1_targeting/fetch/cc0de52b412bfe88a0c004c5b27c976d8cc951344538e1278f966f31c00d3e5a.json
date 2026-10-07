@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://news.example.test/bay-area-saas-2026",
+  "request": {
+    "url": "https://news.example.test/bay-area-saas-2026",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Bay Area SaaS startups to watch in 2026</h1>\n<p>Hazel Spend (San Francisco, CA) builds spend controls for SaaS-heavy finance teams. <a href=\"https://hazel-spend.test/\">Hazel Spend</a></p>\n<p>Iris Ledger (Palo Alto, CA) automates vendor invoice matching for subscription businesses. <a href=\"https://iris-ledger.test/\">Iris Ledger</a></p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

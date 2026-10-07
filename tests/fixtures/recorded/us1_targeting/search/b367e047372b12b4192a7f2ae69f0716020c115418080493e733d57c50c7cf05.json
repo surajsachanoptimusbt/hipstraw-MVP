@@ -1,0 +1,21 @@
+{
+  "matchKey": "San Francisco Bay Area SaaS startups",
+  "request": {
+    "params": {
+      "q": "San Francisco Bay Area SaaS startups"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "web": {
+      "results": [
+        {
+          "url": "https://news.example.test/bay-area-saas-2026",
+          "title": "Bay Area SaaS startups to watch in 2026",
+          "description": "Bay Area SaaS startups to watch."
+        }
+      ]
+    }
+  }
+}

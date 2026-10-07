@@ -1,0 +1,14 @@
+{
+  "matchKey": "QueryPlan:invoice_alpha_genesis__saas_recurring_fees",
+  "request": {
+    "schema": "QueryPlan",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "content": "{\"queries\":[{\"query\":\"software companies A to Z\",\"purpose\":\"A generic directory of software companies\"},{\"query\":\"Atlanta B2B SaaS startups\",\"purpose\":\"Lists of B2B SaaS startups in the Atlanta metro\"},{\"query\":\"San Francisco Bay Area SaaS startups\",\"purpose\":\"Local press lists of Bay Area SaaS startups\"},{\"query\":\"New York SaaS companies to watch\",\"purpose\":\"Local press lists of New York SaaS companies\"}]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

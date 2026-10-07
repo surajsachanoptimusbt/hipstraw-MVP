@@ -1,0 +1,36 @@
+{
+  "matchKey": "Atlanta B2B SaaS startups",
+  "request": {
+    "params": {
+      "q": "Atlanta B2B SaaS startups"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "web": {
+      "results": [
+        {
+          "url": "https://list.example.test/atlanta-startups",
+          "title": "Atlanta B2B SaaS startups",
+          "description": "B2B SaaS startups in and around Atlanta."
+        },
+        {
+          "url": "https://atl-weekly.test/saas-roundup",
+          "title": "Atlanta SaaS roundup",
+          "description": "Events for Atlanta SaaS founders."
+        },
+        {
+          "url": "https://atl-tech.test/startup-map",
+          "title": "Atlanta startup map",
+          "description": "A map of Atlanta startup meetups."
+        },
+        {
+          "url": "https://atl-biz.test/top-saas",
+          "title": "Top Atlanta SaaS",
+          "description": "Skipped by the per-query cap."
+        }
+      ]
+    }
+  }
+}

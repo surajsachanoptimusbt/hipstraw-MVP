@@ -1,0 +1,14 @@
+{
+  "matchKey": "ReviewJudgement:run_20261007T101500__brightform-test",
+  "request": {
+    "schema": "ReviewJudgement",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_sites.yaml"
+  },
+  "response": {
+    "content": "{\"falsifierMet\":false,\"fitHolds\":true,\"citedEvidenceIds\":[],\"reason\":\"New York company under the size limit, hiring AP staff for vendor invoices.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

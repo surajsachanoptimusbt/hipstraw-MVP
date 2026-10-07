@@ -6,7 +6,7 @@
     "scenario": "tests/fixtures/scenarios/basic.yaml"
   },
   "response": {
-    "content": "{\"companies\":[{\"name\":\"Beta Billing\",\"linkId\":\"L1\",\"excerpt\":\"Beta Billing is an Atlanta company that makes invoice tools for creative agencies.\"}]}",
+    "content": "{\"companies\":[{\"name\":\"Beta Billing\",\"linkId\":\"L1\",\"excerpt\":\"Beta Billing is an Atlanta company that makes invoice tools for creative agencies.\",\"location\":\"Atlanta\",\"metroMatch\":\"in\",\"positionMatch\":\"partial\"}]}",
     "refusal": null,
     "finishReason": "stop",
     "model": "test-model"

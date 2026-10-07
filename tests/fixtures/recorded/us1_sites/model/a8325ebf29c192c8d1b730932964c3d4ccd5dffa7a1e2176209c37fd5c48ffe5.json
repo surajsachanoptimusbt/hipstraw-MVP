@@ -1,0 +1,14 @@
+{
+  "matchKey": "ListingExtraction:https://list.example.test/ny-saas",
+  "request": {
+    "schema": "ListingExtraction",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_sites.yaml"
+  },
+  "response": {
+    "content": "{\"companies\":[{\"name\":\"Lark Robots\",\"linkId\":\"L1\",\"excerpt\":\"Lark Robots, New York, NY: warehouse robotics software for retailers.\",\"location\":\"New York, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"weak\"},{\"name\":\"Maple Forbidden\",\"linkId\":\"L2\",\"excerpt\":\"Maple Forbidden, New York, NY: payroll software for agencies.\",\"location\":\"New York, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"partial\"},{\"name\":\"Nettle Throttle\",\"linkId\":\"L3\",\"excerpt\":\"Nettle Throttle, New York, NY: API usage billing for SaaS companies.\",\"location\":\"New York, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"partial\"},{\"name\":\"Rowan Down\",\"linkId\":\"L4\",\"excerpt\":\"Rowan Down, New York, NY: vendor onboarding software.\",\"location\":\"New York, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"partial\"},{\"name\":\"Oxbow Gone\",\"linkId\":\"L5\",\"excerpt\":\"Oxbow Gone, New York, NY: expense reports for small teams.\",\"location\":\"New York, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"weak\"},{\"name\":\"Pine Nowhere\",\"linkId\":\"L6\",\"excerpt\":\"Pine Nowhere, New York, NY: subscription analytics for publishers.\",\"location\":\"New York, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"partial\"},{\"name\":\"Larch Health Systems\",\"linkId\":\"L7\",\"excerpt\":\"Larch Health Systems, New York, NY: charting software for physical therapy clinics.\",\"location\":\"New York, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"partial\"},{\"name\":\"Sorrel Analytics\",\"linkId\":\"L8\",\"excerpt\":\"Sorrel Analytics, New York, NY: spend analytics for SaaS buyers.\",\"location\":\"New York, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Teasel Systems\",\"linkId\":\"L9\",\"excerpt\":\"Teasel Systems, New York, NY: intake forms for clinics.\",\"location\":\"New York, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"partial\"}]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

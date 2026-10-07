@@ -1,0 +1,14 @@
+{
+  "matchKey": "ListingExtraction:https://atl-tech.test/startup-map",
+  "request": {
+    "schema": "ListingExtraction",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "content": "{\"companies\":[]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

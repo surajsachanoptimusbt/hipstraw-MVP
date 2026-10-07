@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://atl-tech.test/startup-map",
+  "request": {
+    "url": "https://atl-tech.test/startup-map",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Atlanta startup map</h1>\n<p>Meetups by neighborhood: Midtown, Buckhead, and Old Fourth Ward.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

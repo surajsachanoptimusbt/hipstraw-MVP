@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://list.example.test/atlanta-startups",
+  "request": {
+    "url": "https://list.example.test/atlanta-startups",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Atlanta B2B SaaS startups</h1>\n<ul>\n  <li>Fennel Invoice, Atlanta, GA: invoice reconciliation SaaS for finance teams. <a href=\"https://fennel-invoice.test/\">fennel-invoice.test</a></li>\n  <li>Garnet Procure, Alpharetta, GA: procurement SaaS for mid-sized companies. <a href=\"https://garnet-procure.test/\">garnet-procure.test</a></li>\n  <li>Lupine Labs, Atlanta, GA: data tools for finance and engineering teams. <a href=\"https://lupine-labs.test/\">lupine-labs.test</a></li>\n</ul>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

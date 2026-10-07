@@ -1,0 +1,15 @@
+{
+  "matchKey": "\"Sorrel Analytics\" accounts payable OR procurement job",
+  "request": {
+    "params": {
+      "q": "\"Sorrel Analytics\" accounts payable OR procurement job"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_sites.yaml"
+  },
+  "response": {
+    "web": {
+      "results": []
+    }
+  }
+}

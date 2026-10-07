@@ -8,6 +8,8 @@ budgets:
   discoveryQueries: 6
   resultsPerQuery: 10
   listingPagesFetched: 12
+  listingPagesPerSite: 3         # per company key; fetch attempts count (research R19)
+  listingPagesPerQuery: 3        # per planned query (research R19)
   profileHopsPerRun: 10
   companiesKept: 10
   ownSitePagesPerCompany: 6

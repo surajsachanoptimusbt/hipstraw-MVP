@@ -139,12 +139,21 @@ class Evidence(Doc):
     check: EvidenceCheck
 
 
+class OriginMatch(Doc):
+    """Discovery ranking inputs after the system's location check (research R19, FR-022)."""
+
+    location: str | None
+    metroMatch: Literal["in", "out", "unknown"]
+    positionMatch: Literal["strong", "partial", "weak"]
+
+
 class Origin(Doc):
     kind: OriginKind
     searchQuery: str | None
     resultUrl: str
     listingEvidenceId: str | None
     profileUrl: str | None = None
+    match: OriginMatch | None = None
 
 
 class IdentifierCheck(Doc):
@@ -158,7 +167,7 @@ class IdentifierCheck(Doc):
 class Hq(Doc):
     city: str | None = None
     state: str | None = None
-    status: Literal["met", "not_met", "unknown"] = "unknown"
+    status: Literal["met", "not_met", "conflict", "unknown"] = "unknown"
     evidenceIds: list[str] = []
 
 

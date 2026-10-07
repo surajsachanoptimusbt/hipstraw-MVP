@@ -1,0 +1,15 @@
+{
+  "matchKey": "\"Larch Health Systems\" invoice automation OR \"AI agents\" finance",
+  "request": {
+    "params": {
+      "q": "\"Larch Health Systems\" invoice automation OR \"AI agents\" finance"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_sites.yaml"
+  },
+  "response": {
+    "web": {
+      "results": []
+    }
+  }
+}

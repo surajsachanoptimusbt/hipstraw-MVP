@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://brightform.test/",
+  "request": {
+    "url": "https://brightform.test/",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_sites.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>BrightForm</h1>\n<p>BrightForm builds intake forms for clinics.</p>\n<a href=\"/about\">About</a>\n<a href=\"/careers\">Careers</a>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

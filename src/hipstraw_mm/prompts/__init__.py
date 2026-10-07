@@ -11,9 +11,9 @@ from functools import cache
 from importlib import resources
 from typing import Any
 
-QUERY_PLAN = "query_plan.v1"
-LISTING_EXTRACTION = "listing_extraction.v1"
-HOMEPAGE_IDENTITY = "homepage_identity.v1"
+QUERY_PLAN = "query_plan.v2"
+LISTING_EXTRACTION = "listing_extraction.v2"
+HOMEPAGE_IDENTITY = "homepage_identity.v2"
 COMPANY_EVIDENCE = "company_evidence.v1"
 REVIEW_JUDGEMENT = "review_judgement.v1"
 

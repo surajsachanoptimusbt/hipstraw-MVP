@@ -1,0 +1,14 @@
+{
+  "matchKey": "ListingExtraction:https://list.example.test/atlanta-startups",
+  "request": {
+    "schema": "ListingExtraction",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "content": "{\"companies\":[{\"name\":\"Fennel Invoice\",\"linkId\":\"L1\",\"excerpt\":\"Fennel Invoice, Atlanta, GA: invoice reconciliation SaaS for finance teams.\",\"location\":\"Atlanta, GA\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Garnet Procure\",\"linkId\":\"L2\",\"excerpt\":\"Garnet Procure, Alpharetta, GA: procurement SaaS for mid-sized companies.\",\"location\":\"Alpharetta, GA\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Lupine Labs\",\"linkId\":\"L3\",\"excerpt\":\"Lupine Labs, Atlanta, GA: data tools for finance and engineering teams.\",\"location\":\"Atlanta, GA\",\"metroMatch\":\"in\",\"positionMatch\":\"partial\"}]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

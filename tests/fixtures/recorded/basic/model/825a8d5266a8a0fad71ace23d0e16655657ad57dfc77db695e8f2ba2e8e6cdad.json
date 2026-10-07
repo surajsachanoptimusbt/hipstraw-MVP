@@ -6,7 +6,7 @@
     "scenario": "tests/fixtures/scenarios/basic.yaml"
   },
   "response": {
-    "content": "{\"isCompanyHomepage\":true,\"name\":\"Epsilon Pay\",\"excerpt\":\"Epsilon Pay helps finance teams pay recurring vendor invoices on time.\"}",
+    "content": "{\"isCompanyHomepage\":true,\"name\":\"Epsilon Pay\",\"excerpt\":\"Epsilon Pay helps finance teams pay recurring vendor invoices on time.\",\"location\":null,\"metroMatch\":\"unknown\",\"positionMatch\":\"strong\"}",
     "refusal": null,
     "finishReason": "stop",
     "model": "test-model"

@@ -1,0 +1,14 @@
+{
+  "matchKey": "QueryPlan:invoice_alpha_genesis__saas_recurring_fees",
+  "request": {
+    "schema": "QueryPlan",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_sites.yaml"
+  },
+  "response": {
+    "content": "{\"queries\":[{\"query\":\"New York SaaS companies directory\",\"purpose\":\"Directory pages that list New York SaaS companies\"}]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

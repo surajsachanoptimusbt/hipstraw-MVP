@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://quillpad.test/about",
+  "request": {
+    "url": "https://quillpad.test/about",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_sites.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>About Larch Health Systems</h1>\n<p>Larch Health Systems is headquartered in New York, NY.</p>\n<p>Larch Health Systems has 40 employees.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

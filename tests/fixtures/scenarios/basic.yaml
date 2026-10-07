@@ -186,37 +186,66 @@ pages:
 
 # ListingExtraction responses (match key: page URL). `link` is an href on that page; the builder
 # turns it into the page's linkId. Every excerpt must pass the citation check and contain the name.
+# The ranking fields (location, metroMatch, positionMatch; research R19) only order the candidates;
+# with 8 found and a cap of 10 they change nothing here.
 listings:
   https://registry.example.test/ga/search:
     - name: Zeta Holdings LLC
       link: null
       excerpt: "Zeta Holdings LLC. Status: Active. Registered in Georgia in 2015."
+      location: null
+      metroMatch: unknown
+      positionMatch: partial
     - name: Alpha Ledger, Inc.
       link: null
       excerpt: "Alpha Ledger, Inc. Status: Active. Registered in Georgia in 2018."
+      location: null
+      metroMatch: unknown
+      positionMatch: partial
   https://list.example.test/atlanta-saas:
     - name: Alpha Ledger
       link: https://alpha-ledger.test/
       excerpt: "Alpha Ledger: subscription billing software for B2B teams."
+      location: null
+      metroMatch: unknown
+      positionMatch: strong
     - name: Beta Billing
       link: https://list.example.test/companies/beta
       excerpt: "Beta Billing: invoice tools for creative agencies."
+      location: null
+      metroMatch: unknown
+      positionMatch: partial
     - name: Gamma Ops
       link: https://gamma-ops.test/
       excerpt: "Gamma Ops: operations software for finance teams."
+      location: null
+      metroMatch: unknown
+      positionMatch: strong
     - name: Delta None
       link: https://delta-none.test/
       excerpt: "Delta None: reporting dashboards for retailers."
+      location: null
+      metroMatch: unknown
+      positionMatch: weak
     - name: Sigma Scale
       link: https://sigma-scale.test/
       excerpt: "Sigma Scale: freight billing software for logistics networks."
+      location: null
+      metroMatch: unknown
+      positionMatch: partial
     - name: Theta Works
       link: https://theta-works.test/
       excerpt: "Theta Works: vendor management software for agencies."
+      location: null
+      metroMatch: unknown
+      positionMatch: partial
   https://list.example.test/companies/beta:
     - name: Beta Billing
       link: https://beta-billing.test/
       excerpt: "Beta Billing is an Atlanta company that makes invoice tools for creative agencies."
+      location: "Atlanta"
+      metroMatch: in
+      positionMatch: partial
 
 # HomepageIdentity responses (match key: page URL).
 homepages:
@@ -224,6 +253,9 @@ homepages:
     isCompanyHomepage: true
     name: Epsilon Pay
     excerpt: "Epsilon Pay helps finance teams pay recurring vendor invoices on time."
+    location: null
+    metroMatch: unknown
+    positionMatch: strong
 
 # CompanyEvidence responses (match key: domain). `pages` is the order the verify step gives the model
 # its pages: the homepage first, then the own-site pages in the order the homepage links to them. The

@@ -1,0 +1,14 @@
+{
+  "matchKey": "ListingExtraction:https://list.example.test/software-a-z",
+  "request": {
+    "schema": "ListingExtraction",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "content": "{\"companies\":[{\"name\":\"Aardvark Rides\",\"linkId\":\"L1\",\"excerpt\":\"Aardvark Rides: ride-sharing app for commuters. HQ Dallas, TX.\",\"location\":\"Dallas, TX\",\"metroMatch\":\"out\",\"positionMatch\":\"weak\"},{\"name\":\"Abacus Arcade\",\"linkId\":\"L2\",\"excerpt\":\"Abacus Arcade: mobile games studio. HQ Austin, Texas.\",\"location\":\"Austin, Texas\",\"metroMatch\":\"out\",\"positionMatch\":\"weak\"},{\"name\":\"Acorn Freight\",\"linkId\":\"L3\",\"excerpt\":\"Acorn Freight: trucking marketplace for shippers. HQ Buffalo, NY.\",\"location\":\"Buffalo, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Adder Analytics\",\"linkId\":\"L4\",\"excerpt\":\"Adder Analytics: B2B SaaS analytics for finance teams.\",\"location\":null,\"metroMatch\":\"unknown\",\"positionMatch\":\"strong\"},{\"name\":\"Agate Billing\",\"linkId\":\"L5\",\"excerpt\":\"Agate Billing: subscription billing SaaS for B2B companies. HQ Atlanta, GA.\",\"location\":\"Atlanta, GA\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Albatross Apps\",\"linkId\":\"L6\",\"excerpt\":\"Albatross Apps: consumer photo-sharing app.\",\"location\":null,\"metroMatch\":\"unknown\",\"positionMatch\":\"weak\"},{\"name\":\"Birch Payables\",\"linkId\":\"L7\",\"excerpt\":\"Birch Payables: accounts payable SaaS for growing teams. HQ Marietta, GA.\",\"location\":\"Marietta, GA\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Cobalt Contracts\",\"linkId\":\"L8\",\"excerpt\":\"Cobalt Contracts: contract management SaaS for finance teams. HQ New York, NY.\",\"location\":\"New York, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Nimbus Ledger\",\"linkId\":\"L9\",\"excerpt\":\"Nimbus Ledger: AP automation SaaS for mid-sized companies.\",\"location\":\"Atlanta, GA\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Quartz Retail\",\"linkId\":\"L10\",\"excerpt\":\"Quartz Retail: chain of home goods stores. HQ Plano, TX.\",\"location\":\"Plano, TX\",\"metroMatch\":\"out\",\"positionMatch\":\"weak\"},{\"name\":\"Yarrow Spend\",\"linkId\":\"L11\",\"excerpt\":\"Yarrow Spend: spend management SaaS for B2B teams. HQ Oakland, CA.\",\"location\":\"Oakland, CA\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Zinnia Pets\",\"linkId\":\"L12\",\"excerpt\":\"Zinnia Pets: online pet supplies store. HQ Dallas, TX.\",\"location\":\"Dallas, TX\",\"metroMatch\":\"out\",\"positionMatch\":\"weak\"}]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

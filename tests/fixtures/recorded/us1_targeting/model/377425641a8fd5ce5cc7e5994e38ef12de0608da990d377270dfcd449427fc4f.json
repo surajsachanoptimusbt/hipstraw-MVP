@@ -1,0 +1,14 @@
+{
+  "matchKey": "ListingExtraction:https://news.example.test/bay-area-saas-2026",
+  "request": {
+    "schema": "ListingExtraction",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "content": "{\"companies\":[{\"name\":\"Hazel Spend\",\"linkId\":\"L1\",\"excerpt\":\"Hazel Spend (San Francisco, CA) builds spend controls for SaaS-heavy finance teams.\",\"location\":\"San Francisco, CA\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Iris Ledger\",\"linkId\":\"L2\",\"excerpt\":\"Iris Ledger (Palo Alto, CA) automates vendor invoice matching for subscription businesses.\",\"location\":\"Palo Alto, CA\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"}]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

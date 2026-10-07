@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://list.example.test/software-a-z",
+  "request": {
+    "url": "https://list.example.test/software-a-z",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Software companies A to Z</h1>\n<p>A fictional test directory of software companies, sorted by name.</p>\n<ul>\n  <li>Aardvark Rides: ride-sharing app for commuters. HQ Dallas, TX. <a href=\"https://aardvark-rides.test/\">Website</a></li>\n  <li>Abacus Arcade: mobile games studio. HQ Austin, Texas. <a href=\"https://abacus-arcade.test/\">Website</a></li>\n  <li>Acorn Freight: trucking marketplace for shippers. HQ Buffalo, NY. <a href=\"https://acorn-freight.test/\">Website</a></li>\n  <li>Adder Analytics: B2B SaaS analytics for finance teams. <a href=\"https://adder-analytics.test/\">Website</a></li>\n  <li>Agate Billing: subscription billing SaaS for B2B companies. HQ Atlanta, GA. <a href=\"https://agate-billing.test/\">Website</a></li>\n  <li>Albatross Apps: consumer photo-sharing app. <a href=\"https://albatross-apps.test/\">Website</a></li>\n  <li>Birch Payables: accounts payable SaaS for growing teams. HQ Marietta, GA. <a href=\"https://birch-payables.test/\">Website</a></li>\n  <li>Cobalt Contracts: contract management SaaS for finance teams. HQ New York, NY. <a href=\"https://cobalt-contracts.test/\">Website</a></li>\n  <li>Nimbus Ledger: AP automation SaaS for mid-sized companies. <a href=\"https://nimbus-ledger.test/\">Website</a></li>\n  <li>Quartz Retail: chain of home goods stores. HQ Plano, TX. <a href=\"https://quartz-retail.test/\">Website</a></li>\n  <li>Yarrow Spend: spend management SaaS for B2B teams. HQ Oakland, CA. <a href=\"https://yarrow-spend.test/\">Website</a></li>\n  <li>Zinnia Pets: online pet supplies store. HQ Dallas, TX. <a href=\"https://zinnia-pets.test/\">Website</a></li>\n</ul>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

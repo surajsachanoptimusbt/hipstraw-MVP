@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:tallyhub.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_sites.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[],\"fitClaims\":[],\"interestSignals\":[],\"falsifier\":\"tallyhub.test is not the website of Sorrel Analytics.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

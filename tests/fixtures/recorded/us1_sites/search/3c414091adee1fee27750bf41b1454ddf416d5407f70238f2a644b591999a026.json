@@ -1,0 +1,31 @@
+{
+  "matchKey": "New York SaaS companies directory",
+  "request": {
+    "params": {
+      "q": "New York SaaS companies directory"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_sites.yaml"
+  },
+  "response": {
+    "web": {
+      "results": [
+        {
+          "url": "https://www.linkedin.com/company/lark-robots-test",
+          "title": "Lark Robots | LinkedIn",
+          "description": "Denylisted; never fetched."
+        },
+        {
+          "url": "https://list.example.test/private/ny-saas",
+          "title": "New York SaaS (members only)",
+          "description": "Disallowed by robots.txt; never fetched."
+        },
+        {
+          "url": "https://list.example.test/ny-saas",
+          "title": "New York SaaS companies",
+          "description": "A directory of SaaS companies in New York."
+        }
+      ]
+    }
+  }
+}

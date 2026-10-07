@@ -1,0 +1,15 @@
+{
+  "matchKey": "site:tallyhub.test careers",
+  "request": {
+    "params": {
+      "q": "site:tallyhub.test careers"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_sites.yaml"
+  },
+  "response": {
+    "web": {
+      "results": []
+    }
+  }
+}

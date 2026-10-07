@@ -132,7 +132,7 @@ class TestMetroConfig:
             "Menlo Park",
             "Redwood City",
         ]:
-            assert city in sf.places
+            assert city in sf.places["CA"]
 
     def test_run_metro_ids_must_exist(self, tmp_path):
         for name in ["metros.yaml", "source_policy.yaml"]:

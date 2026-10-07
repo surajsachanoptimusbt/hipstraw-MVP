@@ -1,0 +1,14 @@
+{
+  "matchKey": "ListingExtraction:https://news.example.test/new-york-saas-2026",
+  "request": {
+    "schema": "ListingExtraction",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "content": "{\"companies\":[{\"name\":\"Juniper Payables\",\"linkId\":\"L1\",\"excerpt\":\"Juniper Payables, based in New York, NY, sells accounts payable software to mid-market firms.\",\"location\":\"New York, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Kestrel AP\",\"linkId\":\"L2\",\"excerpt\":\"Kestrel AP, based in Brooklyn, NY, runs a consumer budgeting app.\",\"location\":\"Brooklyn, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"weak\"}]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

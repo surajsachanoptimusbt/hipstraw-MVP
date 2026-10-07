@@ -1,0 +1,21 @@
+{
+  "matchKey": "New York SaaS companies to watch",
+  "request": {
+    "params": {
+      "q": "New York SaaS companies to watch"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1_targeting.yaml"
+  },
+  "response": {
+    "web": {
+      "results": [
+        {
+          "url": "https://news.example.test/new-york-saas-2026",
+          "title": "New York SaaS companies to watch",
+          "description": "New York SaaS companies to watch."
+        }
+      ]
+    }
+  }
+}

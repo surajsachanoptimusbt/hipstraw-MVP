@@ -496,7 +496,7 @@ acceptance scenarios 1–9 and US2 scenarios 9–10, using recorded responses.
 
 ### Implementation for User Story 1 (in this order)
 
-- [ ] T082 [US1] **Discovery targeting** (FR-022, research R19), making T077 and T081 pass. It needs two parts of T052 first, so it brings them forward: the location rules in `location.py`, and the state-keyed `Metro` shape in `config.py` with both metro files converted. The changes:
+- [x] T082 [US1] **Discovery targeting** (FR-022, research R19), making T077 and T081 pass. It needs two parts of T052 first, so it brings them forward: the location rules in `location.py`, and the state-keyed `Metro` shape in `config.py` with both metro files converted. The changes:
   - Add `location`, `metroMatch`, and `positionMatch` to `ListedCompany` and `HomepageIdentity` in `src/hipstraw_mm/llm_schemas.py`.
   - Write prompts `query_plan.v2.txt`, `listing_extraction.v2.txt`, and `homepage_identity.v2.txt`, and pass the position and the metro names in their payloads.
   - Implement `src/hipstraw_mm/steps/targeting.py`.
