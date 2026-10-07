@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://gamma-ops.test/",
+  "request": {
+    "url": "https://gamma-ops.test/",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Gamma Ops</h1>\n<p>Gamma Ops builds operations software for finance teams.</p>\n<a href=\"/about\">About</a>\n<a href=\"/careers\">Careers</a>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

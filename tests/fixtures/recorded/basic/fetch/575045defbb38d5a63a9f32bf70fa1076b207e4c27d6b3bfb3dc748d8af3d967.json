@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://epsilon-pay.test/careers",
+  "request": {
+    "url": "https://epsilon-pay.test/careers",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Careers at Epsilon Pay</h1>\n<p>Epsilon Pay is exploring AI agents to check vendor invoices against contracts.</p>\n<p>We are hiring an Accounts Payable Manager to own vendor invoice approvals.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

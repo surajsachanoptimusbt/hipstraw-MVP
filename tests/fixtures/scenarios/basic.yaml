@@ -1,0 +1,386 @@
+# T032: the `basic` replay scenario. Rebuild the recordings after editing this file:
+#
+#     python tests/fixtures/build_fixtures.py basic
+#
+# Every company, page, and domain here is fictional and uses a reserved `.test` domain (Constitution IX).
+#
+# What each company exercises:
+#   Alpha Ledger        listing_link     every excerpt verbatim                    -> include
+#   Beta Billing        profile_hop      every excerpt verbatim                    -> include
+#   Epsilon Pay         direct_homepage  verbatim; the page uses an en dash        -> include
+#   Gamma Ops           listing_link     every evidence excerpt is a paraphrase    -> needs_verification
+#   Delta None          listing_link     website returns 404                       -> exclude
+#   Sigma Scale         listing_link     verbatim; "5,000+ employees" (over size)  -> exclude by rule
+#   Theta Works         listing_link     verbatim; headquartered in Chicago, IL    -> exclude by rule
+#   Zeta Holdings LLC   registry_only    no website                                -> needs_verification
+#   Alpha Ledger, Inc.  registry page    dropped by the merge rule (same normalized name as Alpha Ledger)
+#
+# Recordings that are deliberately absent, so calling them raises ReplayMissingError:
+#   - any fetch of linkedin.com (denylisted search result) or of kappa-cloud.test (an external link on
+#     Alpha Ledger's homepage, which is not an own-site page);
+#   - CompanyEvidence for delta-none.test (its website does not load);
+#   - ReviewJudgement for Gamma, Delta, Sigma, Theta, and Zeta (the rule gate decides them).
+#
+# Alpha Ledger's listing entry wraps its name in <strong>, so its excerpt only matches if inline tags
+# do not break the page text into separate lines.
+
+candidateId: invoice_alpha_genesis__saas_recurring_fees
+# Tests fix the clock at 2026-10-07T10:15:00Z, so this is the run's ID. Judgement match keys use it.
+runId: run_20261007T101500
+fetchedAt: "2026-10-07T10:15:00+00:00"
+model: test-model
+
+# QueryPlan (match key: candidateId) and the search results for each query (match key: query).
+queries:
+  - query: Georgia business registry software companies Fulton County
+    purpose: Registry entries for software companies in the Atlanta metro
+    results:
+      - url: https://registry.example.test/ga/search
+        title: Georgia business registry search results
+        snippet: Active software companies registered in Fulton County.
+  - query: Atlanta B2B SaaS companies directory
+    purpose: Directory pages that list Atlanta SaaS companies
+    results:
+      - url: https://www.linkedin.com/company/alpha-ledger-test
+        title: Alpha Ledger | LinkedIn
+        snippet: Denylisted; the search adapter drops this result.
+      - url: https://list.example.test/atlanta-saas
+        title: Atlanta B2B SaaS companies
+        snippet: A directory of software companies in the Atlanta area.
+  - query: Atlanta recurring vendor invoice payments software
+    purpose: Company homepages that mention recurring vendor invoices
+    results:
+      - url: https://epsilon-pay.test/
+        title: Epsilon Pay
+        snippet: Pay recurring vendor invoices on time.
+
+# Fetched pages. Each host gets an allow-all robots.txt. `html` is the body content.
+pages:
+  https://registry.example.test/ga/search:
+    html: |
+      <h1>Georgia business registry: search results</h1>
+      <p>Fictional test registry. Results for "software" in Fulton County.</p>
+      <p>Zeta Holdings LLC. Status: Active. Registered in Georgia in 2015.</p>
+      <p>Alpha Ledger, Inc. Status: Active. Registered in Georgia in 2018.</p>
+      <a href="/ga/help">Search help</a>
+
+  https://list.example.test/atlanta-saas:
+    html: |
+      <h1>Atlanta B2B SaaS companies</h1>
+      <p>A fictional test directory of software companies in the Atlanta area.</p>
+      <ul>
+        <li><strong>Alpha Ledger</strong>: subscription billing software for B2B teams. <a href="https://alpha-ledger.test/">Website</a></li>
+        <li>Beta Billing: invoice tools for creative agencies. <a href="/companies/beta">View profile</a></li>
+        <li>Gamma Ops: operations software for finance teams. <a href="https://gamma-ops.test/">Website</a></li>
+        <li>Delta None: reporting dashboards for retailers. <a href="https://delta-none.test/">Website</a></li>
+        <li>Sigma Scale: freight billing software for logistics networks. <a href="https://sigma-scale.test/">Website</a></li>
+        <li>Theta Works: vendor management software for agencies. <a href="https://theta-works.test/">Website</a></li>
+      </ul>
+      <a href="/about">About this directory</a>
+
+  https://list.example.test/companies/beta:
+    html: |
+      <h1>Beta Billing</h1>
+      <p>Beta Billing is an Atlanta company that makes invoice tools for creative agencies.</p>
+      <a href="https://beta-billing.test/">Visit the Beta Billing website</a>
+      <a href="/atlanta-saas">Back to the directory</a>
+
+  https://alpha-ledger.test/:
+    html: |
+      <h1>Alpha Ledger</h1>
+      <p>Alpha Ledger builds subscription billing software for growing B2B teams.</p>
+      <a href="/about">About us</a>
+      <a href="/careers">Careers</a>
+      <a href="https://kappa-cloud.test/about">About our hosting partner</a>
+  https://alpha-ledger.test/about:
+    html: |
+      <h1>About Alpha Ledger</h1>
+      <p>Alpha Ledger is headquartered in Atlanta, GA.</p>
+      <p>Our team has 120 employees across finance, sales, and engineering.</p>
+  https://alpha-ledger.test/careers:
+    html: |
+      <h1>Careers at Alpha Ledger</h1>
+      <p>We are hiring an Accounts Payable Specialist to process vendor invoices and track our SaaS subscriptions.</p>
+
+  https://beta-billing.test/:
+    html: |
+      <h1>Beta Billing</h1>
+      <p>Beta Billing makes invoice tools for creative agencies.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Jobs</a>
+  https://beta-billing.test/about:
+    html: |
+      <h1>About Beta Billing</h1>
+      <p>Beta Billing is headquartered in Atlanta, GA, with 85 employees.</p>
+  https://beta-billing.test/careers:
+    html: |
+      <h1>Jobs at Beta Billing</h1>
+      <p>Beta Billing is hiring a Procurement Analyst to review supplier contracts and invoices.</p>
+
+  https://epsilon-pay.test/:
+    html: |
+      <h1>Epsilon Pay</h1>
+      <p>Epsilon Pay helps finance teams pay recurring vendor invoices on time.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+  https://epsilon-pay.test/about:
+    html: |
+      <h1>About Epsilon Pay</h1>
+      <p>Epsilon Pay is headquartered in Atlanta, GA.</p>
+      <p>We are a team of 51–200 employees.</p>
+  https://epsilon-pay.test/careers:
+    html: |
+      <h1>Careers at Epsilon Pay</h1>
+      <p>Epsilon Pay is exploring AI agents to check vendor invoices against contracts.</p>
+      <p>We are hiring an Accounts Payable Manager to own vendor invoice approvals.</p>
+
+  https://gamma-ops.test/:
+    html: |
+      <h1>Gamma Ops</h1>
+      <p>Gamma Ops builds operations software for finance teams.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+  https://gamma-ops.test/about:
+    html: |
+      <h1>About Gamma Ops</h1>
+      <p>Gamma Ops was founded in Atlanta, GA and employs 60 people.</p>
+  https://gamma-ops.test/careers:
+    html: |
+      <h1>Careers at Gamma Ops</h1>
+      <p>Gamma Ops is hiring a Senior Accounts Payable Lead.</p>
+
+  https://delta-none.test/:
+    status: 404
+    html: <h1>Not found</h1>
+
+  https://sigma-scale.test/:
+    html: |
+      <h1>Sigma Scale</h1>
+      <p>Sigma Scale builds freight billing software for logistics networks.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+  https://sigma-scale.test/about:
+    html: |
+      <h1>About Sigma Scale</h1>
+      <p>Sigma Scale is headquartered in Atlanta, GA.</p>
+      <p>Sigma Scale has 5,000+ employees across four continents.</p>
+  https://sigma-scale.test/careers:
+    html: |
+      <h1>Careers at Sigma Scale</h1>
+      <p>Sigma Scale is hiring an Accounts Payable Analyst for its shared services center.</p>
+
+  https://theta-works.test/:
+    html: |
+      <h1>Theta Works</h1>
+      <p>Theta Works builds vendor management software for agencies.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+  https://theta-works.test/about:
+    html: |
+      <h1>About Theta Works</h1>
+      <p>Theta Works is headquartered in Chicago, IL, with 140 employees.</p>
+  https://theta-works.test/careers:
+    html: |
+      <h1>Careers at Theta Works</h1>
+      <p>Theta Works is hiring a Procurement Specialist to manage software vendor invoices.</p>
+
+# ListingExtraction responses (match key: page URL). `link` is an href on that page; the builder
+# turns it into the page's linkId. Every excerpt must pass the citation check and contain the name.
+listings:
+  https://registry.example.test/ga/search:
+    - name: Zeta Holdings LLC
+      link: null
+      excerpt: "Zeta Holdings LLC. Status: Active. Registered in Georgia in 2015."
+    - name: Alpha Ledger, Inc.
+      link: null
+      excerpt: "Alpha Ledger, Inc. Status: Active. Registered in Georgia in 2018."
+  https://list.example.test/atlanta-saas:
+    - name: Alpha Ledger
+      link: https://alpha-ledger.test/
+      excerpt: "Alpha Ledger: subscription billing software for B2B teams."
+    - name: Beta Billing
+      link: https://list.example.test/companies/beta
+      excerpt: "Beta Billing: invoice tools for creative agencies."
+    - name: Gamma Ops
+      link: https://gamma-ops.test/
+      excerpt: "Gamma Ops: operations software for finance teams."
+    - name: Delta None
+      link: https://delta-none.test/
+      excerpt: "Delta None: reporting dashboards for retailers."
+    - name: Sigma Scale
+      link: https://sigma-scale.test/
+      excerpt: "Sigma Scale: freight billing software for logistics networks."
+    - name: Theta Works
+      link: https://theta-works.test/
+      excerpt: "Theta Works: vendor management software for agencies."
+  https://list.example.test/companies/beta:
+    - name: Beta Billing
+      link: https://beta-billing.test/
+      excerpt: "Beta Billing is an Atlanta company that makes invoice tools for creative agencies."
+
+# HomepageIdentity responses (match key: page URL).
+homepages:
+  https://epsilon-pay.test/:
+    isCompanyHomepage: true
+    name: Epsilon Pay
+    excerpt: "Epsilon Pay helps finance teams pay recurring vendor invoices on time."
+
+# CompanyEvidence responses (match key: domain). `pages` is the order the verify step gives the model
+# its pages: the homepage first, then the own-site pages in the order the homepage links to them. The
+# builder numbers them s1, s2, ... and turns each claim's `page` into that sourceId.
+# `verbatim: true` claims must pass the citation check; `verbatim: false` claims must fail it.
+evidence:
+  alpha-ledger.test:
+    pages: [https://alpha-ledger.test/, https://alpha-ledger.test/about, https://alpha-ledger.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "Atlanta, GA", page: https://alpha-ledger.test/about, verbatim: true,
+         excerpt: "Alpha Ledger is headquartered in Atlanta, GA."}
+      - {claimId: c2, claimField: employees, claimValue: "120", page: https://alpha-ledger.test/about, verbatim: true,
+         excerpt: "Our team has 120 employees across finance, sales, and engineering."}
+      - {claimId: c3, claimField: fit_problem, claimValue: "vendor invoices and SaaS subscriptions to track",
+         page: https://alpha-ledger.test/careers, verbatim: true,
+         excerpt: "We are hiring an Accounts Payable Specialist to process vendor invoices and track our SaaS subscriptions."}
+      - {claimId: c4, claimField: signal_pain, claimValue: "Accounts Payable Specialist hiring",
+         page: https://alpha-ledger.test/careers, verbatim: true,
+         excerpt: "We are hiring an Accounts Payable Specialist to process vendor invoices and track our SaaS subscriptions."}
+    fitClaims:
+      - aspect: problem
+        statement: Alpha Ledger processes a growing volume of vendor invoices and SaaS subscriptions.
+        primaryInterestIds: [invoice_accuracy_entitlement]
+        claimIds: [c3]
+    interestSignals:
+      - {kind: pain, statement: Hiring an Accounts Payable Specialist to process vendor invoices., claimIds: [c4]}
+    falsifier: Alpha Ledger is a subsidiary of a large enterprise, or has 500 or more employees.
+
+  beta-billing.test:
+    pages: [https://beta-billing.test/, https://beta-billing.test/about, https://beta-billing.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "Atlanta, GA", page: https://beta-billing.test/about, verbatim: true,
+         excerpt: "Beta Billing is headquartered in Atlanta, GA, with 85 employees."}
+      - {claimId: c2, claimField: employees, claimValue: "85", page: https://beta-billing.test/about, verbatim: true,
+         excerpt: "Beta Billing is headquartered in Atlanta, GA, with 85 employees."}
+      - {claimId: c3, claimField: fit_trigger, claimValue: "Procurement Analyst hiring",
+         page: https://beta-billing.test/careers, verbatim: true,
+         excerpt: "Beta Billing is hiring a Procurement Analyst to review supplier contracts and invoices."}
+      - {claimId: c4, claimField: signal_pain, claimValue: "Procurement hiring",
+         page: https://beta-billing.test/careers, verbatim: true,
+         excerpt: "Beta Billing is hiring a Procurement Analyst to review supplier contracts and invoices."}
+    fitClaims:
+      - aspect: trigger
+        statement: Beta Billing is adding procurement staff to review supplier contracts and invoices.
+        primaryInterestIds: [supplier_commercial_position, invoice_accuracy_entitlement]
+        claimIds: [c3]
+    interestSignals:
+      - {kind: pain, statement: Hiring a Procurement Analyst to review supplier invoices., claimIds: [c4]}
+    falsifier: Beta Billing is a subsidiary of a large enterprise, or has 500 or more employees.
+
+  epsilon-pay.test:
+    pages: [https://epsilon-pay.test/, https://epsilon-pay.test/about, https://epsilon-pay.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "Atlanta, GA", page: https://epsilon-pay.test/about, verbatim: true,
+         excerpt: "Epsilon Pay is headquartered in Atlanta, GA."}
+      # The page has an en dash ("51–200"); the claim value uses a hyphen. Both pass after normalization.
+      - {claimId: c2, claimField: employees, claimValue: "51-200", page: https://epsilon-pay.test/about, verbatim: true,
+         excerpt: "We are a team of 51–200 employees."}
+      - {claimId: c3, claimField: fit_problem, claimValue: "checking vendor invoices against contracts",
+         page: https://epsilon-pay.test/careers, verbatim: true,
+         excerpt: "Epsilon Pay is exploring AI agents to check vendor invoices against contracts."}
+      - {claimId: c4, claimField: signal_exploration, claimValue: "AI agents for invoice checks",
+         page: https://epsilon-pay.test/careers, verbatim: true,
+         excerpt: "Epsilon Pay is exploring AI agents to check vendor invoices against contracts."}
+      - {claimId: c5, claimField: signal_pain, claimValue: "Accounts Payable Manager hiring",
+         page: https://epsilon-pay.test/careers, verbatim: true,
+         excerpt: "We are hiring an Accounts Payable Manager to own vendor invoice approvals."}
+    fitClaims:
+      - aspect: problem
+        statement: Epsilon Pay wants vendor invoices checked against contracts.
+        primaryInterestIds: [invoice_accuracy_entitlement, agent_governance_autonomy]
+        claimIds: [c3]
+    interestSignals:
+      - {kind: exploration, statement: Exploring AI agents to check vendor invoices against contracts., claimIds: [c4]}
+      - {kind: pain, statement: Hiring an Accounts Payable Manager for vendor invoice approvals., claimIds: [c5]}
+    falsifier: Epsilon Pay is a subsidiary of a large enterprise, or has 500 or more employees.
+
+  gamma-ops.test:
+    pages: [https://gamma-ops.test/, https://gamma-ops.test/about, https://gamma-ops.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "Atlanta, GA", page: https://gamma-ops.test/about, verbatim: false,
+         excerpt: "Gamma Ops has its head office in Atlanta, GA."}
+      - {claimId: c2, claimField: employees, claimValue: "60", page: https://gamma-ops.test/about, verbatim: false,
+         excerpt: "Gamma Ops has about 60 staff."}
+      - {claimId: c3, claimField: fit_buyer, claimValue: "finance departments", page: https://gamma-ops.test/, verbatim: false,
+         excerpt: "Gamma Ops sells mainly to finance departments."}
+      - {claimId: c4, claimField: signal_pain, claimValue: "AP hiring", page: https://gamma-ops.test/careers, verbatim: false,
+         excerpt: "Gamma Ops is recruiting for its accounts payable team."}
+    fitClaims:
+      - aspect: buyer
+        statement: Gamma Ops sells to finance departments.
+        primaryInterestIds: [continuous_obligation_intelligence]
+        claimIds: [c3]
+    interestSignals:
+      - {kind: pain, statement: Recruiting for accounts payable., claimIds: [c4]}
+    falsifier: Gamma Ops is a subsidiary of a large enterprise, or has 500 or more employees.
+
+  sigma-scale.test:
+    pages: [https://sigma-scale.test/, https://sigma-scale.test/about, https://sigma-scale.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "Atlanta, GA", page: https://sigma-scale.test/about, verbatim: true,
+         excerpt: "Sigma Scale is headquartered in Atlanta, GA."}
+      - {claimId: c2, claimField: employees, claimValue: "5,000+", page: https://sigma-scale.test/about, verbatim: true,
+         excerpt: "Sigma Scale has 5,000+ employees across four continents."}
+      - {claimId: c3, claimField: fit_buyer, claimValue: "shared services AP team",
+         page: https://sigma-scale.test/careers, verbatim: true,
+         excerpt: "Sigma Scale is hiring an Accounts Payable Analyst for its shared services center."}
+      - {claimId: c4, claimField: signal_pain, claimValue: "Accounts Payable Analyst hiring",
+         page: https://sigma-scale.test/careers, verbatim: true,
+         excerpt: "Sigma Scale is hiring an Accounts Payable Analyst for its shared services center."}
+    fitClaims:
+      - aspect: buyer
+        statement: Sigma Scale runs an accounts payable team in a shared services center.
+        primaryInterestIds: [invoice_accuracy_entitlement]
+        claimIds: [c3]
+    interestSignals:
+      - {kind: pain, statement: Hiring an Accounts Payable Analyst., claimIds: [c4]}
+    falsifier: Sigma Scale has 500 or more employees.
+
+  theta-works.test:
+    pages: [https://theta-works.test/, https://theta-works.test/about, https://theta-works.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "Chicago, IL", page: https://theta-works.test/about, verbatim: true,
+         excerpt: "Theta Works is headquartered in Chicago, IL, with 140 employees."}
+      - {claimId: c2, claimField: employees, claimValue: "140", page: https://theta-works.test/about, verbatim: true,
+         excerpt: "Theta Works is headquartered in Chicago, IL, with 140 employees."}
+      - {claimId: c3, claimField: fit_problem, claimValue: "software vendor invoices to manage",
+         page: https://theta-works.test/careers, verbatim: true,
+         excerpt: "Theta Works is hiring a Procurement Specialist to manage software vendor invoices."}
+      - {claimId: c4, claimField: signal_pain, claimValue: "Procurement Specialist hiring",
+         page: https://theta-works.test/careers, verbatim: true,
+         excerpt: "Theta Works is hiring a Procurement Specialist to manage software vendor invoices."}
+    fitClaims:
+      - aspect: problem
+        statement: Theta Works manages a growing volume of software vendor invoices.
+        primaryInterestIds: [invoice_accuracy_entitlement, supplier_commercial_position]
+        claimIds: [c3]
+    interestSignals:
+      - {kind: pain, statement: Hiring a Procurement Specialist for software vendor invoices., claimIds: [c4]}
+    falsifier: Theta Works is headquartered outside the metros in force.
+
+# ReviewJudgement responses (match key: companyRecordId = <runId>__<domainKey>), only for the
+# records that pass every rule. The model cites no evidence IDs: the system attaches the IDs of the
+# record's passing evidence documents to the decision itself.
+judgements:
+  alpha-ledger-test:
+    falsifierMet: false
+    fitHolds: true
+    citedEvidenceIds: []
+    reason: "Atlanta SaaS company under the size limit, hiring AP staff for vendor invoices."
+  beta-billing-test:
+    falsifierMet: false
+    fitHolds: true
+    citedEvidenceIds: []
+    reason: "Atlanta company under the size limit, hiring procurement staff to review supplier invoices."
+  epsilon-pay-test:
+    falsifierMet: false
+    fitHolds: true
+    citedEvidenceIds: []
+    reason: "Atlanta company under the size limit, exploring AI agents for invoice checks."

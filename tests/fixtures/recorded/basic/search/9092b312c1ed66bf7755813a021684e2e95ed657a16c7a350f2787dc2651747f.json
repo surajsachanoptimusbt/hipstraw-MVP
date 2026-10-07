@@ -1,0 +1,21 @@
+{
+  "matchKey": "Georgia business registry software companies Fulton County",
+  "request": {
+    "params": {
+      "q": "Georgia business registry software companies Fulton County"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "web": {
+      "results": [
+        {
+          "url": "https://registry.example.test/ga/search",
+          "title": "Georgia business registry search results",
+          "description": "Active software companies registered in Fulton County."
+        }
+      ]
+    }
+  }
+}

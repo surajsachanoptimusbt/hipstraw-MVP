@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:alpha-ledger.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"Atlanta, GA\",\"sourceId\":\"s2\",\"excerpt\":\"Alpha Ledger is headquartered in Atlanta, GA.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"120\",\"sourceId\":\"s2\",\"excerpt\":\"Our team has 120 employees across finance, sales, and engineering.\"},{\"claimId\":\"c3\",\"claimField\":\"fit_problem\",\"claimValue\":\"vendor invoices and SaaS subscriptions to track\",\"sourceId\":\"s3\",\"excerpt\":\"We are hiring an Accounts Payable Specialist to process vendor invoices and track our SaaS subscriptions.\"},{\"claimId\":\"c4\",\"claimField\":\"signal_pain\",\"claimValue\":\"Accounts Payable Specialist hiring\",\"sourceId\":\"s3\",\"excerpt\":\"We are hiring an Accounts Payable Specialist to process vendor invoices and track our SaaS subscriptions.\"}],\"fitClaims\":[{\"aspect\":\"problem\",\"statement\":\"Alpha Ledger processes a growing volume of vendor invoices and SaaS subscriptions.\",\"primaryInterestIds\":[\"invoice_accuracy_entitlement\"],\"claimIds\":[\"c3\"]}],\"interestSignals\":[{\"kind\":\"pain\",\"statement\":\"Hiring an Accounts Payable Specialist to process vendor invoices.\",\"claimIds\":[\"c4\"]}],\"falsifier\":\"Alpha Ledger is a subsidiary of a large enterprise, or has 500 or more employees.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

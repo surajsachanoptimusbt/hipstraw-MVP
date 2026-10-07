@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:beta-billing.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"Atlanta, GA\",\"sourceId\":\"s2\",\"excerpt\":\"Beta Billing is headquartered in Atlanta, GA, with 85 employees.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"85\",\"sourceId\":\"s2\",\"excerpt\":\"Beta Billing is headquartered in Atlanta, GA, with 85 employees.\"},{\"claimId\":\"c3\",\"claimField\":\"fit_trigger\",\"claimValue\":\"Procurement Analyst hiring\",\"sourceId\":\"s3\",\"excerpt\":\"Beta Billing is hiring a Procurement Analyst to review supplier contracts and invoices.\"},{\"claimId\":\"c4\",\"claimField\":\"signal_pain\",\"claimValue\":\"Procurement hiring\",\"sourceId\":\"s3\",\"excerpt\":\"Beta Billing is hiring a Procurement Analyst to review supplier contracts and invoices.\"}],\"fitClaims\":[{\"aspect\":\"trigger\",\"statement\":\"Beta Billing is adding procurement staff to review supplier contracts and invoices.\",\"primaryInterestIds\":[\"supplier_commercial_position\",\"invoice_accuracy_entitlement\"],\"claimIds\":[\"c3\"]}],\"interestSignals\":[{\"kind\":\"pain\",\"statement\":\"Hiring a Procurement Analyst to review supplier invoices.\",\"claimIds\":[\"c4\"]}],\"falsifier\":\"Beta Billing is a subsidiary of a large enterprise, or has 500 or more employees.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

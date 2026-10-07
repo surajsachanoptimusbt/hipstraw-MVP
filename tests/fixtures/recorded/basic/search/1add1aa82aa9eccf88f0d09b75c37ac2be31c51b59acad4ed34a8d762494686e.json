@@ -1,0 +1,21 @@
+{
+  "matchKey": "Atlanta recurring vendor invoice payments software",
+  "request": {
+    "params": {
+      "q": "Atlanta recurring vendor invoice payments software"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "web": {
+      "results": [
+        {
+          "url": "https://epsilon-pay.test/",
+          "title": "Epsilon Pay",
+          "description": "Pay recurring vendor invoices on time."
+        }
+      ]
+    }
+  }
+}

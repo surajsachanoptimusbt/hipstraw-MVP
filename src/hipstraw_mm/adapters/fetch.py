@@ -25,6 +25,15 @@ from hipstraw_mm.models import is_denylisted, same_company_or_subdomain
 MAX_REDIRECTS = 5
 _HTML_TYPES = ("text/html", "application/xhtml+xml")
 _DROP_TAGS = ["script", "style", "noscript", "template", "svg"]
+# Elements that start a new line, as a browser renders them. Inline elements (a, strong, span, ...)
+# never break a line, so "<strong>Acme</strong>: x" reads "Acme: x", as the model and a reader see it.
+_BLOCK_TAGS = [
+    "address", "article", "aside", "blockquote", "body", "caption", "dd", "details", "dialog", "div",
+    "dl", "dt", "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5",
+    "h6", "header", "hgroup", "hr", "html", "legend", "li", "main", "nav", "ol", "option", "p", "pre",
+    "section", "summary", "table", "tbody", "td", "tfoot", "th", "thead", "title", "tr", "ul",
+]  # fmt: skip
+_LINE_BREAK = "\x00"  # placeholder; NUL is removed from the input first, so it marks only block boundaries
 
 
 @dataclass
@@ -51,7 +60,7 @@ def _utc_now() -> str:
 
 
 def html_to_text_and_links(html: str, base_url: str) -> tuple[str, list[dict[str, str]]]:
-    soup = BeautifulSoup(html, "html.parser")
+    soup = BeautifulSoup(html.replace(_LINE_BREAK, " "), "html.parser")
     for tag in soup(_DROP_TAGS):
         tag.decompose()
     links: list[dict[str, str]] = []
@@ -63,7 +72,14 @@ def html_to_text_and_links(html: str, base_url: str) -> tuple[str, list[dict[str
         seen.add(href)
         anchor_text = " ".join(anchor.get_text(" ").split())[:200]
         links.append({"linkId": f"L{len(links) + 1}", "href": href, "anchorText": anchor_text})
-    lines = (" ".join(line.split()) for line in soup.get_text("\n").splitlines())
+    for br in soup.find_all("br"):
+        br.replace_with(_LINE_BREAK)
+    for block in soup.find_all(_BLOCK_TAGS):
+        block.insert_before(_LINE_BREAK)
+        block.insert_after(_LINE_BREAK)
+    # Whitespace inside a line collapses to one space, as in a browser; only block boundaries break lines.
+    raw = soup.get_text().replace(_LINE_BREAK + _LINE_BREAK, _LINE_BREAK)
+    lines = (" ".join(part.split()) for part in raw.split(_LINE_BREAK))
     return "\n".join(line for line in lines if line), links
 
 

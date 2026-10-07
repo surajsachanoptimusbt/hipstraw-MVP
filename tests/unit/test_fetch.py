@@ -4,9 +4,10 @@ import json
 
 import pytest
 
-from hipstraw_mm.adapters.fetch import Fetcher
+from hipstraw_mm.adapters.fetch import Fetcher, html_to_text_and_links
 from hipstraw_mm.adapters.replay import ReplayStore, match_key_hash
 
+BASE = "https://acme.test/"
 ALLOW_ALL = {"status": 200, "text": "User-agent: *\nAllow: /", "headers": {"content-type": "text/plain"}}
 
 
@@ -132,6 +133,36 @@ class TestFetcher:
         assert "linkId" in link
         assert "anchorText" in link
         assert link["href"] == "https://other.test/about"
+
+
+class TestHtmlToText:
+    """Lines break only at block elements, so inline tags never split a sentence (FR-007 false failures)."""
+
+    def test_inline_tags_do_not_break_text(self):
+        text, _ = html_to_text_and_links("<p><strong>Alpha Ledger</strong>: billing for <em>B2B</em> teams.</p>", BASE)
+        assert text == "Alpha Ledger: billing for B2B teams."
+
+    def test_link_followed_by_punctuation_stays_on_one_line(self):
+        text, _ = html_to_text_and_links('<li>Made by <a href="/a">Alpha Ledger</a>, Inc. in Atlanta.</li>', BASE)
+        assert text == "Made by Alpha Ledger, Inc. in Atlanta."
+
+    def test_block_elements_start_new_lines(self):
+        html = "<h1>Title</h1><p>One.</p><div>Two.</div><ul><li>Three.</li><li>Four.</li></ul>"
+        text, _ = html_to_text_and_links(html, BASE)
+        assert text.splitlines() == ["Title", "One.", "Two.", "Three.", "Four."]
+
+    def test_br_and_table_cells_separate_lines(self):
+        html = "<p>Line one<br>Line two</p><table><tr><td>Zeta Holdings LLC</td><td>Active</td></tr></table>"
+        text, _ = html_to_text_and_links(html, BASE)
+        assert text.splitlines() == ["Line one", "Line two", "Zeta Holdings LLC", "Active"]
+
+    def test_source_line_breaks_inside_a_paragraph_are_spaces(self):
+        text, _ = html_to_text_and_links("<p>Alpha Ledger is\n   headquartered in\nAtlanta, GA.</p>", BASE)
+        assert text == "Alpha Ledger is headquartered in Atlanta, GA."
+
+    def test_adjacent_inline_elements_keep_their_spacing(self):
+        text, _ = html_to_text_and_links("<p><span>Alpha</span> <span>Ledger</span><span>,</span> Inc.</p>", BASE)
+        assert text == "Alpha Ledger, Inc."
 
 
 class TestRedirectRule:

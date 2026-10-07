@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://sigma-scale.test/about",
+  "request": {
+    "url": "https://sigma-scale.test/about",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>About Sigma Scale</h1>\n<p>Sigma Scale is headquartered in Atlanta, GA.</p>\n<p>Sigma Scale has 5,000+ employees across four continents.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

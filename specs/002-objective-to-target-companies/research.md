@@ -162,6 +162,8 @@ environment files, never values.
      fitHolds, citedEvidenceIds, reason}`. The system checks that every cited ID exists and passed
      its check; if not, the disposition becomes needs verification. A met falsifier means exclude,
      and a fit that does not hold means needs verification.
+  3. **Evidence on the decision**: the system attaches the IDs of the record's passing evidence
+     documents to the decision. An include with none becomes needs verification (2026-10-07).
 
   The model can keep or downgrade a disposition, never upgrade one. Decisions are stored in
   `reviewDecisions`, which only the Review step writes. The reviewer is recorded as

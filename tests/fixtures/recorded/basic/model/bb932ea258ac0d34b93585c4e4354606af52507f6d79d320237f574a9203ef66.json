@@ -1,0 +1,14 @@
+{
+  "matchKey": "QueryPlan:invoice_alpha_genesis__saas_recurring_fees",
+  "request": {
+    "schema": "QueryPlan",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "content": "{\"queries\":[{\"query\":\"Georgia business registry software companies Fulton County\",\"purpose\":\"Registry entries for software companies in the Atlanta metro\"},{\"query\":\"Atlanta B2B SaaS companies directory\",\"purpose\":\"Directory pages that list Atlanta SaaS companies\"},{\"query\":\"Atlanta recurring vendor invoice payments software\",\"purpose\":\"Company homepages that mention recurring vendor invoices\"}]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

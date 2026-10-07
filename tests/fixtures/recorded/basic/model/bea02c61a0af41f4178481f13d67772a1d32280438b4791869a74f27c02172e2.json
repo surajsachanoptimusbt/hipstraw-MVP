@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:epsilon-pay.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"Atlanta, GA\",\"sourceId\":\"s2\",\"excerpt\":\"Epsilon Pay is headquartered in Atlanta, GA.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"51-200\",\"sourceId\":\"s2\",\"excerpt\":\"We are a team of 51–200 employees.\"},{\"claimId\":\"c3\",\"claimField\":\"fit_problem\",\"claimValue\":\"checking vendor invoices against contracts\",\"sourceId\":\"s3\",\"excerpt\":\"Epsilon Pay is exploring AI agents to check vendor invoices against contracts.\"},{\"claimId\":\"c4\",\"claimField\":\"signal_exploration\",\"claimValue\":\"AI agents for invoice checks\",\"sourceId\":\"s3\",\"excerpt\":\"Epsilon Pay is exploring AI agents to check vendor invoices against contracts.\"},{\"claimId\":\"c5\",\"claimField\":\"signal_pain\",\"claimValue\":\"Accounts Payable Manager hiring\",\"sourceId\":\"s3\",\"excerpt\":\"We are hiring an Accounts Payable Manager to own vendor invoice approvals.\"}],\"fitClaims\":[{\"aspect\":\"problem\",\"statement\":\"Epsilon Pay wants vendor invoices checked against contracts.\",\"primaryInterestIds\":[\"invoice_accuracy_entitlement\",\"agent_governance_autonomy\"],\"claimIds\":[\"c3\"]}],\"interestSignals\":[{\"kind\":\"exploration\",\"statement\":\"Exploring AI agents to check vendor invoices against contracts.\",\"claimIds\":[\"c4\"]},{\"kind\":\"pain\",\"statement\":\"Hiring an Accounts Payable Manager for vendor invoice approvals.\",\"claimIds\":[\"c5\"]}],\"falsifier\":\"Epsilon Pay is a subsidiary of a large enterprise, or has 500 or more employees.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

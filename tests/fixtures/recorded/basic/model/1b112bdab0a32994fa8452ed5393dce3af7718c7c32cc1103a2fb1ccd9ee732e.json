@@ -1,0 +1,14 @@
+{
+  "matchKey": "ListingExtraction:https://list.example.test/companies/beta",
+  "request": {
+    "schema": "ListingExtraction",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "content": "{\"companies\":[{\"name\":\"Beta Billing\",\"linkId\":\"L1\",\"excerpt\":\"Beta Billing is an Atlanta company that makes invoice tools for creative agencies.\"}]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

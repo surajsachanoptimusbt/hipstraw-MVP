@@ -121,7 +121,7 @@ class SourcePolicy(_Strict):
                 raise ValueError(f"{key} must be in (0, 1], got {weight}")
         return v
 
-    def category_for(self, url_or_host: str) -> str | None:
+    def category_for(self, url_or_host: str) -> SourceTypeCategory | None:
         """The `sourceTypeDomains` category whose domain matches this host or a parent of it."""
         host = host_of(url_or_host)
         for category, domains in self.sourceTypeDomains.items():

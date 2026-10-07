@@ -157,7 +157,9 @@ The system then decides the disposition:
   "judgement cited unknown evidence";
 - if `falsifierMet` → `exclude`;
 - if not `fitHolds` → `needs_verification`;
-- otherwise → `include`.
+- if the record has no passing evidence document → `needs_verification`;
+- otherwise → `include`, with the IDs of the record's passing evidence documents attached to the
+  decision by the system. The model does not need to cite them.
 
 The judgement can never turn a rule-gate failure into `include` (research R9).
 

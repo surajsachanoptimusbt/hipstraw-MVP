@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://alpha-ledger.test/about",
+  "request": {
+    "url": "https://alpha-ledger.test/about",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>About Alpha Ledger</h1>\n<p>Alpha Ledger is headquartered in Atlanta, GA.</p>\n<p>Our team has 120 employees across finance, sales, and engineering.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

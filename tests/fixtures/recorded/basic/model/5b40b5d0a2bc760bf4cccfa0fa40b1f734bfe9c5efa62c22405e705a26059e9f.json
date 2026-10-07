@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:gamma-ops.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"Atlanta, GA\",\"sourceId\":\"s2\",\"excerpt\":\"Gamma Ops has its head office in Atlanta, GA.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"60\",\"sourceId\":\"s2\",\"excerpt\":\"Gamma Ops has about 60 staff.\"},{\"claimId\":\"c3\",\"claimField\":\"fit_buyer\",\"claimValue\":\"finance departments\",\"sourceId\":\"s1\",\"excerpt\":\"Gamma Ops sells mainly to finance departments.\"},{\"claimId\":\"c4\",\"claimField\":\"signal_pain\",\"claimValue\":\"AP hiring\",\"sourceId\":\"s3\",\"excerpt\":\"Gamma Ops is recruiting for its accounts payable team.\"}],\"fitClaims\":[{\"aspect\":\"buyer\",\"statement\":\"Gamma Ops sells to finance departments.\",\"primaryInterestIds\":[\"continuous_obligation_intelligence\"],\"claimIds\":[\"c3\"]}],\"interestSignals\":[{\"kind\":\"pain\",\"statement\":\"Recruiting for accounts payable.\",\"claimIds\":[\"c4\"]}],\"falsifier\":\"Gamma Ops is a subsidiary of a large enterprise, or has 500 or more employees.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

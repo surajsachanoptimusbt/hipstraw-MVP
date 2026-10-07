@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:sigma-scale.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"Atlanta, GA\",\"sourceId\":\"s2\",\"excerpt\":\"Sigma Scale is headquartered in Atlanta, GA.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"5,000+\",\"sourceId\":\"s2\",\"excerpt\":\"Sigma Scale has 5,000+ employees across four continents.\"},{\"claimId\":\"c3\",\"claimField\":\"fit_buyer\",\"claimValue\":\"shared services AP team\",\"sourceId\":\"s3\",\"excerpt\":\"Sigma Scale is hiring an Accounts Payable Analyst for its shared services center.\"},{\"claimId\":\"c4\",\"claimField\":\"signal_pain\",\"claimValue\":\"Accounts Payable Analyst hiring\",\"sourceId\":\"s3\",\"excerpt\":\"Sigma Scale is hiring an Accounts Payable Analyst for its shared services center.\"}],\"fitClaims\":[{\"aspect\":\"buyer\",\"statement\":\"Sigma Scale runs an accounts payable team in a shared services center.\",\"primaryInterestIds\":[\"invoice_accuracy_entitlement\"],\"claimIds\":[\"c3\"]}],\"interestSignals\":[{\"kind\":\"pain\",\"statement\":\"Hiring an Accounts Payable Analyst.\",\"claimIds\":[\"c4\"]}],\"falsifier\":\"Sigma Scale has 500 or more employees.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

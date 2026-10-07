@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://list.example.test/companies/beta",
+  "request": {
+    "url": "https://list.example.test/companies/beta",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Beta Billing</h1>\n<p>Beta Billing is an Atlanta company that makes invoice tools for creative agencies.</p>\n<a href=\"https://beta-billing.test/\">Visit the Beta Billing website</a>\n<a href=\"/atlanta-saas\">Back to the directory</a>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

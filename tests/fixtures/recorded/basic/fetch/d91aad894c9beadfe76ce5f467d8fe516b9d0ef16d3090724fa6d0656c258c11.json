@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://epsilon-pay.test/",
+  "request": {
+    "url": "https://epsilon-pay.test/",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Epsilon Pay</h1>\n<p>Epsilon Pay helps finance teams pay recurring vendor invoices on time.</p>\n<a href=\"/about\">About</a>\n<a href=\"/careers\">Careers</a>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

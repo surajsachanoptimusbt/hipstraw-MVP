@@ -1,0 +1,9 @@
+# First position used by the integration tests (contracts/config.md shape).
+candidateId: invoice_alpha_genesis__saas_recurring_fees
+segment: B2B SaaS companies under 500 employees in the Atlanta, San Francisco, or New York metro
+companyArchetype: Subscription software vendor whose own vendor stack is growing
+buyer: Head of finance or accounts payable lead
+problem: Recurring SaaS and services invoices drift from what was contracted and are paid unchecked
+trigger: Hiring accounts payable or procurement staff to handle growing vendor invoice volume
+primaryInterestIds: [invoice_accuracy_entitlement, continuous_obligation_intelligence]
+searchHints: [Atlanta B2B SaaS]

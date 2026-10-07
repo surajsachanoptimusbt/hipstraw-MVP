@@ -1,0 +1,14 @@
+{
+  "matchKey": "ReviewJudgement:run_20261007T101500__beta-billing-test",
+  "request": {
+    "schema": "ReviewJudgement",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "content": "{\"falsifierMet\":false,\"fitHolds\":true,\"citedEvidenceIds\":[],\"reason\":\"Atlanta company under the size limit, hiring procurement staff to review supplier invoices.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

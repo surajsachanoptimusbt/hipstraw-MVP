@@ -11,55 +11,27 @@ import json
 import os
 import sys
 from collections.abc import Callable
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, NoReturn, TextIO
+from typing import NoReturn, TextIO
 
 from hipstraw_mm.adapters.fetch import Fetcher
 from hipstraw_mm.adapters.llm import LLMClient, LLMSchemaError
 from hipstraw_mm.adapters.replay import ReplayMissingError, ReplayStore, mode_from_env
 from hipstraw_mm.adapters.search import BraveSearch
 from hipstraw_mm.config import LoadedConfig, load_config
+from hipstraw_mm.context import CommandResult, Context
 from hipstraw_mm.errors import ExternalServiceError, HipstrawError, PreconditionError, UsageError
 from hipstraw_mm.logging_setup import EventLog, scrub
-from hipstraw_mm.store.base import InvalidTransitionError, NotFoundError, Store
+from hipstraw_mm.steps.candidates import candidates
+from hipstraw_mm.steps.discover import discover
+from hipstraw_mm.steps.intake import intake
+from hipstraw_mm.steps.position import position
+from hipstraw_mm.steps.report import report
+from hipstraw_mm.steps.review import review
+from hipstraw_mm.steps.verify import verify
+from hipstraw_mm.store.base import InvalidTransitionError, NotFoundError
 
 COMMANDS = ("intake", "candidates", "position", "discover", "verify", "review", "report", "run", "show")
-
-
-@dataclass
-class Context:
-    """Everything a step needs. Tests build their own with a MemoryStore and replay adapters."""
-
-    config: LoadedConfig
-    store: Store
-    log: EventLog
-    llm: LLMClient
-    search: BraveSearch
-    new_fetcher: Callable[[], Fetcher]
-    reports_dir: Path = Path("reports")
-    now: Callable[[], datetime] = field(default=lambda: datetime.now(timezone.utc))
-
-
-@dataclass
-class CommandResult:
-    command: str
-    message: str = ""
-    runId: str | None = None
-    status: str | None = None
-    counts: dict[str, int] | None = None
-    warnings: list[str] = field(default_factory=list)
-
-    def to_json(self) -> dict[str, Any]:
-        out: dict[str, Any] = {"command": self.command}
-        for key in ("runId", "status", "counts"):
-            value = getattr(self, key)
-            if value is not None:
-                out[key] = value
-        if self.warnings:
-            out["warnings"] = self.warnings
-        return out
 
 
 def build_context(config: LoadedConfig) -> Context:
@@ -143,8 +115,33 @@ def _not_implemented(ctx: Context, args: argparse.Namespace) -> CommandResult:
     raise UsageError(f"'{args.command}' is not implemented yet")
 
 
+def _run(ctx: Context, args: argparse.Namespace) -> CommandResult:
+    """position, discover, verify, review, report; the first failure stops it with the run marked failed."""
+    created = position(ctx, args.candidate, args.file)
+    run_id = str(created.runId)
+    results = [
+        discover(ctx, run_id),
+        verify(ctx, run_id),
+        review(ctx, run_id),
+        report(ctx, run_id),
+    ]
+    last = results[-1]
+    warnings = list(dict.fromkeys(w for r in results for w in r.warnings))
+    return CommandResult(
+        "run", message=last.message, runId=run_id, status=last.status, counts=last.counts, warnings=warnings
+    )
+
+
 HANDLERS: dict[str, Callable[[Context, argparse.Namespace], CommandResult]] = {
-    name: _not_implemented for name in COMMANDS
+    "intake": lambda ctx, a: intake(ctx, a.program),
+    "candidates": lambda ctx, a: candidates(ctx, a.program),
+    "position": lambda ctx, a: position(ctx, a.candidate, a.file),
+    "discover": lambda ctx, a: discover(ctx, a.run),
+    "verify": lambda ctx, a: verify(ctx, a.run),
+    "review": lambda ctx, a: review(ctx, a.run),
+    "report": lambda ctx, a: report(ctx, a.run, Path(a.out) if a.out else None),
+    "run": _run,
+    "show": _not_implemented,  # T071, after the demo
 }
 
 

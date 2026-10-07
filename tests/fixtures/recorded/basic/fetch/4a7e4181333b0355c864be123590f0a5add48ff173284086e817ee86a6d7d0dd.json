@@ -1,0 +1,15 @@
+{
+  "matchKey": "https://sigma-scale.test/robots.txt",
+  "request": {
+    "url": "https://sigma-scale.test/robots.txt",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/plain"
+    },
+    "text": "User-agent: *\nAllow: /\n"
+  }
+}

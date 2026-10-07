@@ -109,7 +109,7 @@ class Run(Doc):
     position: Position
     constraintsInForce: ConstraintsInForce
     budgets: dict[str, int]
-    model: str
+    model: str | None  # None when LLM_MODEL was unset at `position`; model steps require it
     status: RunStatus = RunStatus.created
     stepTimes: dict[str, str] = {}
     counts: dict[str, int] = {}
@@ -151,6 +151,7 @@ class IdentifierCheck(Doc):
     status: IdentifierStatus
     httpStatus: int | None = None
     finalUrl: str | None = None
+    failReason: str | None = None  # the fetcher's reason when the website did not load
     checkedAt: str
 
 
@@ -243,6 +244,8 @@ class ReviewDecision(Doc):
     reason: str = Field(min_length=1)
     ruleResults: list[RuleResult]
     judgement: Judgement | None
+    # The record's passing evidence, attached by the system (not the model); an include needs at least one.
+    evidenceIds: list[str] = []
     reviewer: str
     reviewedAt: str
 

@@ -149,6 +149,7 @@ logging, schemas, and the CLI shell. Every later phase depends on these.
   - Non-`text/html` responses are skipped, and responses over `maxBytes` are rejected.
   - HTML to text drops `script` and `style` content.
   - Outbound links are returned as `[{linkId, href, anchorText}]`.
+  - HTML to text breaks lines only at block elements (and `<br>`), so inline tags never split a sentence: `<strong>Acme</strong>: x` reads `Acme: x` (added 2026-10-07, before Phase 3).
   - **Redirect rule** (FR-008): with `same_company_only`, redirects to `www.` or another subdomain of the same company key are followed; a redirect to another company key, or to a look-alike host such as `notacme.test`, stops with `redirect_off_site` and the 3xx status. Every hop is checked against the denylist and `robots.txt`.
 - [x] T014 Test harness in `tests/conftest.py`:
   - a `--emulator` CLI option that skips `emulator`-marked tests unless it is given and `FIRESTORE_EMULATOR_HOST` is set, and allows sockets to localhost only in that case;
@@ -224,13 +225,13 @@ logging, schemas, and the CLI shell. Every later phase depends on these.
   - the `--json` output shape;
   - error messages always written to stderr, in both modes;
   - a `build_context()` factory (store and adapters) that tests can override.
-- [ ] T030 Write `tests/fixtures/record_real.py` and have a team member with keys run it with `HIPSTRAW_REPLAY=record` (quickstart.md, "Recording the real adapter responses"). The script makes exactly:
+- [x] T030 Write `tests/fixtures/record_real.py` and have a team member with keys run it with `HIPSTRAW_REPLAY=record` (quickstart.md, "Recording the real adapter responses"). The script makes exactly:
   - one Brave query (`SaaS companies Atlanta`);
   - one page fetch, plus its `robots.txt`, of the first result whose `robots.txt` allows fetching;
   - one OpenAI parse per schema, using minimal fixed prompts and that page's text as input. `ReviewJudgement` uses a two-item synthetic evidence list.
 
   It writes to `tests/fixtures/recorded/real/`, fails if any key value appears in a written file, and the files are then committed.
-- [ ] T031 Run `pytest tests/unit tests/contract` and confirm all Phase 2 tests pass, including T015 against the real recordings
+- [x] T031 Run `pytest tests/unit tests/contract` and confirm all Phase 2 tests pass, including T015 against the real recordings
 
 **Checkpoint**: The foundation is ready, the adapters are proven against real response shapes, and
 the default suite runs with the network blocked.
@@ -253,7 +254,7 @@ tests/integration/test_no_verifiable_source_not_included.py` passes with sockets
 
 ### Tests for Phase 3 (write first; they must fail)
 
-- [ ] T032 [US1] Create the replay scenario `tests/fixtures/scenarios/basic.yaml` and a builder script `tests/fixtures/build_fixtures.py` that writes `tests/fixtures/recorded/basic/`. Use only `.test` domains and plainly fictional names (Constitution IX). The scenario contains:
+- [x] T032 [US1] Create the replay scenario `tests/fixtures/scenarios/basic.yaml` and a builder script `tests/fixtures/build_fixtures.py` that writes `tests/fixtures/recorded/basic/`. Use only `.test` domains and plainly fictional names (Constitution IX). The scenario contains:
   - a `QueryPlan` with 3 queries;
   - search results for:
     - listing page `https://list.example.test/atlanta-saas`;
@@ -263,14 +264,16 @@ tests/integration/test_no_verifiable_source_not_included.py` passes with sockets
     - `alpha-ledger.test`, with an external link;
     - `beta-billing.test`, with only an internal link to `https://list.example.test/companies/beta`, whose profile page links externally to `beta-billing.test`;
     - `gamma-ops.test` and `delta-none.test`, with external links;
+    - `sigma-scale.test` (about page: "5,000+ employees") and `theta-works.test` (about page: headquartered in "Chicago, IL"), with external links and otherwise fully cited, so only the rule checks can exclude them;
+    - Alpha Ledger's name wrapped in `<strong>`, so its excerpt matches only if inline tags don't break lines;
   - registry HTML naming "Zeta Holdings LLC" and "Alpha Ledger, Inc.", neither with a website link. Alpha Ledger is also found through its website, so it tests the merge rule.
   - an allow-all `robots.txt` for every host;
   - homepages for `alpha`, `beta`, `epsilon`, and `gamma` containing their names, while `delta-none.test` returns 404;
   - about and careers pages with headquarters "Atlanta, GA", employee counts under 500, and AP job-posting text;
   - `HomepageIdentity` for `epsilon-pay.test`;
   - `CompanyEvidence` responses. `alpha`, `beta`, and `epsilon` quote their pages verbatim; every `gamma` excerpt is a paraphrase.
-  - `ReviewJudgement` responses with `falsifierMet: false` and `fitHolds: true`.
-- [ ] T033 [P] [US1] Integration test `tests/integration/test_end_to_end_path.py`:
+  - `ReviewJudgement` responses with `falsifierMet: false` and `fitHolds: true`, only for `alpha`, `beta`, and `epsilon`. Gamma, delta, sigma, theta, and zeta have none, so a judgement call for any of them fails the run.
+- [x] T033 [P] [US1] Integration test `tests/integration/test_end_to_end_path.py`:
   - With `MemoryStore` and the `basic` replay, run `intake`, `candidates`, `position`, `discover`, `verify`, `review`, `report` through `cli.main([...])` with `build_context()` overridden.
   - Assert the run status reaches `reported`.
   - Assert the origin kinds `listing_link` (alpha), `profile_hop` (beta), `direct_homepage` (epsilon), and `registry_only` (zeta) all appear.
@@ -280,29 +283,33 @@ tests/integration/test_no_verifiable_source_not_included.py` passes with sockets
   - Assert every company with a loading website has an `existence` evidence document whose excerpt contains its name.
   - Assert at most 10 records exist, each with `status == "finding"`, and each with exactly one `reviewDecisions` document.
   - Assert `reports/<runId>.md` exists with the headings of sections 1–8 from contracts/demo-report.md.
-- [ ] T034 [P] [US2] Integration test `tests/integration/test_no_verifiable_source_not_included.py` (required by the planning input). After the `basic` run, none of these is `include`:
+  - Also assert (approved 2026-10-07): alpha, beta, and epsilon are the only `include`s; every record's origin citation passes and names the company; the baseline matches the decisions; `demoReports.sha256` matches the file and each company is under the right report section; `hipstraw-mm run` completes; a second `review` exits with code 2. `tests/unit/test_build_fixtures.py` fails when the committed recordings are stale.
+- [x] T034 [P] [US2] Integration test `tests/integration/test_no_verifiable_source_not_included.py` (required by the planning input). After the `basic` run, none of these is `include`:
   - `delta-none.test` (website 404) → `exclude`, with `ruleResults` entry `{rule: existence, outcome: fail}`;
   - `gamma-ops.test` (all citations fail) → every claim is in `unknowns`, with no `fitClaims` or `interestSignals`;
   - "Zeta Holdings LLC" (registry-only) → `needs_verification`, with `{rule: existence, outcome: unknown}` (FR-008).
-- [ ] T035 [US1] Run `pytest tests/integration` to confirm the Phase 3 tests fail, then present them for **user approval** before implementing Phase 3 (Constitution III)
+  - `sigma-scale.test` ("5,000+ employees") → `exclude`, with `{rule: size, outcome: fail}` and no judgement;
+  - `theta-works.test` (Chicago, IL) → `exclude`, with `{rule: hq, outcome: fail}` and no judgement;
+  - every `include` carries a non-empty `evidenceIds` list of the record's passing evidence documents.
+- [x] T035 [US1] Run `pytest tests/integration` to confirm the Phase 3 tests fail, then present them for **user approval** before implementing Phase 3 (Constitution III)
 
 ### Implementation for Phase 3
 
-- [ ] T036 [US1] Implement `src/hipstraw_mm/steps/intake.py`: load `config/programs/<id>.yaml` and upsert `programs/{programId}` with `objective`, `sourceUrl`, `experimentContexts`, `primaryInterests`, and `defaultConstraints` (`{maxEmployees, maxRevenueUsd, metroIds[]}` from `config/run.yaml`)
-- [ ] T037 [P] [US1] Implement `src/hipstraw_mm/steps/candidates.py`: for each of the six experiment contexts, upsert `marketCandidates/{candidateId}` with `candidateId = "<programId>__<experimentContextId>"` and `origin = "program_experiment_context"`. No model call and no generation (FR-019).
-- [ ] T038 [US1] Implement `src/hipstraw_mm/steps/position.py`:
+- [x] T036 [US1] Implement `src/hipstraw_mm/steps/intake.py`: load `config/programs/<id>.yaml` and upsert `programs/{programId}` with `objective`, `sourceUrl`, `experimentContexts`, `primaryInterests`, and `defaultConstraints` (`{maxEmployees, maxRevenueUsd, metroIds[]}` from `config/run.yaml`)
+- [x] T037 [P] [US1] Implement `src/hipstraw_mm/steps/candidates.py`: for each of the six experiment contexts, upsert `marketCandidates/{candidateId}` with `candidateId = "<programId>__<experimentContextId>"` and `origin = "program_experiment_context"`. No model call and no generation (FR-019).
+- [x] T038 [US1] Implement `src/hipstraw_mm/steps/position.py`:
   - Validate the first-position file and check that the candidate exists.
   - Create `runs/{runId}` with status `created`.
   - Copy `constraintsInForce` (`{maxEmployees, maxRevenueUsd, metros[{id, csaCode, name}]}`), `budgets`, and `model` from config.
   - Print the `runId`.
-- [ ] T039 [P] [US1] Write prompt templates `src/hipstraw_mm/prompts/query_plan.v1.txt`, `listing_extraction.v1.txt`, `homepage_identity.v1.txt`, `company_evidence.v1.txt`, and `review_judgement.v1.txt`. Each says:
+- [x] T039 [P] [US1] Write prompt templates `src/hipstraw_mm/prompts/query_plan.v1.txt`, `listing_extraction.v1.txt`, `homepage_identity.v1.txt`, `company_evidence.v1.txt`, and `review_judgement.v1.txt`. Each says:
   - use only the provided text;
   - copy excerpts verbatim, at most 300 characters;
   - never output person fields, emails, or phone numbers;
   - return only the schema.
 
   `company_evidence.v1.txt` adds: spend phrases such as "heavy recurring spend" are examples only, and every interest signal needs a quoted excerpt (FR-020).
-- [ ] T040 [US1] Implement `src/hipstraw_mm/steps/discover.py` (thin), following the discovery rules in contracts/llm-outputs.md:
+- [x] T040 [US1] Implement `src/hipstraw_mm/steps/discover.py` (thin), following the discovery rules in contracts/llm-outputs.md:
   - Make the `QueryPlan` call (match key: `candidateId`), then search.
   - **Direct homepage**: a root-path result on an unclassified domain gets a `HomepageIdentity` call (match key: URL).
   - **Listing page**: any other result gets a `ListingExtraction` call (match key: URL).
@@ -314,33 +321,35 @@ tests/integration/test_no_verifiable_source_not_included.py` passes with sockets
   - Write origin `evidence` and `companyRecords` with `status: finding` and `origin {kind, searchQuery, resultUrl, listingEvidenceId, profileUrl}`.
   - Emit a `step_start` log event at the start, and a `step_end` event with counts (searches, fetches, model calls, candidates found, kept, dropped by merge) at the end.
   - Record `runs.counts`, then transition the run to `discovered`.
-- [ ] T041 [US1] Implement `src/hipstraw_mm/steps/verify.py` (thin):
+- [x] T041 [US1] Implement `src/hipstraw_mm/steps/verify.py` (thin):
   - **Website load** (FR-008): fetch `https://<domain>/`, accepting redirects only within the same company key or its subdomains. Record `resolves` on 2xx, otherwise `fails` with `httpStatus`. Record `no_website` for registry-only companies, which are never fetched.
   - **Existence evidence** (FR-016): for each website that resolves, build it from the homepage as defined in data-model.md, with the sentence (or 100 characters on each side) around the first occurrence of the name, at most 300 characters. Set `existenceEvidenceId`.
   - Fetch own-site pages linked from the homepage whose path contains `about`, `company`, `careers`, `jobs`, `contact`, `locations`, `press`, or `news`, up to `ownSitePagesPerCompany`.
   - Make the `CompanyEvidence` call (match key: domain). Create one `evidence` document per claim and run its check.
   - **Registry-only companies get no evidence-extraction call** (no `CompanyEvidence`, and no page fetches). Set `fitClaims: []`, `interestSignals: []`, and `falsifier: null`, and add `fit`, `interestSignal`, and `falsifier` to `unknowns` (FR-005).
   - Keep fit claims and interest signals only if they have at least one passing claim; put everything else in `unknowns`.
+  - Fill `hq` with `src/hipstraw_mm/evidence/location.py` (research R5) and `size` with `src/hipstraw_mm/evidence/size.py` (research R6, without parent handling), so the rule checks can exclude `theta` and `sigma`. T052 and T053 complete these modules against their unit tests.
   - Set `confidence: null` here; T054 computes it before the demo.
   - Track `verifyFetchesPerRun` and `verifyModelCallsPerRun`, and stop at either ceiling. Exit code 4 for that case is added in T055.
   - Emit a `step_start` log event, and a `step_end` event with counts (fetches, model calls, companies verified, registry-only, websites failed, citations passed and failed).
   - Record `runs.counts`, then transition the run to `verified`.
-- [ ] T042 [US2] Implement `src/hipstraw_mm/steps/review.py` (thin):
-  - **Rule gate**: website `fails` → `exclude`. `no_website`, or an existence evidence that failed → `needs_verification`. Missing a passing citation for headquarters, size, or interest signal → `needs_verification`.
-  - **Judgement call**: only for records that pass every rule, with only passing evidence as input (match key: `companyRecordId`). Apply `falsifierMet → exclude`, `!fitHolds → needs_verification`, otherwise `include`.
+- [x] T042 [US2] Implement `src/hipstraw_mm/steps/review.py` (thin):
+  - **Rule gate**: website `fails` → `exclude`. `no_website`, or an existence evidence that failed → `needs_verification`. Headquarters `not_met` or size `over` → `exclude`. Headquarters `unknown`, size `unknown` or `conflict`, or no interest signal → `needs_verification`.
+  - **Judgement call**: only for records that pass every rule, with only passing evidence as input (match key: `companyRecordId`). Apply `falsifierMet → exclude`, `!fitHolds → needs_verification`, no passing evidence document → `needs_verification`, otherwise `include`.
+  - Attach the IDs of the record's passing evidence documents to every decision as `evidenceIds` (approved 2026-10-07). Unit tests: `tests/unit/test_judgement_validation.py` (started here; T060 adds the remaining cases).
   - Create `reviewDecisions/{runId}__{domainKey}` with reviewer `market-manager/rules-v1+<model>`.
   - Create `positionBaselines/{runId}` with `create()`.
   - Emit a `step_start` log event, and a `step_end` event with counts (reviewed, include, exclude, needs verification, judgement calls).
   - Transition the run to `reviewed`.
-- [ ] T043 [US3] Implement `src/hipstraw_mm/steps/report.py` (thin):
+- [x] T043 [US3] Implement `src/hipstraw_mm/steps/report.py` (thin):
   - Write `reports/<runId>.md` with sections 1–8 from contracts/demo-report.md: title, run summary, first position, constraints in force, hypothesis check with a blank spot-check table, included, needs verification, and excluded. Show confidence as "not computed" while it is null.
   - Create `demoReports/{runId}` with `path`, `sha256`, `counts`, and `generatedAt`.
   - Emit a `step_start` log event, and a `step_end` event with counts (companies per section, report bytes).
   - Transition the run to `reported`.
-- [ ] T044 [US1] Wire every subcommand in `src/hipstraw_mm/cli.py` to its step:
+- [x] T044 [US1] Wire every subcommand in `src/hipstraw_mm/cli.py` to its step:
   - `run` executes `position`, `discover`, `verify`, `review`, `report` in order and stops at the first failure, marking the run `failed` with `errorStep` and `errorMessage`.
   - `review` exits with code 2 if decisions already exist for the run.
-- [ ] T045 [US1] Run `pytest tests/` and confirm `tests/integration/test_end_to_end_path.py` (T033) and `tests/integration/test_no_verifiable_source_not_included.py` (T034) pass with sockets blocked
+- [x] T045 [US1] Run `pytest tests/` and confirm `tests/integration/test_end_to_end_path.py` (T033) and `tests/integration/test_no_verifiable_source_not_included.py` (T034) pass with sockets blocked
 
 **Checkpoint**: A runnable end-to-end slice exists.
 
@@ -410,8 +419,8 @@ tests/unit/test_confidence.py tests/integration/test_us1_finding.py` covers US1 
 
 ### Implementation for User Story 1
 
-- [ ] T052 [P] [US1] Implement headquarters matching in `src/hipstraw_mm/evidence/location.py` per research R5, making T046 pass
-- [ ] T053 [P] [US1] Implement size, range, conflict, and parent evaluation in `src/hipstraw_mm/evidence/size.py` per research R6, making T047 pass
+- [ ] T052 [P] [US1] Complete headquarters matching in `src/hipstraw_mm/evidence/location.py` per research R5, making T046 pass (a first version exists from T041)
+- [ ] T053 [P] [US1] Complete size, range, conflict, and parent evaluation in `src/hipstraw_mm/evidence/size.py` per research R6, making T047 pass (a first version without parent handling exists from T041)
 - [ ] T054 [US1] Implement reliability weights and confidence in `src/hipstraw_mm/evidence/confidence.py` per research R8, making T048 pass. Registry-only records get the normal formula, which gives 0 and the Low band. Set `companyRecords.confidence` in `src/hipstraw_mm/steps/verify.py`, and show the band in `src/hipstraw_mm/steps/report.py`.
 - [ ] T055 [US1] *(after demo)* First write `tests/integration/test_budget_exhaustion.py` and get approval. It covers two cases:
   - With `verifyFetchesPerRun: 5` in the test config, the `us1` run runs out during `verify` with companies still unverified, so it exits with code 4, the run status is `failed`, and partial counts are recorded.

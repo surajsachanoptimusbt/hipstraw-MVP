@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:theta-works.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"Chicago, IL\",\"sourceId\":\"s2\",\"excerpt\":\"Theta Works is headquartered in Chicago, IL, with 140 employees.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"140\",\"sourceId\":\"s2\",\"excerpt\":\"Theta Works is headquartered in Chicago, IL, with 140 employees.\"},{\"claimId\":\"c3\",\"claimField\":\"fit_problem\",\"claimValue\":\"software vendor invoices to manage\",\"sourceId\":\"s3\",\"excerpt\":\"Theta Works is hiring a Procurement Specialist to manage software vendor invoices.\"},{\"claimId\":\"c4\",\"claimField\":\"signal_pain\",\"claimValue\":\"Procurement Specialist hiring\",\"sourceId\":\"s3\",\"excerpt\":\"Theta Works is hiring a Procurement Specialist to manage software vendor invoices.\"}],\"fitClaims\":[{\"aspect\":\"problem\",\"statement\":\"Theta Works manages a growing volume of software vendor invoices.\",\"primaryInterestIds\":[\"invoice_accuracy_entitlement\",\"supplier_commercial_position\"],\"claimIds\":[\"c3\"]}],\"interestSignals\":[{\"kind\":\"pain\",\"statement\":\"Hiring a Procurement Specialist for software vendor invoices.\",\"claimIds\":[\"c4\"]}],\"falsifier\":\"Theta Works is headquartered outside the metros in force.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

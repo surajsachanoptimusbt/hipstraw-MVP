@@ -1,0 +1,14 @@
+{
+  "matchKey": "HomepageIdentity:https://epsilon-pay.test/",
+  "request": {
+    "schema": "HomepageIdentity",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "content": "{\"isCompanyHomepage\":true,\"name\":\"Epsilon Pay\",\"excerpt\":\"Epsilon Pay helps finance teams pay recurring vendor invoices on time.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "matchKey": "Atlanta B2B SaaS companies directory",
+  "request": {
+    "params": {
+      "q": "Atlanta B2B SaaS companies directory"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "web": {
+      "results": [
+        {
+          "url": "https://www.linkedin.com/company/alpha-ledger-test",
+          "title": "Alpha Ledger | LinkedIn",
+          "description": "Denylisted; the search adapter drops this result."
+        },
+        {
+          "url": "https://list.example.test/atlanta-saas",
+          "title": "Atlanta B2B SaaS companies",
+          "description": "A directory of software companies in the Atlanta area."
+        }
+      ]
+    }
+  }
+}

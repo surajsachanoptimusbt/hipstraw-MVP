@@ -1,0 +1,14 @@
+{
+  "matchKey": "ListingExtraction:https://list.example.test/atlanta-saas",
+  "request": {
+    "schema": "ListingExtraction",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "content": "{\"companies\":[{\"name\":\"Alpha Ledger\",\"linkId\":\"L1\",\"excerpt\":\"Alpha Ledger: subscription billing software for B2B teams.\"},{\"name\":\"Beta Billing\",\"linkId\":\"L2\",\"excerpt\":\"Beta Billing: invoice tools for creative agencies.\"},{\"name\":\"Gamma Ops\",\"linkId\":\"L3\",\"excerpt\":\"Gamma Ops: operations software for finance teams.\"},{\"name\":\"Delta None\",\"linkId\":\"L4\",\"excerpt\":\"Delta None: reporting dashboards for retailers.\"},{\"name\":\"Sigma Scale\",\"linkId\":\"L5\",\"excerpt\":\"Sigma Scale: freight billing software for logistics networks.\"},{\"name\":\"Theta Works\",\"linkId\":\"L6\",\"excerpt\":\"Theta Works: vendor management software for agencies.\"}]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

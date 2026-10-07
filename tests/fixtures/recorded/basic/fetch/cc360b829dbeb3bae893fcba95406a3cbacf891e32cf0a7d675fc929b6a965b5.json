@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://theta-works.test/careers",
+  "request": {
+    "url": "https://theta-works.test/careers",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Careers at Theta Works</h1>\n<p>Theta Works is hiring a Procurement Specialist to manage software vendor invoices.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

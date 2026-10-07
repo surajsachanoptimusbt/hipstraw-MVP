@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://registry.example.test/ga/search",
+  "request": {
+    "url": "https://registry.example.test/ga/search",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Georgia business registry: search results</h1>\n<p>Fictional test registry. Results for \"software\" in Fulton County.</p>\n<p>Zeta Holdings LLC. Status: Active. Registered in Georgia in 2015.</p>\n<p>Alpha Ledger, Inc. Status: Active. Registered in Georgia in 2018.</p>\n<a href=\"/ga/help\">Search help</a>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

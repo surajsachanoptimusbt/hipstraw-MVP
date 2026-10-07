@@ -94,6 +94,9 @@ supplied micro-market. Program updated on 2026-10-07 to the Kozmo Invoice Alpha 
   quotes become straight quotes, en and em dashes become hyphens, and non-breaking spaces become
   normal spaces, on both the excerpt and the page text. This extends the 2026-10-06 answer, which
   ignored only spacing, line breaks, and letter case. Paraphrases still fail. (FR-007)
+- Q: Must the judgement model cite evidence for an include? → A: No. The system attaches the IDs of
+  the record's passing evidence documents to every decision itself. An include needs at least one
+  passing evidence document; without one, the disposition becomes needs verification. (FR-012)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -308,7 +311,9 @@ unchanged after a second run.
   record exactly one disposition (include, exclude, or needs verification) with a non-empty reason,
   and MUST record who reviewed it and when. Review MUST apply the written rules in FR-013 to FR-016.
   Any judgement step MUST be a bounded reasoning step with explicit inputs and a structured output,
-  and MUST rely only on the record's passing citations.
+  and MUST rely only on the record's passing citations. Every include decision MUST carry the IDs of
+  at least one passing evidence document, attached by the system; otherwise it becomes needs
+  verification.
 - **FR-013**: A company that fails the existence check MUST NOT be included.
 - **FR-014**: A company whose falsifier is shown to be true MUST NOT be included.
 - **FR-015**: Review MUST address any conflicting evidence on a constraint in its reason.

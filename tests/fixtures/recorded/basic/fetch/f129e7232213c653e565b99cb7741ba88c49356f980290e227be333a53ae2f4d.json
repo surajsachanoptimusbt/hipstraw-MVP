@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://list.example.test/atlanta-saas",
+  "request": {
+    "url": "https://list.example.test/atlanta-saas",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Atlanta B2B SaaS companies</h1>\n<p>A fictional test directory of software companies in the Atlanta area.</p>\n<ul>\n  <li><strong>Alpha Ledger</strong>: subscription billing software for B2B teams. <a href=\"https://alpha-ledger.test/\">Website</a></li>\n  <li>Beta Billing: invoice tools for creative agencies. <a href=\"/companies/beta\">View profile</a></li>\n  <li>Gamma Ops: operations software for finance teams. <a href=\"https://gamma-ops.test/\">Website</a></li>\n  <li>Delta None: reporting dashboards for retailers. <a href=\"https://delta-none.test/\">Website</a></li>\n  <li>Sigma Scale: freight billing software for logistics networks. <a href=\"https://sigma-scale.test/\">Website</a></li>\n  <li>Theta Works: vendor management software for agencies. <a href=\"https://theta-works.test/\">Website</a></li>\n</ul>\n<a href=\"/about\">About this directory</a>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

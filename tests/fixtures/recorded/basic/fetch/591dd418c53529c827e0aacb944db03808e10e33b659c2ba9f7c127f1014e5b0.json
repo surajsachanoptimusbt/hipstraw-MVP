@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://alpha-ledger.test/",
+  "request": {
+    "url": "https://alpha-ledger.test/",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Alpha Ledger</h1>\n<p>Alpha Ledger builds subscription billing software for growing B2B teams.</p>\n<a href=\"/about\">About us</a>\n<a href=\"/careers\">Careers</a>\n<a href=\"https://kappa-cloud.test/about\">About our hosting partner</a>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

@@ -94,7 +94,7 @@ Each CLI step requires the previous status (contracts/cli.md, exit code 2 otherw
 | `name` | string | As written in its origin source |
 | `domain` | string or null | The company's own website domain. Null only for a registry-only company. |
 | `origin` | map | `{kind: listing_link \| profile_hop \| direct_homepage \| registry_only, searchQuery, resultUrl, listingEvidenceId, profileUrl}`: the retrieved source the company came from (FR-006). `profileUrl` is set only for `profile_hop`. |
-| `identifierCheck` | map | `{status: resolves \| fails \| no_website, httpStatus, finalUrl, checkedAt}` (FR-008). `resolves` needs a 2xx response from the company's own website, with redirects only within the same company key or its subdomains. `no_website` is used for registry-only companies, which are never fetched. |
+| `identifierCheck` | map | `{status: resolves \| fails \| no_website, httpStatus, finalUrl, failReason, checkedAt}` (FR-008). `failReason` is the fetcher's reason (for example `robots_disallowed`) when the website did not load. `resolves` needs a 2xx response from the company's own website, with redirects only within the same company key or its subdomains. `no_website` is used for registry-only companies, which are never fetched. |
 | `existenceEvidenceId` | string or null | The `existence` evidence document built from the homepage (FR-016). Null when the website did not load or the company has no website. |
 | `hq` | map | `{city, state, status: met \| not_met \| unknown, evidenceIds[]}` (research R5) |
 | `size` | map | `{signals[{kind: employees \| revenue, low, high, evidenceId}], status: under \| over \| conflict \| unknown}` (research R6) |
@@ -151,12 +151,14 @@ Written only by the Review step. It is created once per company record and never
 | `reason` | string | Non-empty. Must address any size conflict (FR-015). |
 | `ruleResults` | list | `{rule: existence \| hq \| size \| large_enterprise \| interest_signal, outcome: pass \| fail \| unknown \| conflict, evidenceIds[]}` |
 | `judgement` | map or null | `{falsifierMet, fitHolds, citedEvidenceIds[], reason, model}`. Null when the rule gate already decided. |
+| `evidenceIds` | list | The IDs of the record's passing evidence documents (its origin citation plus its own passing evidence), attached by the system, not the model. An `include` needs at least one. |
 | `reviewer` | string | `market-manager/rules-v1+<model>` |
 | `reviewedAt` | timestamp | |
 
 **Invariants** (research R9):
 - `include` requires every rule to pass and `judgement.falsifierMet == false` and
-  `judgement.fitHolds == true`.
+  `judgement.fitHolds == true`, and a non-empty `evidenceIds`. A judgement that would include a
+  record with no passing evidence becomes `needs_verification`.
 - Every `citedEvidenceId` must exist with `check.status == pass`.
 - A company whose existence check fails is never `include` (FR-013).
 - The `existence` rule outcome is:
