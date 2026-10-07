@@ -1,0 +1,15 @@
+{
+  "matchKey": "site:beta-billing.test careers",
+  "request": {
+    "params": {
+      "q": "site:beta-billing.test careers"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "web": {
+      "results": []
+    }
+  }
+}

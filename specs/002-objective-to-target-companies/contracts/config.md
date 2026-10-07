@@ -41,11 +41,13 @@ constraints:
   maxEmployees: 500              # strict "less than"
   maxRevenueUsd: 100000000       # strict "less than"
   metroIds: [atlanta, san_francisco, new_york]
-  largeEnterpriseParents: []     # optional list of parent names or domains to treat as large
+  largeEnterpriseParents: []     # optional parent names to treat as large, compared by normalized name
 budgets:                         # research R13
   discoveryQueries: 6
   resultsPerQuery: 10
   listingPagesFetched: 12        # listing pages and direct-homepage results
+  listingPagesPerSite: 3         # per company key; fetch attempts count (2026-10-07)
+  listingPagesPerQuery: 3        # per planned query (2026-10-07)
   profileHopsPerRun: 10          # one hop per company at most (contracts/llm-outputs.md)
   companiesKept: 10              # FR-004 cap; must be <= 10
   ownSitePagesPerCompany: 6
@@ -70,23 +72,34 @@ metros:
     name: Atlanta–Athens-Clarke County–Sandy Springs, GA-AL CSA
     csaCode: "122"
     states: [GA, AL]
-    places: [Atlanta, Sandy Springs, Alpharetta, Marietta, Roswell, ...]
+    counties:                    # per state: every county in the CSA
+      GA: [Fulton, DeKalb, Cobb, Gwinnett, ...]
+      AL: [Chambers]
+    places:                      # per state: EVERY Census place in those counties
+      GA: [Atlanta, Sandy Springs, Alpharetta, Marietta, Roswell, Norcross, ...]
+      AL: [Lanett, Valley, ...]
   - id: san_francisco
     name: San Jose–San Francisco–Oakland, CA CSA
     csaCode: "488"
     states: [CA]
-    places: [San Francisco, Oakland, San Jose, Palo Alto, Mountain View, ...]
+    counties: {CA: [San Francisco, San Mateo, Santa Clara, Alameda, ...]}
+    places: {CA: [San Francisco, Oakland, San Jose, Palo Alto, Mountain View, ...]}
   - id: new_york
     name: New York–Newark, NY-NJ-CT-PA CSA
     csaCode: "408"
     states: [NY, NJ, CT, PA]
-    places: [New York, Brooklyn, Jersey City, Newark, Stamford, ...]
+    counties: {NY: [New York, Kings, ...], NJ: [Hudson, Essex, ...], CT: [Fairfield, ...], PA: [Pike, ...]}
+    places: {NY: [New York, Brooklyn, Yonkers, ...], NJ: [Jersey City, Newark, Hoboken, ...], CT: [Stamford, ...], PA: [...]}
 ```
 
 The CSA names, codes, and states above are illustrative and must be checked against the current
-Census CSA delineation file when the place lists are built during implementation. A city that isn't
-listed makes the location `unknown`, never `not_met`. A state outside every metro's `states` makes it
-`not_met` (research R5).
+Census CSA delineation file. **Since 2026-10-07 a cited city that is not on its state's place list
+makes the location `not_met`** (research R5), so the place lists must be complete: every incorporated
+place, census-designated place, and county subdivision (town or township) in the CSA's counties,
+keyed by state, because the same place name can exist in two states of one CSA. They are generated from the Census CSA delineation file and the
+place-to-county relationship file by `scripts/build_metro_places.py` and committed, with the source
+files and their dates recorded in the YAML header (T052). Every key of `counties` and `places` must
+be one of the metro's `states`.
 
 ## `config/source_policy.yaml`
 

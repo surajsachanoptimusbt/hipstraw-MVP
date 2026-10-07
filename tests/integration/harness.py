@@ -90,14 +90,36 @@ class CompletedRun:
         return self.store.list_evidence(self.run_id)
 
 
-def run_basic(harness: Harness) -> CompletedRun:
-    """intake, candidates, position, then each step, every one through `cli.main`."""
+def run_steps(harness: Harness, steps: tuple[str, ...] = STEPS) -> CompletedRun:
+    """intake, candidates, position, then the given steps, every one through `cli.main`."""
     results = {
         "intake": harness.cli("intake", "--program", "invoice_alpha"),
         "candidates": harness.cli("candidates", "--program", PROGRAM_ID),
         "position": harness.cli("position", "--candidate", CANDIDATE_ID, "--file", str(POSITION_FILE)),
     }
     run_id = (results["position"].json or {}).get("runId", RUN_ID)
-    for step in STEPS:
+    for step in steps:
         results[step] = harness.cli(step, "--run", run_id)
     return CompletedRun(harness, run_id, results)
+
+
+def run_basic(harness: Harness) -> CompletedRun:
+    """intake, candidates, position, then every step."""
+    return run_steps(harness, STEPS)
+
+
+def require_success(completed: CompletedRun) -> CompletedRun:
+    """Fail the calling fixture with the first failing command's error."""
+    import pytest
+
+    for command, result in completed.results.items():
+        if result.code != 0:
+            pytest.fail(f"`{command}` exited with {result.code}: {result.stderr.strip()}")
+    return completed
+
+
+def step_counts(completed: CompletedRun, step: str) -> dict[str, Any]:
+    """The counts on the step's `step_end` log event."""
+    ends = [e for e in completed.harness.log_events(completed.run_id) if e["event"] == "step_end" and e["step"] == step]
+    assert len(ends) == 1, f"expected one step_end for {step}, got {len(ends)}"
+    return dict(ends[0]["counts"])

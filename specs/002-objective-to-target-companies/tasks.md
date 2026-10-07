@@ -7,7 +7,7 @@ description: "Task list for feature 002: find and review target companies for a 
 
 **Input**: Design documents from `specs/002-objective-to-target-companies/`
 
-**Prerequisites**: plan.md, spec.md, research.md (R1–R18), data-model.md, contracts/ (cli,
+**Prerequisites**: plan.md, spec.md, research.md (R1–R19), data-model.md, contracts/ (cli,
 llm-outputs, config, demo-report), quickstart.md
 
 **Tests**: Included. Constitution Principle III makes test-first development mandatory, and the
@@ -37,11 +37,13 @@ intake → candidates → first position → discovery → verification → Revi
 
 ## Live demo path (minimal subset for one live end-to-end run on Invoice Alpha)
 
-**64 of 76 tasks.** A live run that is correct and follows the constitution needs:
+**73 of 85 tasks.** A live run that is correct and follows the constitution needs:
 - the whole foundation, including the real adapter recordings (Constitution IV);
 - the thin end-to-end path, with start and end log events per step;
 - the parts of US1 and US2 that keep a wrong company from being included: the headquarters and size
   checks, signal searches, the full rule gate, and judgement validation;
+- the four fixes from the first live run (2026-10-07): discovery targeting, blocked websites,
+  headquarters outside the metros, and name–domain mismatches, plus the real recordings made again;
 - confidence, so every record has the fields FR-005 requires;
 - the emulator store check, the team confirmations, and the live run itself.
 
@@ -52,8 +54,8 @@ Tests stay in, because Constitution III does not allow code without them.
 | 1. Setup | T001–T007 |
 | 2. Foundational | T009–T031 (all) |
 | 3. End-to-end path | T032–T045 (all) |
-| 4. US1 | T046–T054, T056, T058 |
-| 5. US2 | T059, T060, T062, T064–T066 |
+| 4. US1 | T046–T054, T056, T058, T065, T077–T085 |
+| 5. US2 | T059, T060, T062, T064, T066 |
 | 6. US3 | none (the thin report from T043 is enough for the demo) |
 | 7. Polish | T074, T075, T076 |
 
@@ -358,88 +360,195 @@ tests/integration/test_no_verifiable_source_not_included.py` passes with sockets
 ## Phase 4: User Story 1 - Find real, evidenced companies for one micro-market (Priority: P1)
 
 **Goal**: Complete company records:
-- headquarters checked against the CSA;
+- discovery that targets the first position (ranking before the cap);
+- websites that exist but cannot be read kept apart from websites that do not exist;
+- headquarters checked against the complete CSA place lists;
+- name–domain mismatches made explicit;
 - size, parent, and large-enterprise evidence;
 - signal searches, labeled interest signals, and primary interests;
 - preserved conflicts and explicit unknowns;
-- computed confidence.
+- computed confidence, and validated judgement citations.
 
 Exit code 4 when a verify ceiling runs out, and per-event logs, come after the demo.
 
-**Independent Test**: `pytest tests/unit/test_location.py tests/unit/test_size.py
-tests/unit/test_confidence.py tests/integration/test_us1_finding.py` covers US1 acceptance scenarios
-1–8 using recorded responses.
+**Reordered on 2026-10-07 after the first live run** (`run_20261007T140925`; spec Clarifications,
+Session 2026-10-07 after the live run). Implementation runs in the order listed below, not in ID
+order:
+1. the four live-run findings: T082 (discovery targeting), T083 (blocked websites), T052
+   (headquarters outside the metros), T084 (name–domain mismatch);
+2. then T053 (parent-company check), T056 (signal searches), T054 (confidence), and T065 (cited-ID
+   validation, moved here from Phase 5);
+3. then T085 (the real recordings, made again).
+
+Task IDs T077–T085 were added on that date.
+
+**Independent Test**: `pytest tests/unit/test_targeting.py tests/unit/test_website_checks.py
+tests/unit/test_location.py tests/unit/test_size.py tests/unit/test_confidence.py
+tests/unit/test_rule_gate.py tests/unit/test_judgement_validation.py
+tests/integration/test_discovery_targeting.py tests/integration/test_us1_finding.py` covers US1
+acceptance scenarios 1–9 and US2 scenarios 9–10, using recorded responses.
 
 ### Tests for User Story 1 (write first; they must fail)
 
-- [ ] T046 [P] [US1] Unit tests in `tests/unit/test_location.py`:
+- [x] T077 [P] [US1] Unit tests in `tests/unit/test_targeting.py` (discovery targeting, FR-022, research R19), against `src/hipstraw_mm/steps/targeting.py`:
+  - `order_queries` puts queries round-robin by metro in the configured order, with queries that name no metro last; nothing is dropped.
+  - `reading_order` interleaves results across queries (first of each, then second of each) and skips repeated URLs.
+  - `classify_metro`: a location missing from the entry's excerpt → `unknown` whatever the model says; `"Atlanta, GA"` → `in`; `"Buffalo, NY"` and `"Dallas, TX"` → `out`, overriding a model `in`; `"Austin, Texas"` → `out`; an unparseable location keeps the model's value; no location → `unknown`.
+  - `rank_candidates`: `in` before `unknown` before `out`, then `strong` before `partial` before `weak`, then website before registry-only. An alphabetical page's entries are not returned in page order. Ties alternate between source pages. The result is the same for any input order.
+- [x] T078 [P] [US1] Unit tests in `tests/unit/test_website_checks.py` (FR-008, FR-016, research R4) against `src/hipstraw_mm/evidence/existence.py`:
+  - `website_status`: 2xx → `resolves`; HTTP 404 and 410, and `dns_error` → `fails`; `robots_disallowed`, HTTP 401, 403, 429, 500, and 503, `network_error`, `redirect_off_site`, `too_many_redirects`, `not_html`, and `too_large` → `unreadable`.
+  - `name_matches_domain`: Addison Health Systems / writepad.com → false; Alpha Ledger / alpha-ledger.test, Accountable HQ / www.accountablehq.com, ADEO Healthcare Software / adeohs.com, 6DOS / 6dos.co, and The Home Depot / homedepot.com → true.
+
+  Add to `tests/unit/test_fetch.py`: a host whose name does not resolve gives `dns_error` for a page and for its `robots.txt` (never `robots_disallowed`); any other connection error stays `network_error`.
+- [x] T046 [P] [US1] Unit tests in `tests/unit/test_location.py` (research R5 as revised on 2026-10-07; place lists keyed by state):
   - A listed city with a matching state → `met`.
   - A state outside every metro's `states` → `not_met`.
-  - A matching state with an unlisted city → `unknown`.
-  - No headquarters claim → `unknown`.
+  - **A matching state with an unlisted city → `not_met`** (Buffalo, NY; changed from `unknown`).
+  - A full state name ("Austin, Texas") is read as its code.
+  - A value naming no city: "California", "New York", "Georgia", "Alabama", and "Pennsylvania" → `unknown` (each state has some part in a metro CSA); "Texas" and "Illinois" → `not_met`. No headquarters claim → `unknown`.
+  - Citations inside and outside together → `conflict`. All inside → `met`.
+  - The same place name in two states resolves by state.
   - `Palo Alto, CA` → `met` (the San Francisco CSA is the wider region).
-  - An "office in New York" claim is not treated as the headquarters.
-- [ ] T047 [P] [US1] Unit tests in `tests/unit/test_size.py`:
+  - (An "office in New York" statement is not a headquarters claim. That is a prompt rule, so T050 checks it on the `us1` Palo Alto company, whose page also names a New York office.)
+  - **The real `config/metros.yaml`** lists known in-CSA suburbs (for example Cumming, GA; Menlo Park, CA; Montclair, NJ) and none of Buffalo, NY; Sacramento, CA; Savannah, GA; Philadelphia, PA; or Hartford, CT.
+- [x] T047 [P] [US1] Unit tests in `tests/unit/test_size.py`:
   - Thresholds are strict "less than" and come from config; changing `maxEmployees` changes the outcome, so nothing is hard-coded.
   - A range uses its upper bound for "under" and its lower bound for "over".
   - 450 and 620 employees → `conflict`.
   - Only "over" evidence → `over`.
   - No signals → `unknown`.
-  - A parent on `largeEnterpriseParents`, or a parent shown over the thresholds → `parent.status = large`.
-  - A parent of unknown size → `unknown_size`.
-- [ ] T048 [P] [US1] Unit tests in `tests/unit/test_confidence.py`:
+  - `evaluate_parent`: a parent on `largeEnterpriseParents` (normalized name), or a parent whose `parent_employees` or `parent_revenue` reaches a threshold → `large`.
+  - A parent cited under both thresholds → `small`. A parent of unknown size → `unknown_size`. No parent claim → no parent.
+- [x] T048 [P] [US1] Unit tests in `tests/unit/test_confidence.py`:
   - Reliability comes from `reliabilityBySourceType`, and weights from `reliabilityWeights` (high 1.0, medium 0.7, low 0.4).
   - Confidence is the mean, over existence, location, size, and interest signal, of the best passing citation's weight, with 0 for an item that has none.
   - Bands: "High ≥ 0.8, Medium 0.5–0.79, Low < 0.5".
-- [ ] T049 [US1] Add the replay scenario `tests/fixtures/scenarios/us1.yaml` and build it into `tests/fixtures/recorded/us1/` with `tests/fixtures/build_fixtures.py`. Use `.test` domains only. It must contain:
-  - a company with conflicting employee counts on two pages;
-  - a company headquartered in Palo Alto, CA;
-  - a page disallowed by `robots.txt`;
-  - a `linkedin.com` URL in the search results;
-  - a company with no interest signal;
-  - a company with an exploration signal (AI for invoice processing);
-  - a "heavy recurring SaaS spend" signal whose excerpt does not appear on the page (A1);
-  - a company whose excerpt contains an email address;
-  - a press excerpt naming a person (allowed);
-  - a listing page naming 12 companies, to test the cap of 10;
-  - a second listing that yields only 3 companies, to test the shortfall.
-- [ ] T050 [US1] Integration test `tests/integration/test_us1_finding.py` covering US1 acceptance scenarios 1–8:
+- [x] T079 [P] [US1] Unit tests in `tests/unit/test_rule_gate.py`, the rows that changed on 2026-10-07 (T059 adds the rest of the research R9 table):
+  - `fails` (HTTP 404, HTTP 410, `dns_error`) → `exclude`.
+  - `unreadable` (`robots_disallowed`, HTTP 403, HTTP 429, a redirect off the site) → `needs_verification`, with the cause in the reason.
+  - Headquarters `not_met` for Buffalo, NY → `exclude`; `conflict` → `needs_verification` with both places in the reason; `unknown` → `needs_verification`.
+  - `nameMatchesDomain: false` with a passing existence citation → the existence rule passes; with a failed one → `needs_verification`, and the reason names the website and the company.
+  - Parent `large` → `exclude`, through the `large_enterprise` rule; parent `unknown_size` → `needs_verification`.
+- [x] T080 [P] [US1] Add to `tests/unit/test_judgement_validation.py` (for T065): a judgement citing an evidence ID that is not in the passing set → `needs_verification` with the reason "judgement cited unknown evidence", even when `fitHolds` is true. A judgement citing only passing IDs can still include.
+- [x] T049 [US1] Add three replay scenarios and build them with `tests/fixtures/build_fixtures.py`. Use `.test` domains only. First extend the builder with:
+  - per-origin `robots` (text, or a status);
+  - `unreachable` hosts (`dns` or `connect`);
+  - `signalSearches` with explicit results, and `noSignalResults`, which records the three research R7 queries with empty results;
+  - the ranking fields on listing and homepage responses;
+  - `parent_employees` and `parent_revenue` as structured claims.
+
+  The three scenarios:
+  - `tests/fixtures/scenarios/us1_targeting.yaml` (discovery only):
+    - an alphabetical A–Z directory of 12 companies whose first entries are off-target (headquartered in Dallas, Austin, or Buffalo; consumer businesses);
+    - one entry whose stated location is not in its excerpt (another entry on the page has that location);
+    - three metro lists (Atlanta, Bay Area, New York);
+    - 19 candidates in all, of which exactly 10 are `in` and `strong`.
+  - `tests/fixtures/scenarios/us1_sites.yaml`:
+    - eight New York companies whose websites are blocked by robots.txt, answer HTTP 403, 429, 410, or 503, or whose domain does not resolve;
+    - Larch Health Systems on `quillpad.test`, whose homepage names it;
+    - Sorrel Analytics on `tallyhub.test`, whose homepage does not;
+    - a robots-disallowed listing page and a `linkedin.com` result;
+    - eight kept, so the shortfall is recorded.
+  - `tests/fixtures/scenarios/us1.yaml`, ten companies:
+    - conflicting employee counts (450 and 620);
+    - a Palo Alto, CA headquarters with an exploration signal (AI for invoice processing) and a press excerpt naming a person (allowed);
+    - no interest signal;
+    - an unsourced "heavy recurring SaaS spend" signal (A1) beside a sourced one, and an excerpt with an email address;
+    - an interest signal found only on a job-board page through a signal search;
+    - a cited Buffalo, NY headquarters;
+    - a parent on `largeEnterpriseParents`, a parent of unknown size, and a parent cited with 12,000 employees;
+    - a judgement that cites an unknown evidence ID.
+
+  Also add `noSignalResults` for the six `basic` companies whose website loads, and add "Omega Conglomerate" to `largeEnterpriseParents` in `tests/fixtures/config/run.yaml`. The three new scenarios can be built only once the schemas carry the ranking fields (T082) and the parent-size claims (T053). Until then their tests fail on the missing recordings.
+- [x] T081 [US1] Integration test `tests/integration/test_discovery_targeting.py` on `us1_targeting` (FR-022, US1 scenario 9):
+  - exactly the 10 `in` and `strong` candidates are kept, and none of the directory's off-target first entries;
+  - the entry whose location is not in its excerpt is not treated as `in`;
+  - `origin.match` holds the checked values;
+  - `droppedOverCap` is 9;
+  - every planned query is searched.
+- [x] T050 [US1] Integration test `tests/integration/test_us1_finding.py` covering US1 acceptance scenarios 1–8 and US2 scenarios 9–10, on `us1` and `us1_sites`:
   - All FR-005 fields are present, including `confidence` with a value and band, and every fit claim has `primaryInterestIds` with at least 1 known ID.
   - Each record's origin traces to a retrieved page.
-  - Failed excerpts become unknowns, and the website failure is flagged.
+  - Failed excerpts become unknowns.
+  - **Websites** (`us1_sites`):
+    - robots-blocked, 403, 429, and 503 sites are `unreadable` → `needs_verification`, with the cause in the reason, and get no `CompanyEvidence` call or signal searches;
+    - 410 and DNS-failure sites are `fails` → `exclude`.
+  - **Name–domain**: Larch Health Systems passes existence with `nameMatchesDomain: false`; Sorrel Analytics is `needs_verification`, with `tallyhub.test` in the reason.
   - Both conflicting employee counts are kept as separate signals.
-  - The cap is 10, and a shortfall sets `shortfallReason`.
+  - The shortfall sets `shortfallReason` (`us1_sites`).
   - Every record has `status == "finding"`.
   - A missing interest signal appears in `unknowns` with field `interestSignal`.
   - The unsourced "heavy spend" signal is absent, and every kept interest signal has at least 1 passing citation (FR-020).
+  - The job-board signal is kept with `sourceType: job_board`. Each loading website gets at most 3 signal searches, and registry-only and non-resolving companies get none.
+  - **Headquarters**: Buffalo, NY → `not_met` → `exclude`.
+  - **Parents**: the listed parent and the 12,000-employee parent → `exclude`; the parent of unknown size → `needs_verification`.
+  - The judgement citing an unknown evidence ID → `needs_verification`.
   - `linkedin.com` and the robots-disallowed URL are never fetched.
   - The email excerpt fails with `contains_contact_data`, and the person-name excerpt passes.
   - `runs.counts` stays within every budget in `config/run.yaml`.
-- [ ] T051 [US1] Run the new tests to confirm they fail, then present `tests/unit/test_location.py`, `tests/unit/test_size.py`, `tests/unit/test_confidence.py`, and `tests/integration/test_us1_finding.py` for **user approval** (Constitution III)
 
-### Implementation for User Story 1
+  Also add to `tests/integration/test_end_to_end_path.py`: the `basic` verify step makes 18 signal searches (3 for each of the six loading websites).
+- [x] T051 [US1] Run the new tests to confirm they fail, then present them for **user approval** (Constitution III):
+  - `tests/unit/test_targeting.py`, `test_website_checks.py`, `test_location.py`, `test_size.py`, `test_confidence.py`, `test_rule_gate.py`;
+  - the additions to `test_judgement_validation.py`, `test_fetch.py`, and `test_end_to_end_path.py`;
+  - `tests/integration/test_discovery_targeting.py` and `test_us1_finding.py`;
+  - the three scenarios.
 
-- [ ] T052 [P] [US1] Complete headquarters matching in `src/hipstraw_mm/evidence/location.py` per research R5, making T046 pass (a first version exists from T041)
-- [ ] T053 [P] [US1] Complete size, range, conflict, and parent evaluation in `src/hipstraw_mm/evidence/size.py` per research R6, making T047 pass (a first version without parent handling exists from T041)
-- [ ] T054 [US1] Implement reliability weights and confidence in `src/hipstraw_mm/evidence/confidence.py` per research R8, making T048 pass. Registry-only records get the normal formula, which gives 0 and the Low band. Set `companyRecords.confidence` in `src/hipstraw_mm/steps/verify.py`, and show the band in `src/hipstraw_mm/steps/report.py`.
-- [ ] T055 [US1] *(after demo)* First write `tests/integration/test_budget_exhaustion.py` and get approval. It covers two cases:
-  - With `verifyFetchesPerRun: 5` in the test config, the `us1` run runs out during `verify` with companies still unverified, so it exits with code 4, the run status is `failed`, and partial counts are recorded.
-  - A run whose `QueryPlan` returns more queries than `discoveryQueries` drops the extras and completes with exit code 0.
+### Implementation for User Story 1 (in this order)
 
-  Then make `src/hipstraw_mm/steps/verify.py` exit with code 4 and mark the run `failed` (with `errorStep: verify` and partial counts) when it runs out of `verifyFetchesPerRun` or `verifyModelCallsPerRun` with companies still unverified. `src/hipstraw_mm/steps/discover.py` keeps treating its limits as normal completion (contracts/cli.md).
-- [ ] T056 [US1] Complete `src/hipstraw_mm/steps/verify.py`:
-  - Run up to `signalSearchesPerCompany` signal searches (query patterns in research R7) and fetch up to `thirdPartyPagesPerCompany` third-party pages.
+- [ ] T082 [US1] **Discovery targeting** (FR-022, research R19), making T077 and T081 pass. It needs two parts of T052 first, so it brings them forward: the location rules in `location.py`, and the state-keyed `Metro` shape in `config.py` with both metro files converted. The changes:
+  - Add `location`, `metroMatch`, and `positionMatch` to `ListedCompany` and `HomepageIdentity` in `src/hipstraw_mm/llm_schemas.py`.
+  - Write prompts `query_plan.v2.txt`, `listing_extraction.v2.txt`, and `homepage_identity.v2.txt`, and pass the position and the metro names in their payloads.
+  - Implement `src/hipstraw_mm/steps/targeting.py`.
+  - In `src/hipstraw_mm/steps/discover.py`: order the queries, run every search before reading, read round-robin, keep the best-ranked duplicate, rank before the cap, and store `origin.match` (add `OriginMatch` to `models.py`).
+  - **Page caps** (added at the T051 review): `listingPagesPerSite` and `listingPagesPerQuery` in `config/run.yaml` and `Budgets`. `select_pages` in `targeting.py` skips a result whose site or query has reached its cap, and the discover counts record `resultsOverSiteCap` and `resultsOverQueryCap`. Tests: `TestSelectPages` in `test_targeting.py`, and the extra A–Z and Atlanta results in `us1_targeting`.
+  - Add the ranking fields to the `basic` listing and homepage responses, rebuild `basic`, and build `us1_targeting`.
+- [ ] T083 [US1] **Blocked websites** (FR-008, FR-013, research R3, R4), making T078's `website_status` and fetch cases and T079's website rows pass:
+  - Report `dns_error` from `src/hipstraw_mm/adapters/fetch.py` (live: a failed connection whose host name does not resolve; replay: `dnsFailed: true`), including for `robots.txt`.
+  - Implement `website_status` in `src/hipstraw_mm/evidence/existence.py` and add `unreadable` to `IdentifierStatus`.
+  - In `src/hipstraw_mm/steps/verify.py`, an `unreadable` website gets no page fetches, no `CompanyEvidence` call, and no signal searches; its unknowns say why.
+  - In `src/hipstraw_mm/steps/review.py`, `fails` → `exclude`, and `unreadable` → `needs_verification` with the cause. Build `us1_sites`.
+- [ ] T052 [P] [US1] **Headquarters outside the metros** (research R5 as revised), making T046 and T079's headquarters rows pass:
+  - The location rules and the state-keyed `Metro` shape are brought forward into T082.
+  - **State names in headquarters claim checks** (added at the T051 review): in `src/hipstraw_mm/evidence/excerpt_check.py`, an `hq` claim's value passes when it appears in the excerpt with its state written as either the code or the full name ("Addison, TX" against "Addison, Texas"). Tests: `TestHeadquartersStateNames` in `tests/unit/test_excerpt_check.py`. The builder passes the claim field too.
+  - Add `conflict` to the `hq` status.
+  - Write `scripts/build_metro_places.py`, which builds complete place lists from the Census CSA delineation file and the place-to-county relationship file, and commit the regenerated `config/metros.yaml`, with the source files and their dates in its header. Convert `tests/fixtures/config/metros.yaml` to the new shape.
+  - In `src/hipstraw_mm/steps/review.py`, `not_met` → `exclude`, and `conflict` → `needs_verification` with both places.
+- [ ] T084 [US1] **Name–domain mismatch** (research R4), making T078's `name_matches_domain` cases and T079's name–domain rows pass:
+  - Implement `name_matches_domain`.
+  - Store `identifierCheck.nameMatchesDomain` in `src/hipstraw_mm/steps/verify.py`.
+  - When the existence citation fails and the names do not match, the review reason names the website and the company.
+  - **Existence from about or contact pages** (FR-016, added at the T051 review): `find_existence` in `existence.py` searches the homepage, then the already-fetched own-site pages whose path contains `about` or `contact`, in fetch order. There are no extra fetches, and own-site pages are now fetched before the existence evidence is built. Tests: `TestFindExistence` in `test_website_checks.py`, and Teasel Systems (named only on its about page) in `us1_sites`.
+- [ ] T053 [US1] **Parent-company check**: complete size, range, conflict, and parent evaluation in `src/hipstraw_mm/evidence/size.py` per research R6, making T047 pass:
+  - Add the `parent_employees` and `parent_revenue` claim fields (schema, `company_evidence.v2.txt`, `models.py`, and the unknowns mapping).
+  - Fill `parent` in `src/hipstraw_mm/steps/verify.py`.
+  - Add the `large_enterprise` rule to `src/hipstraw_mm/steps/review.py` (moved here from T064), so `large` → `exclude` and `unknown_size` → `needs_verification`.
+- [ ] T056 [US1] **Signal searches**: complete `src/hipstraw_mm/steps/verify.py`, making the T050 signal cases and the `basic` signal-search assertion pass:
+  - Run up to `signalSearchesPerCompany` signal searches per resolving website, with the exact research R7 query strings. Fetch up to `thirdPartyPagesPerCompany` third-party pages (own-site results count toward `ownSitePagesPerCompany`), and give them to `CompanyEvidence` after the own-site pages.
   - Assign `sourceType` per the source type rules in contracts/config.md, and `reliability` from config.
   - Fill `hq` with `location.py`, and fill `size` and `parent` with `size.py`.
   - Require `primaryInterestIds` to be non-empty and known.
   - Label each interest signal `pain` or `exploration`, and keep only those with a passing citation.
   - Add an `unknowns` entry for every minimum-proof item without a passing citation, including `interestSignal`.
   - Keep conflicting values as separate signals.
+  - Record the signal-search count in the verify `step_end` event.
+  - Build `us1`. The `basic` recordings for these searches were added in T049.
+- [ ] T054 [US1] **Confidence**: implement reliability weights and confidence in `src/hipstraw_mm/evidence/confidence.py` per research R8, making T048 pass. Registry-only records get the normal formula, which gives 0 and the Low band. Set `companyRecords.confidence` in `src/hipstraw_mm/steps/verify.py`, and show the band in `src/hipstraw_mm/steps/report.py`.
+- [ ] T065 [US2] **Cited-ID validation** (moved here from Phase 5 on 2026-10-07), making T080 pass. Complete judgement handling in `src/hipstraw_mm/steps/review.py`:
+  - validate `citedEvidenceIds` against the passing evidence ("judgement cited unknown evidence" → `needs_verification`);
+  - apply the invariant "`include` requires every rule to pass and `judgement.falsifierMet == false` and `judgement.fitHolds == true`";
+  - store `judgement` with `model`.
+- [ ] T085 [US1] Make the real model recordings again with `tests/fixtures/record_real.py` and real keys, for the three schemas that changed (`ListingExtraction`, `HomepageIdentity`, `CompanyEvidence`), so that `tests/contract/test_adapters_real.py` passes (Constitution IV, research R11). Needs a team member with keys.
+- [ ] T055 [US1] *(after demo)* First write `tests/integration/test_budget_exhaustion.py` and get approval. It covers two cases:
+  - With `verifyFetchesPerRun: 5` in the test config, the `us1` run runs out during `verify` with companies still unverified, so it exits with code 4, the run status is `failed`, and partial counts are recorded.
+  - A run whose `QueryPlan` returns more queries than `discoveryQueries` drops the extras and completes with exit code 0.
+
+  Then make `src/hipstraw_mm/steps/verify.py` exit with code 4 and mark the run `failed` (with `errorStep: verify` and partial counts) when it runs out of `verifyFetchesPerRun` or `verifyModelCallsPerRun` with companies still unverified. `src/hipstraw_mm/steps/discover.py` keeps treating its limits as normal completion (contracts/cli.md).
 - [ ] T057 [US1] *(after demo)* First write `tests/unit/test_log_events.py` and get approval. Then emit a JSON log event for each search, fetch, model call, and failed check in `src/hipstraw_mm/steps/discover.py` and `src/hipstraw_mm/steps/verify.py`, via `src/hipstraw_mm/logging_setup.py`.
 - [ ] T058 [US1] Run `pytest tests/` and confirm the Phase 3 and Phase 4 tests pass (except the after-demo tests not yet written)
 
-**Checkpoint**: User Story 1 is complete for the demo. Findings are bounded and evidenced, and none
-is included without Review.
+**Checkpoint**: User Story 1 is complete for the demo. Discovery keeps the companies that best match
+the first position; findings are bounded and evidenced, and none is included without Review.
 
 ---
 
@@ -457,22 +566,18 @@ The integration suite and the split store views come after the demo.
 
 ### Tests for User Story 2 (write first; they must fail)
 
-- [ ] T059 [P] [US2] Unit tests in `tests/unit/test_rule_gate.py`, one case per row of the research R9 table:
+- [ ] T059 [P] [US2] Complete `tests/unit/test_rule_gate.py` (started in T079 with the website, headquarters, name–domain, and parent rows) with one case per remaining row of the research R9 table:
 
   | Condition | Expected disposition |
   |-----------|---------------------|
-  | Website does not load | `exclude` |
   | Registry-only (`no_website`) | `needs_verification` |
   | Website loads, existence citation failed | `needs_verification` |
-  | Headquarters `not_met` | `exclude` |
-  | Headquarters `unknown` | `needs_verification` |
-  | Only over-threshold size, or a large parent | `exclude` |
+  | Only over-threshold size | `exclude` |
   | Size conflict | `needs_verification` |
   | No size signal | `needs_verification` |
   | No interest signal, all else met | `needs_verification` |
   | All rules pass | goes on to judgement |
-- [ ] T060 [P] [US2] Unit tests in `tests/unit/test_judgement_validation.py`:
-  - A judgement citing an evidence ID not in the passing set → `needs_verification` with the reason "judgement cited unknown evidence".
+- [ ] T060 [P] [US2] Unit tests in `tests/unit/test_judgement_validation.py` (the cited-ID case moved to T080 on 2026-10-07):
   - `falsifierMet` → `exclude`.
   - `fitHolds == false` → `needs_verification`.
   - A judgement can never make a rule-gate failure `include`.
@@ -499,11 +604,8 @@ The integration suite and the split store views come after the demo.
 - [ ] T063 [US2] *(after demo)* Split the store access in `src/hipstraw_mm/store/base.py`:
   - `FindingStore`, passed to `discover` and `verify`, has no decision or baseline write methods;
   - `ReviewStore`, passed only to `review`, adds `create_review_decision` and `create_position_baseline`.
-- [ ] T064 [US2] Replace the thin rule gate in `src/hipstraw_mm/steps/review.py` with the full research R9 table. Write `ruleResults` entries `{rule: existence | hq | size | large_enterprise | interest_signal, outcome: pass | fail | unknown | conflict, evidenceIds[]}`, and make reasons name the failed rule and any conflicting values (FR-015).
-- [ ] T065 [US2] Complete judgement handling in `src/hipstraw_mm/steps/review.py`:
-  - validate `citedEvidenceIds` against the passing evidence;
-  - apply the invariant "`include` requires every rule to pass and `judgement.falsifierMet == false` and `judgement.fitHolds == true`";
-  - store `judgement` with `model`.
+- [ ] T064 [US2] Complete the rule gate in `src/hipstraw_mm/steps/review.py` with the rest of the research R9 table. The website, headquarters, name–domain, and `large_enterprise` rows come earlier, in T083, T052, T084, and T053. Write `ruleResults` entries `{rule: existence | hq | size | large_enterprise | interest_signal, outcome: pass | fail | unknown | conflict, evidenceIds[]}`, and make reasons name the failed rule and any conflicting values (FR-015).
+- T065 moved to Phase 4 on 2026-10-07 (cited-ID validation, after T054).
 - [ ] T066 [US2] Run `pytest tests/` and confirm all tests written so far pass
 
 **Checkpoint**: Review is ready for the demo. Only Review includes companies, and every disposition has
@@ -604,7 +706,10 @@ These are recorded so they aren't lost. Each needs its own spec or a spec change
 - T018 → T019, T021, T024. T021 → T022, T023.
 - T024 → T025, T026, T027 → T030 → T031 (T015 passes only after T030). T028 → T030.
 - T036 → T037 → T038 → T040 → T041 → T042 → T043 → T044.
-- T052, T053 → T056. T048 → T054. T064 → T065. T061 → T063.
+- Phase 4 implementation order (2026-10-07): T082 → T083 → T052 → T084 → T053 → T056 → T054 → T065 →
+  T085. T082 changes the listing and homepage schemas that every new scenario needs; T053 changes
+  `CompanyEvidence`; T085 records the changed schemas for real.
+- T077 → T082. T078 → T083, T084. T046 → T052. T047 → T053. T048 → T054. T080 → T065. T061 → T063.
 
 ---
 
@@ -627,8 +732,8 @@ Code together:   T037 with T039 (different files), while T036 → T038 run in se
 ### Phase 4 (User Story 1)
 
 ```text
-Tests together:  T046, T047, T048
-Code together:   T052 (location.py), T053 (size.py)
+Tests together:  T077, T078, T046, T047, T048, T079, T080 (then T049 → T081, T050)
+Code:            in the listed order; T052 (location.py) can run beside T083 (verify.py, fetch.py)
 ```
 
 ### Phases 5 and 6

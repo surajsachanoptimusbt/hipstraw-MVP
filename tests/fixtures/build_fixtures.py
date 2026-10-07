@@ -11,6 +11,13 @@ It checks the scenario first and writes nothing if a check fails:
   and every excerpt marked `verbatim: false` fails it;
 - every link points at a link on its page, every claim at a page given to the model;
 - every model response validates against its schema.
+
+Scenario sections beyond the basic ones (added for Phase 4):
+- `robots`: per-origin robots.txt, as text or `{status, text}`, instead of allow-all;
+- `unreachable`: per-origin `dns` (the host name does not resolve) or `connect` (the connection
+  fails); its robots.txt recording is that error, so nothing on it is ever fetched;
+- `signalSearches`: verify-step searches (research R7) with explicit results, keyed by query;
+- `noSignalResults`: `{name, domain}` entries whose three research R7 signal searches return nothing.
 """
 
 from __future__ import annotations
@@ -37,7 +44,17 @@ RECORDED_DIR = FIXTURES_DIR / "recorded"
 TEST_SOURCE_POLICY = FIXTURES_DIR / "config" / "source_policy.yaml"
 
 ROBOTS_ALLOW_ALL = "User-agent: *\nAllow: /\n"
-STRUCTURED_FIELDS = {"hq", "employees", "revenue", "parent"}
+STRUCTURED_FIELDS = {"hq", "employees", "revenue", "parent", "parent_employees", "parent_revenue"}
+RANKING_FIELDS = ("location", "metroMatch", "positionMatch")
+
+
+def signal_queries(name: str, domain: str) -> list[str]:
+    """The three verify-step signal searches, in order (research R7). Their strings are match keys."""
+    return [
+        f'"{name}" accounts payable OR procurement job',
+        f'"{name}" invoice automation OR "AI agents" finance',
+        f"site:{domain} careers",
+    ]
 
 
 class ScenarioError(Exception):
@@ -89,9 +106,29 @@ def build(scenario_path: Path, out_dir: Path) -> int:
         records.append(("fetch", url, {"url": url, **audit}, response))
         parsed = urlparse(url)
         origins.add(f"{parsed.scheme}://{parsed.netloc}")
-    for origin in sorted(origins):
+    unreachable: dict[str, str] = scenario.get("unreachable", {})
+    robots: dict[str, Any] = scenario.get("robots", {})
+    for origin in unreachable:
+        if origin in origins:
+            raise ScenarioError(f"{origin} is unreachable but has pages")
+    for origin in sorted(origins | set(robots) | set(unreachable)):
+        if not host_of(origin).endswith(".test"):
+            raise ScenarioError(f"robots origin {origin} is not on a .test domain")
         robots_url = f"{origin}/robots.txt"
-        response = {"status": 200, "headers": {"content-type": "text/plain"}, "text": ROBOTS_ALLOW_ALL}
+        if origin in unreachable:
+            kind = unreachable[origin]
+            if kind not in ("dns", "connect"):
+                raise ScenarioError(f"unreachable {origin}: expected dns or connect, got {kind!r}")
+            response = {"status": None, "error": "ConnectError", "dnsFailed": kind == "dns"}
+        else:
+            spec = robots.get(origin, ROBOTS_ALLOW_ALL)
+            if isinstance(spec, str):
+                spec = {"status": 200, "text": spec}
+            response = {
+                "status": spec["status"],
+                "headers": {"content-type": "text/plain"},
+                "text": spec.get("text", ""),
+            }
         records.append(("fetch", robots_url, {"url": robots_url, **audit}, response))
 
     # QueryPlan and search results
@@ -110,6 +147,20 @@ def build(scenario_path: Path, out_dir: Path) -> int:
         request = {"params": {"q": q["query"]}, **audit}
         records.append(("search", q["query"], request, {"web": {"results": results}}))
 
+    # Signal searches (verify step, research R7)
+    signal_searches: dict[str, list[dict[str, str]]] = dict(scenario.get("signalSearches", {}))
+    for company in scenario.get("noSignalResults", []):
+        for query in signal_queries(company["name"], company["domain"]):
+            signal_searches.setdefault(query, [])
+    for query, found in signal_searches.items():
+        results = []
+        for r in found:
+            if not (host_of(r["url"]).endswith(".test") or is_denylisted(r["url"], denylist)):
+                raise ScenarioError(f"signal result {r['url']} is neither a .test domain nor denylisted")
+            results.append({"url": r["url"], "title": r["title"], "description": r["snippet"]})
+        request = {"params": {"q": query}, **audit}
+        records.append(("search", query, request, {"web": {"results": results}}))
+
     # ListingExtraction
     for url, entries in scenario.get("listings", {}).items():
         if url not in pages:
@@ -124,7 +175,12 @@ def build(scenario_path: Path, out_dir: Path) -> int:
             if link is not None and link not in link_ids:
                 raise ScenarioError(f"{where}: {link} is not a link on the page")
             companies.append(
-                {"name": entry["name"], "linkId": link_ids[link] if link else None, "excerpt": entry["excerpt"]}
+                {
+                    "name": entry["name"],
+                    "linkId": link_ids[link] if link else None,
+                    "excerpt": entry["excerpt"],
+                    **{k: entry[k] for k in RANKING_FIELDS if k in entry},
+                }
             )
         response = _model_response(llm_schemas.ListingExtraction, {"companies": companies}, model)
         records.append(("model", f"ListingExtraction:{url}", {"schema": "ListingExtraction", **audit}, response))

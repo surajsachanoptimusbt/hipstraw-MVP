@@ -1,7 +1,9 @@
 """T013: Fetch adapter tests using replayed responses (research R3, FR-002, FR-008)."""
 
 import json
+import socket
 
+import httpx
 import pytest
 
 from hipstraw_mm.adapters.fetch import Fetcher, html_to_text_and_links
@@ -206,3 +208,76 @@ class TestRedirectRule:
         result = make_fetcher().fetch("https://rel.test/", same_company_only=True)
         assert result.fail_reason is None
         assert result.final_url == "https://rel.test/home"
+
+
+DNS_FAILED = {"status": None, "error": "ConnectError", "dnsFailed": True}
+CONNECT_FAILED = {"status": None, "error": "ConnectError"}
+
+
+@pytest.fixture
+def dns_fetcher(fetch_fixtures):
+    """T078: recordings for hosts whose name does not resolve, and for an ordinary connection failure."""
+    fetch_dir = fetch_fixtures / "fetch"
+
+    def _record(url: str, response: dict):
+        record = {"matchKey": url, "request": {"url": url}, "response": response}
+        (fetch_dir / f"{match_key_hash(url)}.json").write_text(json.dumps(record))
+
+    _record("https://nxdomain.test/robots.txt", DNS_FAILED)
+    _record("https://flaky-dns.test/robots.txt", ALLOW_ALL)
+    _record("https://flaky-dns.test/", DNS_FAILED)
+    _record("https://refused.test/robots.txt", ALLOW_ALL)
+    _record("https://refused.test/", CONNECT_FAILED)
+    return Fetcher(
+        replay_store=ReplayStore(fetch_fixtures, mode="replay"),
+        denylist_domains=[],
+        user_agent="TestBot/1.0",
+        timeout_seconds=15,
+        max_bytes=2_000_000,
+    )
+
+
+class TestDnsFailure:
+    """A host name that does not resolve means the website is gone (`dns_error`), so it must never be
+    reported as `robots_disallowed` or `network_error` (research R3, 2026-10-07)."""
+
+    def test_unresolvable_host_at_robots_txt_is_dns_error(self, dns_fetcher):
+        result = dns_fetcher.fetch("https://nxdomain.test/", same_company_only=True)
+        assert result.fail_reason == "dns_error"
+
+    def test_unresolvable_host_at_the_page_is_dns_error(self, dns_fetcher):
+        result = dns_fetcher.fetch("https://flaky-dns.test/", same_company_only=True)
+        assert result.fail_reason == "dns_error"
+
+    def test_other_connection_failures_stay_network_error(self, dns_fetcher):
+        result = dns_fetcher.fetch("https://refused.test/", same_company_only=True)
+        assert result.fail_reason == "network_error"
+
+    @pytest.fixture
+    def live_fetcher(self, tmp_path, monkeypatch):
+        def refuse(request):
+            raise httpx.ConnectError("connection failed", request=request)
+
+        fetcher = Fetcher(
+            replay_store=ReplayStore(tmp_path / "unused", mode="record"),
+            denylist_domains=[],
+            user_agent="TestBot/1.0",
+            timeout_seconds=15,
+            max_bytes=2_000_000,
+        )
+        monkeypatch.setattr(fetcher, "_http", httpx.Client(transport=httpx.MockTransport(refuse)))
+        return fetcher
+
+    def test_live_connection_failure_on_an_unresolvable_host_is_recorded_as_dns_failure(
+        self, live_fetcher, monkeypatch
+    ):
+        def no_such_host(*args, **kwargs):
+            raise socket.gaierror(11001, "getaddrinfo failed")
+
+        monkeypatch.setattr(socket, "getaddrinfo", no_such_host)
+        assert live_fetcher._live_get("https://nxdomain.test/") == DNS_FAILED
+        assert live_fetcher._live_robots("https://nxdomain.test/robots.txt") == DNS_FAILED
+
+    def test_live_connection_failure_on_a_resolvable_host_is_not_a_dns_failure(self, live_fetcher, monkeypatch):
+        monkeypatch.setattr(socket, "getaddrinfo", lambda *args, **kwargs: [("fake",)])
+        assert live_fetcher._live_get("https://refused.test/") == CONNECT_FAILED

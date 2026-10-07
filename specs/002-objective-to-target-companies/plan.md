@@ -18,7 +18,9 @@ Manager Review → markdown demo report.
   - a result that is itself a company homepage becomes a candidate directly;
   - on listing pages, only links to other domains count as company websites, with one budgeted hop
     from a directory profile page to the company's site;
-  - companies on official registry pages with no website are kept as registry-only records.
+  - companies on official registry pages with no website are kept as registry-only records;
+  - queries target the metros, results are read round-robin across queries, and candidates are
+    ranked by their match to the first position before the cap of 10 (FR-022, research R19).
 - **Verification**:
   - checks that each company's own website loads, and cites its homepage for the company name;
   - sends registry-only companies to needs verification;
@@ -132,6 +134,22 @@ Raised as requested; each comes with the resolution taken in this plan.
    - **Conflict**: The constitution requires user approval before code.
    - **Resolution**: `/speckit-tasks` must include an approval checkpoint after the test tasks and
      before the implementation tasks.
+7. **Changes after the first live run (2026-10-07, `run_20261007T140925`)**. Four clarifications
+   (spec, Session 2026-10-07 after the live run) change the design:
+   - **Discovery targeting** (FR-022, research R19): metro-ordered queries, round-robin result
+     reading, and ranking before the cap. `ListingExtraction` and `HomepageIdentity` gain three
+     ranking fields.
+   - **Blocked websites** (FR-008, research R4): `unreadable` (needs verification) is split from
+     `fails` (exclude), and the fetcher reports `dns_error`.
+   - **Headquarters outside the metros** (research R5): an unlisted city is `not_met`.
+   - **Name–domain mismatch** (research R4): recorded as `nameMatchesDomain`, and the reason names
+     both the website and the company.
+   - **Flag, the place lists**: R5 previously relied on "an unlisted city is only unknown" so that gaps
+     in the place lists could not exclude anyone. That protection is gone. `config/metros.yaml` must
+     list every Census place in each CSA, keyed by state, before the next live run (T052).
+   - **Flag, the real recordings (Constitution IV)**: `ListingExtraction`, `HomepageIdentity`, and
+     `CompanyEvidence` (parent-size claims, research R6) change shape. Their real recordings must be
+     made again with keys (T085), or the adapter contract tests fail.
 
 ## Project Structure
 
@@ -140,12 +158,12 @@ Raised as requested; each comes with the resolution taken in this plan.
 ```text
 specs/002-objective-to-target-companies/
 ├── plan.md              # This file
-├── research.md          # Phase 0 decisions R1–R18
+├── research.md          # Phase 0 decisions R1–R19
 ├── data-model.md        # Firestore collections, validation, state transitions
 ├── quickstart.md        # Setup, hermetic tests, live run, validation scenarios
 ├── contracts/
 │   ├── cli.md           # hipstraw-mm commands, exit codes, --json shape
-│   ├── llm-outputs.md   # The five structured model calls, discovery rules, identifier check
+│   ├── llm-outputs.md   # The five structured model calls, discovery rules and ranking, signal searches, identifier check
 │   ├── config.md        # Program, run, metros, source policy, first-position files
 │   └── demo-report.md   # Markdown report sections
 ├── checklists/requirements.md

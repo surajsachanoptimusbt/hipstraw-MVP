@@ -1,0 +1,174 @@
+# T049: the `us1_targeting` replay scenario (FR-022, research R19). Discovery only: the test runs
+# intake, candidates, position, and discover, so there are no verify recordings.
+#
+#     python tests/fixtures/build_fixtures.py us1_targeting
+#
+# It reproduces the first live run's failure (run_20261007T140925): an alphabetical A-Z directory whose
+# first entries are off-target. Every company, page, and domain is fictional on a `.test` domain.
+#
+# The model plans the generic A-Z query first; the system must order the metro queries ahead of it.
+# 19 candidates are found. Ranking (metroMatch, then positionMatch, then website) must keep exactly:
+#   in + strong (9):  Agate Billing, Birch Payables, Cobalt Contracts, Yarrow Spend (A-Z directory),
+#                     Fennel Invoice, Garnet Procure (Atlanta list), Hazel Spend, Iris Ledger (Bay Area),
+#                     Juniper Payables (New York)
+#   in + partial (1): Lupine Labs (Atlanta list), which takes the tenth place
+# and drop 9: Aardvark Rides, Abacus Arcade, Quartz Retail, Zinnia Pets (out, weak); Acorn Freight
+# (the model says in + strong, but its cited "Buffalo, NY" is outside the metros); Adder Analytics and
+# Albatross Apps (no location); Nimbus Ledger (the model claims "Atlanta, GA", but that is not in its
+# excerpt; it is Agate's location); Kestrel AP (in, weak).
+# If either of the Acorn or Nimbus checks were missing, that company would rank in + strong and push
+# Lupine Labs out, so the test can tell.
+#
+# Page caps (added at the T051 review; the test config sets listingPagesPerSite: 2 and
+# listingPagesPerQuery: 3). Reading order after the query reordering: Atlanta, Bay Area, New York,
+# then A-Z. The two extra A-Z pages (?page=2, ?page=3) are skipped because list.example.test already
+# has 2 pages; the fourth Atlanta result (atl-biz.test) is skipped because the Atlanta query already
+# has 3. None of the three has a recording, so reading one would fail the run. The two Atlanta pages
+# that are read (atl-weekly.test, atl-tech.test) name no companies.
+#
+# The company websites are never fetched in this scenario, so they have no pages.
+
+candidateId: invoice_alpha_genesis__saas_recurring_fees
+runId: run_20261007T101500
+fetchedAt: "2026-10-07T10:15:00+00:00"
+model: test-model
+
+queries:
+  - query: software companies A to Z
+    purpose: A generic directory of software companies
+    results:
+      - url: https://list.example.test/software-a-z
+        title: Software companies A to Z
+        snippet: Every software company, sorted by name.
+      - url: https://list.example.test/software-a-z?page=2
+        title: Software companies A to Z, page 2
+        snippet: Skipped by the per-site cap.
+      - url: https://list.example.test/software-a-z?page=3
+        title: Software companies A to Z, page 3
+        snippet: Skipped by the per-site cap.
+  - query: Atlanta B2B SaaS startups
+    purpose: Lists of B2B SaaS startups in the Atlanta metro
+    results:
+      - url: https://list.example.test/atlanta-startups
+        title: Atlanta B2B SaaS startups
+        snippet: B2B SaaS startups in and around Atlanta.
+      - url: https://atl-weekly.test/saas-roundup
+        title: Atlanta SaaS roundup
+        snippet: Events for Atlanta SaaS founders.
+      - url: https://atl-tech.test/startup-map
+        title: Atlanta startup map
+        snippet: A map of Atlanta startup meetups.
+      - url: https://atl-biz.test/top-saas
+        title: Top Atlanta SaaS
+        snippet: Skipped by the per-query cap.
+  - query: San Francisco Bay Area SaaS startups
+    purpose: Local press lists of Bay Area SaaS startups
+    results:
+      - url: https://news.example.test/bay-area-saas-2026
+        title: Bay Area SaaS startups to watch in 2026
+        snippet: Bay Area SaaS startups to watch.
+  - query: New York SaaS companies to watch
+    purpose: Local press lists of New York SaaS companies
+    results:
+      - url: https://news.example.test/new-york-saas-2026
+        title: New York SaaS companies to watch
+        snippet: New York SaaS companies to watch.
+
+pages:
+  https://list.example.test/software-a-z:
+    html: |
+      <h1>Software companies A to Z</h1>
+      <p>A fictional test directory of software companies, sorted by name.</p>
+      <ul>
+        <li>Aardvark Rides: ride-sharing app for commuters. HQ Dallas, TX. <a href="https://aardvark-rides.test/">Website</a></li>
+        <li>Abacus Arcade: mobile games studio. HQ Austin, Texas. <a href="https://abacus-arcade.test/">Website</a></li>
+        <li>Acorn Freight: trucking marketplace for shippers. HQ Buffalo, NY. <a href="https://acorn-freight.test/">Website</a></li>
+        <li>Adder Analytics: B2B SaaS analytics for finance teams. <a href="https://adder-analytics.test/">Website</a></li>
+        <li>Agate Billing: subscription billing SaaS for B2B companies. HQ Atlanta, GA. <a href="https://agate-billing.test/">Website</a></li>
+        <li>Albatross Apps: consumer photo-sharing app. <a href="https://albatross-apps.test/">Website</a></li>
+        <li>Birch Payables: accounts payable SaaS for growing teams. HQ Marietta, GA. <a href="https://birch-payables.test/">Website</a></li>
+        <li>Cobalt Contracts: contract management SaaS for finance teams. HQ New York, NY. <a href="https://cobalt-contracts.test/">Website</a></li>
+        <li>Nimbus Ledger: AP automation SaaS for mid-sized companies. <a href="https://nimbus-ledger.test/">Website</a></li>
+        <li>Quartz Retail: chain of home goods stores. HQ Plano, TX. <a href="https://quartz-retail.test/">Website</a></li>
+        <li>Yarrow Spend: spend management SaaS for B2B teams. HQ Oakland, CA. <a href="https://yarrow-spend.test/">Website</a></li>
+        <li>Zinnia Pets: online pet supplies store. HQ Dallas, TX. <a href="https://zinnia-pets.test/">Website</a></li>
+      </ul>
+
+  https://list.example.test/atlanta-startups:
+    html: |
+      <h1>Atlanta B2B SaaS startups</h1>
+      <ul>
+        <li>Fennel Invoice, Atlanta, GA: invoice reconciliation SaaS for finance teams. <a href="https://fennel-invoice.test/">fennel-invoice.test</a></li>
+        <li>Garnet Procure, Alpharetta, GA: procurement SaaS for mid-sized companies. <a href="https://garnet-procure.test/">garnet-procure.test</a></li>
+        <li>Lupine Labs, Atlanta, GA: data tools for finance and engineering teams. <a href="https://lupine-labs.test/">lupine-labs.test</a></li>
+      </ul>
+
+  https://atl-weekly.test/saas-roundup:
+    html: |
+      <h1>Atlanta SaaS roundup</h1>
+      <p>This week: three meetups for founders and a panel on pricing.</p>
+
+  https://atl-tech.test/startup-map:
+    html: |
+      <h1>Atlanta startup map</h1>
+      <p>Meetups by neighborhood: Midtown, Buckhead, and Old Fourth Ward.</p>
+
+  https://news.example.test/bay-area-saas-2026:
+    html: |
+      <h1>Bay Area SaaS startups to watch in 2026</h1>
+      <p>Hazel Spend (San Francisco, CA) builds spend controls for SaaS-heavy finance teams. <a href="https://hazel-spend.test/">Hazel Spend</a></p>
+      <p>Iris Ledger (Palo Alto, CA) automates vendor invoice matching for subscription businesses. <a href="https://iris-ledger.test/">Iris Ledger</a></p>
+
+  https://news.example.test/new-york-saas-2026:
+    html: |
+      <h1>New York SaaS companies to watch</h1>
+      <p>Juniper Payables, based in New York, NY, sells accounts payable software to mid-market firms. <a href="https://juniper-payables.test/">Juniper Payables</a></p>
+      <p>Kestrel AP, based in Brooklyn, NY, runs a consumer budgeting app. <a href="https://kestrel-ap.test/">Kestrel AP</a></p>
+
+# ListingExtraction responses with the ranking fields (contracts/llm-outputs.md §2). `metroMatch` is
+# the model's own answer; the system checks it against the excerpt and the metro place lists.
+listings:
+  https://list.example.test/software-a-z:
+    - {name: Aardvark Rides, link: "https://aardvark-rides.test/", location: "Dallas, TX", metroMatch: out, positionMatch: weak,
+       excerpt: "Aardvark Rides: ride-sharing app for commuters. HQ Dallas, TX."}
+    - {name: Abacus Arcade, link: "https://abacus-arcade.test/", location: "Austin, Texas", metroMatch: out, positionMatch: weak,
+       excerpt: "Abacus Arcade: mobile games studio. HQ Austin, Texas."}
+    - {name: Acorn Freight, link: "https://acorn-freight.test/", location: "Buffalo, NY", metroMatch: in, positionMatch: strong,
+       excerpt: "Acorn Freight: trucking marketplace for shippers. HQ Buffalo, NY."}
+    - {name: Adder Analytics, link: "https://adder-analytics.test/", location: null, metroMatch: unknown, positionMatch: strong,
+       excerpt: "Adder Analytics: B2B SaaS analytics for finance teams."}
+    - {name: Agate Billing, link: "https://agate-billing.test/", location: "Atlanta, GA", metroMatch: in, positionMatch: strong,
+       excerpt: "Agate Billing: subscription billing SaaS for B2B companies. HQ Atlanta, GA."}
+    - {name: Albatross Apps, link: "https://albatross-apps.test/", location: null, metroMatch: unknown, positionMatch: weak,
+       excerpt: "Albatross Apps: consumer photo-sharing app."}
+    - {name: Birch Payables, link: "https://birch-payables.test/", location: "Marietta, GA", metroMatch: in, positionMatch: strong,
+       excerpt: "Birch Payables: accounts payable SaaS for growing teams. HQ Marietta, GA."}
+    - {name: Cobalt Contracts, link: "https://cobalt-contracts.test/", location: "New York, NY", metroMatch: in, positionMatch: strong,
+       excerpt: "Cobalt Contracts: contract management SaaS for finance teams. HQ New York, NY."}
+    - {name: Nimbus Ledger, link: "https://nimbus-ledger.test/", location: "Atlanta, GA", metroMatch: in, positionMatch: strong,
+       excerpt: "Nimbus Ledger: AP automation SaaS for mid-sized companies."}
+    - {name: Quartz Retail, link: "https://quartz-retail.test/", location: "Plano, TX", metroMatch: out, positionMatch: weak,
+       excerpt: "Quartz Retail: chain of home goods stores. HQ Plano, TX."}
+    - {name: Yarrow Spend, link: "https://yarrow-spend.test/", location: "Oakland, CA", metroMatch: in, positionMatch: strong,
+       excerpt: "Yarrow Spend: spend management SaaS for B2B teams. HQ Oakland, CA."}
+    - {name: Zinnia Pets, link: "https://zinnia-pets.test/", location: "Dallas, TX", metroMatch: out, positionMatch: weak,
+       excerpt: "Zinnia Pets: online pet supplies store. HQ Dallas, TX."}
+  https://list.example.test/atlanta-startups:
+    - {name: Fennel Invoice, link: "https://fennel-invoice.test/", location: "Atlanta, GA", metroMatch: in, positionMatch: strong,
+       excerpt: "Fennel Invoice, Atlanta, GA: invoice reconciliation SaaS for finance teams."}
+    - {name: Garnet Procure, link: "https://garnet-procure.test/", location: "Alpharetta, GA", metroMatch: in, positionMatch: strong,
+       excerpt: "Garnet Procure, Alpharetta, GA: procurement SaaS for mid-sized companies."}
+    - {name: Lupine Labs, link: "https://lupine-labs.test/", location: "Atlanta, GA", metroMatch: in, positionMatch: partial,
+       excerpt: "Lupine Labs, Atlanta, GA: data tools for finance and engineering teams."}
+  https://atl-weekly.test/saas-roundup: []
+  https://atl-tech.test/startup-map: []
+  https://news.example.test/bay-area-saas-2026:
+    - {name: Hazel Spend, link: "https://hazel-spend.test/", location: "San Francisco, CA", metroMatch: in, positionMatch: strong,
+       excerpt: "Hazel Spend (San Francisco, CA) builds spend controls for SaaS-heavy finance teams."}
+    - {name: Iris Ledger, link: "https://iris-ledger.test/", location: "Palo Alto, CA", metroMatch: in, positionMatch: strong,
+       excerpt: "Iris Ledger (Palo Alto, CA) automates vendor invoice matching for subscription businesses."}
+  https://news.example.test/new-york-saas-2026:
+    - {name: Juniper Payables, link: "https://juniper-payables.test/", location: "New York, NY", metroMatch: in, positionMatch: strong,
+       excerpt: "Juniper Payables, based in New York, NY, sells accounts payable software to mid-market firms."}
+    - {name: Kestrel AP, link: "https://kestrel-ap.test/", location: "Brooklyn, NY", metroMatch: in, positionMatch: weak,
+       excerpt: "Kestrel AP, based in Brooklyn, NY, runs a consumer budgeting app."}

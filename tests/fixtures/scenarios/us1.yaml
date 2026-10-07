@@ -1,0 +1,529 @@
+# T049: the `us1` replay scenario: complete company records (US1 acceptance scenarios 1-8), the
+# parent-company check (T053), signal searches (T056), confidence (T054), and cited-ID validation
+# (T065).
+#
+#     python tests/fixtures/build_fixtures.py us1
+#
+# Every company, person, page, and domain is fictional on a `.test` domain (Constitution IX).
+#
+#   Palisade Ledger   Palo Alto, CA; exploration signal; press quote naming a person;
+#                     also names a New York sales office, which is not its headquarters -> include
+#   Quarry Spend      450 employees (about) and 620 (press)                          -> needs_verification
+#   Ridge Books       no interest signal                                             -> needs_verification
+#   Saffron Bill      sourced AP-hiring signal; unsourced "heavy recurring SaaS spend"
+#                     signal (A1, dropped); a fit excerpt holding an email address     -> include
+#   Tamarack AP       its only signal is on a job-board page found by a signal search  -> include
+#   Umber Freight     listed as New York, but its own site cites Buffalo, NY           -> exclude
+#   Vetch Payments    subsidiary of Omega Conglomerate (on largeEnterpriseParents)     -> exclude
+#   Willow Invoice    part of the Pelican Group, size unknown                         -> needs_verification
+#   Xenon Contracts   subsidiary of Heron Holdings, cited with 12,000 employees        -> exclude
+#   Yucca Procure     its judgement cites an evidence ID that does not exist           -> needs_verification
+#
+# Recordings that are deliberately absent, so calling them raises ReplayMissingError:
+#   - any fetch of the denylisted jobs.linkedin.com result;
+#   - ReviewJudgement for every company the rule gate decides (Quarry, Ridge, Umber, Vetch, Willow,
+#     Xenon).
+
+candidateId: invoice_alpha_genesis__saas_recurring_fees
+runId: run_20261007T101500
+fetchedAt: "2026-10-07T10:15:00+00:00"
+model: test-model
+
+queries:
+  - query: San Francisco Bay Area SaaS companies hiring finance staff
+    purpose: Bay Area SaaS companies with growing finance teams
+    results:
+      - url: https://list.example.test/bay-area-finance-saas
+        title: Bay Area SaaS companies hiring finance staff
+        snippet: SaaS companies in the Bay Area that are growing their finance teams.
+  - query: New York SaaS companies list
+    purpose: Local press lists of New York SaaS companies
+    results:
+      - url: https://news.example.test/ny-saas-list
+        title: New York SaaS companies
+        snippet: A list of New York SaaS companies.
+
+pages:
+  https://list.example.test/bay-area-finance-saas:
+    html: |
+      <h1>Bay Area SaaS companies hiring finance staff</h1>
+      <ul>
+        <li>Palisade Ledger, Palo Alto, CA: matches vendor invoices to contracts. <a href="https://palisade-ledger.test/">Website</a></li>
+        <li>Quarry Spend, San Jose, CA: spend management for SaaS buyers. <a href="https://quarry-spend.test/">Website</a></li>
+        <li>Ridge Books, San Francisco, CA: bookkeeping software for agencies. <a href="https://ridge-books.test/">Website</a></li>
+        <li>Saffron Bill, Oakland, CA: recurring billing for B2B services. <a href="https://saffron-bill.test/">Website</a></li>
+        <li>Willow Invoice, San Francisco, CA: invoice approval workflows. <a href="https://willow-invoice.test/">Website</a></li>
+      </ul>
+
+  https://news.example.test/ny-saas-list:
+    html: |
+      <h1>New York SaaS companies</h1>
+      <p>Tamarack AP, New York, NY: accounts payable software for agencies. <a href="https://tamarack-ap.test/">Tamarack AP</a></p>
+      <p>Umber Freight, New York, NY: freight invoice auditing software. <a href="https://umber-freight.test/">Umber Freight</a></p>
+      <p>Vetch Payments, New York, NY: vendor payment software. <a href="https://vetch-payments.test/">Vetch Payments</a></p>
+      <p>Xenon Contracts, Jersey City, NJ: contract management for procurement teams. <a href="https://xenon-contracts.test/">Xenon Contracts</a></p>
+      <p>Yucca Procure, Brooklyn, NY: procurement software for SaaS renewals. <a href="https://yucca-procure.test/">Yucca Procure</a></p>
+
+  # Palisade Ledger
+  https://palisade-ledger.test/:
+    html: |
+      <h1>Palisade Ledger</h1>
+      <p>Palisade Ledger matches vendor invoices to contracts for subscription businesses.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+      <a href="/press">Press</a>
+  https://palisade-ledger.test/about:
+    html: |
+      <h1>About Palisade Ledger</h1>
+      <p>Palisade Ledger is headquartered in Palo Alto, CA.</p>
+      <p>We also have a sales office in New York, NY.</p>
+      <p>Palisade Ledger has 75 employees.</p>
+  https://palisade-ledger.test/careers:
+    html: |
+      <h1>Careers at Palisade Ledger</h1>
+      <p>Palisade Ledger is exploring AI agents to match vendor invoices against contract terms.</p>
+  https://palisade-ledger.test/press:
+    html: |
+      <h1>Press</h1>
+      <p>"Our customers lose money to invoice drift every month," said Dana Whitfield, chief financial officer of Palisade Ledger.</p>
+
+  # Quarry Spend
+  https://quarry-spend.test/:
+    html: |
+      <h1>Quarry Spend</h1>
+      <p>Quarry Spend helps SaaS buyers control their spend.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+      <a href="/news">News</a>
+  https://quarry-spend.test/about:
+    html: |
+      <h1>About Quarry Spend</h1>
+      <p>Quarry Spend is headquartered in San Jose, CA.</p>
+      <p>Quarry Spend has 450 employees.</p>
+  https://quarry-spend.test/careers:
+    html: |
+      <h1>Careers</h1>
+      <p>Quarry Spend is hiring an Accounts Payable Analyst.</p>
+  https://quarry-spend.test/news:
+    html: |
+      <h1>News</h1>
+      <p>Quarry Spend now employs 620 people across three offices.</p>
+
+  # Ridge Books
+  https://ridge-books.test/:
+    html: |
+      <h1>Ridge Books</h1>
+      <p>Ridge Books is bookkeeping software for creative agencies.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+  https://ridge-books.test/about:
+    html: |
+      <h1>About Ridge Books</h1>
+      <p>Ridge Books is headquartered in San Francisco, CA.</p>
+      <p>Ridge Books has 90 employees.</p>
+      <p>Our customers are agency owners and their finance leads.</p>
+  https://ridge-books.test/careers:
+    html: |
+      <h1>Careers</h1>
+      <p>Ridge Books is hiring a Senior Backend Engineer.</p>
+
+  # Saffron Bill
+  https://saffron-bill.test/:
+    html: |
+      <h1>Saffron Bill</h1>
+      <p>Saffron Bill runs recurring billing for B2B services firms.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+  https://saffron-bill.test/about:
+    html: |
+      <h1>About Saffron Bill</h1>
+      <p>Saffron Bill is headquartered in Oakland, CA.</p>
+      <p>Saffron Bill has 60 employees.</p>
+      <p>Contact our finance team at finance@saffron-bill.test with vendor questions.</p>
+  https://saffron-bill.test/careers:
+    html: |
+      <h1>Careers</h1>
+      <p>Saffron Bill is hiring an Accounts Payable Specialist to review vendor invoices.</p>
+
+  # Tamarack AP: no careers page; its signal comes from a job board, found by a signal search.
+  https://tamarack-ap.test/:
+    html: |
+      <h1>Tamarack AP</h1>
+      <p>Tamarack AP builds accounts payable software for agencies.</p>
+      <a href="/about">About</a>
+  https://tamarack-ap.test/about:
+    html: |
+      <h1>About Tamarack AP</h1>
+      <p>Tamarack AP is headquartered in New York, NY.</p>
+      <p>Tamarack AP has 120 employees.</p>
+  https://jobs.example.test/tamarack-ap/accounts-payable-specialist:
+    html: |
+      <h1>Accounts Payable Specialist at Tamarack AP</h1>
+      <p>Tamarack AP is hiring an Accounts Payable Specialist to process recurring vendor invoices.</p>
+      <p>Location: New York, NY.</p>
+
+  # Umber Freight
+  https://umber-freight.test/:
+    html: |
+      <h1>Umber Freight</h1>
+      <p>Umber Freight audits freight invoices for shippers.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+  https://umber-freight.test/about:
+    html: |
+      <h1>About Umber Freight</h1>
+      <p>Umber Freight is headquartered in Buffalo, NY.</p>
+      <p>Umber Freight has 150 employees.</p>
+  https://umber-freight.test/careers:
+    html: |
+      <h1>Careers</h1>
+      <p>Umber Freight is hiring an Accounts Payable Clerk to audit carrier invoices.</p>
+
+  # Vetch Payments
+  https://vetch-payments.test/:
+    html: |
+      <h1>Vetch Payments</h1>
+      <p>Vetch Payments pays vendors on schedule.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+  https://vetch-payments.test/about:
+    html: |
+      <h1>About Vetch Payments</h1>
+      <p>Vetch Payments is headquartered in New York, NY.</p>
+      <p>Vetch Payments has 200 employees.</p>
+      <p>Vetch Payments is a subsidiary of Omega Conglomerate.</p>
+  https://vetch-payments.test/careers:
+    html: |
+      <h1>Careers</h1>
+      <p>Vetch Payments is hiring a Procurement Analyst to review vendor contracts.</p>
+
+  # Willow Invoice
+  https://willow-invoice.test/:
+    html: |
+      <h1>Willow Invoice</h1>
+      <p>Willow Invoice routes invoices for approval.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+  https://willow-invoice.test/about:
+    html: |
+      <h1>About Willow Invoice</h1>
+      <p>Willow Invoice is headquartered in San Francisco, CA.</p>
+      <p>Willow Invoice has 110 employees.</p>
+      <p>Willow Invoice is part of the Pelican Group.</p>
+  https://willow-invoice.test/careers:
+    html: |
+      <h1>Careers</h1>
+      <p>Willow Invoice is hiring an Accounts Payable Lead to manage vendor invoices.</p>
+
+  # Xenon Contracts
+  https://xenon-contracts.test/:
+    html: |
+      <h1>Xenon Contracts</h1>
+      <p>Xenon Contracts manages supplier contracts for procurement teams.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+  https://xenon-contracts.test/about:
+    html: |
+      <h1>About Xenon Contracts</h1>
+      <p>Xenon Contracts is headquartered in Jersey City, NJ.</p>
+      <p>Xenon Contracts has 95 employees.</p>
+      <p>Xenon Contracts is a subsidiary of Heron Holdings, which employs 12,000 people.</p>
+  https://xenon-contracts.test/careers:
+    html: |
+      <h1>Careers</h1>
+      <p>Xenon Contracts is hiring a Procurement Specialist to track supplier invoices.</p>
+
+  # Yucca Procure
+  https://yucca-procure.test/:
+    html: |
+      <h1>Yucca Procure</h1>
+      <p>Yucca Procure manages SaaS renewals for procurement teams.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+  https://yucca-procure.test/about:
+    html: |
+      <h1>About Yucca Procure</h1>
+      <p>Yucca Procure is headquartered in Brooklyn, NY.</p>
+      <p>Yucca Procure has 30 employees.</p>
+  https://yucca-procure.test/careers:
+    html: |
+      <h1>Careers</h1>
+      <p>Yucca Procure is hiring a Procurement Coordinator to manage SaaS renewals.</p>
+
+listings:
+  https://list.example.test/bay-area-finance-saas:
+    - {name: Palisade Ledger, link: "https://palisade-ledger.test/", location: "Palo Alto, CA", metroMatch: in, positionMatch: strong,
+       excerpt: "Palisade Ledger, Palo Alto, CA: matches vendor invoices to contracts."}
+    - {name: Quarry Spend, link: "https://quarry-spend.test/", location: "San Jose, CA", metroMatch: in, positionMatch: strong,
+       excerpt: "Quarry Spend, San Jose, CA: spend management for SaaS buyers."}
+    - {name: Ridge Books, link: "https://ridge-books.test/", location: "San Francisco, CA", metroMatch: in, positionMatch: partial,
+       excerpt: "Ridge Books, San Francisco, CA: bookkeeping software for agencies."}
+    - {name: Saffron Bill, link: "https://saffron-bill.test/", location: "Oakland, CA", metroMatch: in, positionMatch: strong,
+       excerpt: "Saffron Bill, Oakland, CA: recurring billing for B2B services."}
+    - {name: Willow Invoice, link: "https://willow-invoice.test/", location: "San Francisco, CA", metroMatch: in, positionMatch: strong,
+       excerpt: "Willow Invoice, San Francisco, CA: invoice approval workflows."}
+  https://news.example.test/ny-saas-list:
+    - {name: Tamarack AP, link: "https://tamarack-ap.test/", location: "New York, NY", metroMatch: in, positionMatch: strong,
+       excerpt: "Tamarack AP, New York, NY: accounts payable software for agencies."}
+    - {name: Umber Freight, link: "https://umber-freight.test/", location: "New York, NY", metroMatch: in, positionMatch: partial,
+       excerpt: "Umber Freight, New York, NY: freight invoice auditing software."}
+    - {name: Vetch Payments, link: "https://vetch-payments.test/", location: "New York, NY", metroMatch: in, positionMatch: strong,
+       excerpt: "Vetch Payments, New York, NY: vendor payment software."}
+    - {name: Xenon Contracts, link: "https://xenon-contracts.test/", location: "Jersey City, NJ", metroMatch: in, positionMatch: strong,
+       excerpt: "Xenon Contracts, Jersey City, NJ: contract management for procurement teams."}
+    - {name: Yucca Procure, link: "https://yucca-procure.test/", location: "Brooklyn, NY", metroMatch: in, positionMatch: strong,
+       excerpt: "Yucca Procure, Brooklyn, NY: procurement software for SaaS renewals."}
+
+# Signal searches (verify step, research R7). Tamarack AP's first search finds a job-board page and a
+# denylisted LinkedIn job, which is never fetched; every other search returns nothing.
+signalSearches:
+  '"Tamarack AP" accounts payable OR procurement job':
+    - url: https://jobs.linkedin.com/view/tamarack-ap-accounts-payable
+      title: Accounts Payable Specialist | LinkedIn
+      snippet: Denylisted; never fetched.
+    - url: https://jobs.example.test/tamarack-ap/accounts-payable-specialist
+      title: Accounts Payable Specialist at Tamarack AP
+      snippet: Process recurring vendor invoices.
+noSignalResults:
+  - {name: Palisade Ledger, domain: palisade-ledger.test}
+  - {name: Quarry Spend, domain: quarry-spend.test}
+  - {name: Ridge Books, domain: ridge-books.test}
+  - {name: Saffron Bill, domain: saffron-bill.test}
+  - {name: Tamarack AP, domain: tamarack-ap.test}
+  - {name: Umber Freight, domain: umber-freight.test}
+  - {name: Vetch Payments, domain: vetch-payments.test}
+  - {name: Willow Invoice, domain: willow-invoice.test}
+  - {name: Xenon Contracts, domain: xenon-contracts.test}
+  - {name: Yucca Procure, domain: yucca-procure.test}
+
+# CompanyEvidence responses. `pages`: the homepage, then own-site pages in homepage link order, then
+# third-party pages from the signal searches.
+evidence:
+  palisade-ledger.test:
+    pages: [https://palisade-ledger.test/, https://palisade-ledger.test/about, https://palisade-ledger.test/careers,
+            https://palisade-ledger.test/press]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "Palo Alto, CA", page: https://palisade-ledger.test/about, verbatim: true,
+         excerpt: "Palisade Ledger is headquartered in Palo Alto, CA."}
+      - {claimId: c2, claimField: employees, claimValue: "75", page: https://palisade-ledger.test/about, verbatim: true,
+         excerpt: "Palisade Ledger has 75 employees."}
+      - {claimId: c3, claimField: signal_exploration, claimValue: "AI agents for invoice matching",
+         page: https://palisade-ledger.test/careers, verbatim: true,
+         excerpt: "Palisade Ledger is exploring AI agents to match vendor invoices against contract terms."}
+      - {claimId: c4, claimField: fit_problem, claimValue: "invoice drift", page: https://palisade-ledger.test/press, verbatim: true,
+         excerpt: '"Our customers lose money to invoice drift every month," said Dana Whitfield, chief financial officer of Palisade Ledger.'}
+    fitClaims:
+      - aspect: problem
+        statement: Palisade Ledger sees invoice drift as a monthly cost.
+        primaryInterestIds: [invoice_accuracy_entitlement]
+        claimIds: [c4]
+    interestSignals:
+      - {kind: exploration, statement: Exploring AI agents to match vendor invoices against contracts., claimIds: [c3]}
+    falsifier: Palisade Ledger is a subsidiary of a large enterprise, or has 500 or more employees.
+
+  quarry-spend.test:
+    pages: [https://quarry-spend.test/, https://quarry-spend.test/about, https://quarry-spend.test/careers,
+            https://quarry-spend.test/news]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "San Jose, CA", page: https://quarry-spend.test/about, verbatim: true,
+         excerpt: "Quarry Spend is headquartered in San Jose, CA."}
+      - {claimId: c2, claimField: employees, claimValue: "450", page: https://quarry-spend.test/about, verbatim: true,
+         excerpt: "Quarry Spend has 450 employees."}
+      - {claimId: c3, claimField: employees, claimValue: "620", page: https://quarry-spend.test/news, verbatim: true,
+         excerpt: "Quarry Spend now employs 620 people across three offices."}
+      - {claimId: c4, claimField: signal_pain, claimValue: "Accounts Payable Analyst hiring",
+         page: https://quarry-spend.test/careers, verbatim: true,
+         excerpt: "Quarry Spend is hiring an Accounts Payable Analyst."}
+    fitClaims:
+      - aspect: trigger
+        statement: Quarry Spend is adding accounts payable staff.
+        primaryInterestIds: [invoice_accuracy_entitlement]
+        claimIds: [c4]
+    interestSignals:
+      - {kind: pain, statement: Hiring an Accounts Payable Analyst., claimIds: [c4]}
+    falsifier: Quarry Spend has 500 or more employees.
+
+  ridge-books.test:
+    pages: [https://ridge-books.test/, https://ridge-books.test/about, https://ridge-books.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "San Francisco, CA", page: https://ridge-books.test/about, verbatim: true,
+         excerpt: "Ridge Books is headquartered in San Francisco, CA."}
+      - {claimId: c2, claimField: employees, claimValue: "90", page: https://ridge-books.test/about, verbatim: true,
+         excerpt: "Ridge Books has 90 employees."}
+      - {claimId: c3, claimField: fit_buyer, claimValue: "agency finance leads", page: https://ridge-books.test/about, verbatim: true,
+         excerpt: "Our customers are agency owners and their finance leads."}
+    fitClaims:
+      - aspect: buyer
+        statement: Ridge Books sells to agency owners and their finance leads.
+        primaryInterestIds: [continuous_obligation_intelligence]
+        claimIds: [c3]
+    interestSignals: []
+    falsifier: Ridge Books shows no sign of invoice or spend pain.
+
+  saffron-bill.test:
+    pages: [https://saffron-bill.test/, https://saffron-bill.test/about, https://saffron-bill.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "Oakland, CA", page: https://saffron-bill.test/about, verbatim: true,
+         excerpt: "Saffron Bill is headquartered in Oakland, CA."}
+      - {claimId: c2, claimField: employees, claimValue: "60", page: https://saffron-bill.test/about, verbatim: true,
+         excerpt: "Saffron Bill has 60 employees."}
+      - {claimId: c3, claimField: signal_pain, claimValue: "Accounts Payable Specialist hiring",
+         page: https://saffron-bill.test/careers, verbatim: true,
+         excerpt: "Saffron Bill is hiring an Accounts Payable Specialist to review vendor invoices."}
+      # A1: a plausible spend claim that the page does not say.
+      - {claimId: c4, claimField: signal_pain, claimValue: "heavy recurring SaaS spend",
+         page: https://saffron-bill.test/about, verbatim: false,
+         excerpt: "Saffron Bill has heavy recurring SaaS spend."}
+      # Verbatim, but holds an email address, so it fails with contains_contact_data (FR-018).
+      - {claimId: c5, claimField: fit_buyer, claimValue: "finance team", page: https://saffron-bill.test/about, verbatim: false,
+         excerpt: "Contact our finance team at finance@saffron-bill.test with vendor questions."}
+      - {claimId: c6, claimField: fit_problem, claimValue: "vendor invoices to review",
+         page: https://saffron-bill.test/careers, verbatim: true,
+         excerpt: "Saffron Bill is hiring an Accounts Payable Specialist to review vendor invoices."}
+    fitClaims:
+      - aspect: buyer
+        statement: Saffron Bill's finance team handles vendor questions.
+        primaryInterestIds: [supplier_commercial_position]
+        claimIds: [c5]
+      - aspect: problem
+        statement: Saffron Bill reviews a growing volume of vendor invoices.
+        primaryInterestIds: [invoice_accuracy_entitlement]
+        claimIds: [c6]
+    interestSignals:
+      - {kind: pain, statement: Hiring an Accounts Payable Specialist to review vendor invoices., claimIds: [c3]}
+      - {kind: pain, statement: Heavy recurring SaaS spend., claimIds: [c4]}
+    falsifier: Saffron Bill is a subsidiary of a large enterprise, or has 500 or more employees.
+
+  tamarack-ap.test:
+    pages: [https://tamarack-ap.test/, https://tamarack-ap.test/about,
+            https://jobs.example.test/tamarack-ap/accounts-payable-specialist]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "New York, NY", page: https://tamarack-ap.test/about, verbatim: true,
+         excerpt: "Tamarack AP is headquartered in New York, NY."}
+      - {claimId: c2, claimField: employees, claimValue: "120", page: https://tamarack-ap.test/about, verbatim: true,
+         excerpt: "Tamarack AP has 120 employees."}
+      - {claimId: c3, claimField: signal_pain, claimValue: "Accounts Payable Specialist hiring",
+         page: https://jobs.example.test/tamarack-ap/accounts-payable-specialist, verbatim: true,
+         excerpt: "Tamarack AP is hiring an Accounts Payable Specialist to process recurring vendor invoices."}
+      - {claimId: c4, claimField: fit_trigger, claimValue: "Accounts Payable Specialist hiring",
+         page: https://jobs.example.test/tamarack-ap/accounts-payable-specialist, verbatim: true,
+         excerpt: "Tamarack AP is hiring an Accounts Payable Specialist to process recurring vendor invoices."}
+    fitClaims:
+      - aspect: trigger
+        statement: Tamarack AP is hiring for recurring vendor invoice processing.
+        primaryInterestIds: [invoice_accuracy_entitlement, continuous_obligation_intelligence]
+        claimIds: [c4]
+    interestSignals:
+      - {kind: pain, statement: Hiring an Accounts Payable Specialist for recurring vendor invoices., claimIds: [c3]}
+    falsifier: Tamarack AP is a subsidiary of a large enterprise, or has 500 or more employees.
+
+  umber-freight.test:
+    pages: [https://umber-freight.test/, https://umber-freight.test/about, https://umber-freight.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "Buffalo, NY", page: https://umber-freight.test/about, verbatim: true,
+         excerpt: "Umber Freight is headquartered in Buffalo, NY."}
+      - {claimId: c2, claimField: employees, claimValue: "150", page: https://umber-freight.test/about, verbatim: true,
+         excerpt: "Umber Freight has 150 employees."}
+      - {claimId: c3, claimField: signal_pain, claimValue: "Accounts Payable Clerk hiring",
+         page: https://umber-freight.test/careers, verbatim: true,
+         excerpt: "Umber Freight is hiring an Accounts Payable Clerk to audit carrier invoices."}
+    fitClaims: []
+    interestSignals:
+      - {kind: pain, statement: Hiring an Accounts Payable Clerk., claimIds: [c3]}
+    falsifier: Umber Freight is headquartered outside the metros in force.
+
+  vetch-payments.test:
+    pages: [https://vetch-payments.test/, https://vetch-payments.test/about, https://vetch-payments.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "New York, NY", page: https://vetch-payments.test/about, verbatim: true,
+         excerpt: "Vetch Payments is headquartered in New York, NY."}
+      - {claimId: c2, claimField: employees, claimValue: "200", page: https://vetch-payments.test/about, verbatim: true,
+         excerpt: "Vetch Payments has 200 employees."}
+      - {claimId: c3, claimField: parent, claimValue: "Omega Conglomerate", page: https://vetch-payments.test/about, verbatim: true,
+         excerpt: "Vetch Payments is a subsidiary of Omega Conglomerate."}
+      - {claimId: c4, claimField: signal_pain, claimValue: "Procurement Analyst hiring",
+         page: https://vetch-payments.test/careers, verbatim: true,
+         excerpt: "Vetch Payments is hiring a Procurement Analyst to review vendor contracts."}
+    fitClaims: []
+    interestSignals:
+      - {kind: pain, statement: Hiring a Procurement Analyst., claimIds: [c4]}
+    falsifier: Vetch Payments belongs to a large enterprise.
+
+  willow-invoice.test:
+    pages: [https://willow-invoice.test/, https://willow-invoice.test/about, https://willow-invoice.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "San Francisco, CA", page: https://willow-invoice.test/about, verbatim: true,
+         excerpt: "Willow Invoice is headquartered in San Francisco, CA."}
+      - {claimId: c2, claimField: employees, claimValue: "110", page: https://willow-invoice.test/about, verbatim: true,
+         excerpt: "Willow Invoice has 110 employees."}
+      - {claimId: c3, claimField: parent, claimValue: "Pelican Group", page: https://willow-invoice.test/about, verbatim: true,
+         excerpt: "Willow Invoice is part of the Pelican Group."}
+      - {claimId: c4, claimField: signal_pain, claimValue: "Accounts Payable Lead hiring",
+         page: https://willow-invoice.test/careers, verbatim: true,
+         excerpt: "Willow Invoice is hiring an Accounts Payable Lead to manage vendor invoices."}
+    fitClaims: []
+    interestSignals:
+      - {kind: pain, statement: Hiring an Accounts Payable Lead., claimIds: [c4]}
+    falsifier: Willow Invoice belongs to a large enterprise.
+
+  xenon-contracts.test:
+    pages: [https://xenon-contracts.test/, https://xenon-contracts.test/about, https://xenon-contracts.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "Jersey City, NJ", page: https://xenon-contracts.test/about, verbatim: true,
+         excerpt: "Xenon Contracts is headquartered in Jersey City, NJ."}
+      - {claimId: c2, claimField: employees, claimValue: "95", page: https://xenon-contracts.test/about, verbatim: true,
+         excerpt: "Xenon Contracts has 95 employees."}
+      - {claimId: c3, claimField: parent, claimValue: "Heron Holdings", page: https://xenon-contracts.test/about, verbatim: true,
+         excerpt: "Xenon Contracts is a subsidiary of Heron Holdings, which employs 12,000 people."}
+      - {claimId: c4, claimField: parent_employees, claimValue: "12,000", page: https://xenon-contracts.test/about, verbatim: true,
+         excerpt: "Xenon Contracts is a subsidiary of Heron Holdings, which employs 12,000 people."}
+      - {claimId: c5, claimField: signal_pain, claimValue: "Procurement Specialist hiring",
+         page: https://xenon-contracts.test/careers, verbatim: true,
+         excerpt: "Xenon Contracts is hiring a Procurement Specialist to track supplier invoices."}
+    fitClaims: []
+    interestSignals:
+      - {kind: pain, statement: Hiring a Procurement Specialist., claimIds: [c5]}
+    falsifier: Xenon Contracts belongs to a large enterprise.
+
+  yucca-procure.test:
+    pages: [https://yucca-procure.test/, https://yucca-procure.test/about, https://yucca-procure.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "Brooklyn, NY", page: https://yucca-procure.test/about, verbatim: true,
+         excerpt: "Yucca Procure is headquartered in Brooklyn, NY."}
+      - {claimId: c2, claimField: employees, claimValue: "30", page: https://yucca-procure.test/about, verbatim: true,
+         excerpt: "Yucca Procure has 30 employees."}
+      - {claimId: c3, claimField: signal_pain, claimValue: "Procurement Coordinator hiring",
+         page: https://yucca-procure.test/careers, verbatim: true,
+         excerpt: "Yucca Procure is hiring a Procurement Coordinator to manage SaaS renewals."}
+    fitClaims:
+      - aspect: trigger
+        statement: Yucca Procure is hiring to manage SaaS renewals.
+        primaryInterestIds: [continuous_obligation_intelligence]
+        claimIds: [c3]
+    interestSignals:
+      - {kind: pain, statement: Hiring a Procurement Coordinator for SaaS renewals., claimIds: [c3]}
+    falsifier: Yucca Procure is a subsidiary of a large enterprise, or has 500 or more employees.
+
+# ReviewJudgement responses, only for the records that pass every rule.
+judgements:
+  palisade-ledger-test:
+    falsifierMet: false
+    fitHolds: true
+    citedEvidenceIds: []
+    reason: "Palo Alto company under the size limit, exploring AI agents for invoice matching."
+  saffron-bill-test:
+    falsifierMet: false
+    fitHolds: true
+    citedEvidenceIds: []
+    reason: "Oakland company under the size limit, hiring AP staff to review vendor invoices."
+  tamarack-ap-test:
+    falsifierMet: false
+    fitHolds: true
+    citedEvidenceIds: []
+    reason: "New York company under the size limit, hiring AP staff for recurring vendor invoices."
+  # T065: cites an evidence ID that does not exist, so the system downgrades it.
+  yucca-procure-test:
+    falsifierMet: false
+    fitHolds: true
+    citedEvidenceIds: [ev_run_20261007T101500_9999]
+    reason: "Brooklyn company under the size limit, hiring for SaaS renewals."

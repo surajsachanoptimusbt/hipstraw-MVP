@@ -3,7 +3,7 @@ constraints:
   maxEmployees: 500
   maxRevenueUsd: 100000000
   metroIds: [atlanta, san_francisco, new_york]
-  largeEnterpriseParents: []
+  largeEnterpriseParents: [Omega Conglomerate]   # fictional; used by the us1 scenario
 budgets:
   discoveryQueries: 6
   resultsPerQuery: 10

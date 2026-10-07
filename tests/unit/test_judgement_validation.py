@@ -1,7 +1,7 @@
 """Turning a judgement into a disposition (research R9, contracts/llm-outputs.md §5).
 
-Started in Phase 3 for the rule "include needs at least one passing evidence document"; T060 adds the
-remaining judgement-validation cases.
+Started in Phase 3 for the rule "include needs at least one passing evidence document"; T080 adds the
+cited-ID cases (for T065), and T060 the remaining ones.
 """
 
 from __future__ import annotations
@@ -34,3 +34,20 @@ def test_fit_not_holding_is_needs_verification():
     judgement = FITS.model_copy(update={"fitHolds": False, "reason": "No sign of the problem."})
     disposition, _ = judged_disposition(judgement, ["ev_run_1_0001"])
     assert disposition == "needs_verification"
+
+
+# T080 (for T065, moved to Phase 4 on 2026-10-07): the judgement's cited IDs must all be passing
+# evidence of this record (contracts/llm-outputs.md §5).
+
+
+def test_a_judgement_citing_unknown_evidence_needs_verification():
+    judgement = FITS.model_copy(update={"citedEvidenceIds": ["ev_run_1_0001", "ev_run_1_9999"]})
+    disposition, reason = judged_disposition(judgement, ["ev_run_1_0001", "ev_run_1_0002"])
+    assert disposition == "needs_verification"
+    assert "judgement cited unknown evidence" in reason
+
+
+def test_a_judgement_citing_only_passing_evidence_can_include():
+    judgement = FITS.model_copy(update={"citedEvidenceIds": ["ev_run_1_0002"]})
+    disposition, _ = judged_disposition(judgement, ["ev_run_1_0001", "ev_run_1_0002"])
+    assert disposition == "include"

@@ -1,6 +1,6 @@
 """T009: Unit tests for the excerpt check (research R4, FR-007, FR-018)."""
 
-from hipstraw_mm.evidence.excerpt_check import check_excerpt
+from hipstraw_mm.evidence.excerpt_check import CheckResult, check_excerpt
 
 
 class TestExcerptCheck:
@@ -158,3 +158,47 @@ class TestExcerptCheck:
             claim_value=None,
         )
         assert result.status == "pass"
+
+
+class TestHeadquartersStateNames:
+    """Added at the T051 review (2026-10-07): for a headquarters claim, a US state's two-letter code and
+    its full name are equal when checking that the value appears in the excerpt (FR-007). In the
+    first live run, Addison Health Systems' claim "Addison, TX" failed against "Addison, Texas"."""
+
+    PAGE = (
+        "Addison Health Systems is located in the heart of Addison, Texas. "
+        "Addison is one of the Dallas area's most popular suburbs."
+    )
+    EXCERPT = "Addison Health Systems is located in the heart of Addison, Texas."
+
+    def test_a_code_in_the_claim_matches_the_full_name_in_the_excerpt(self):
+        result = check_excerpt(self.EXCERPT, self.PAGE, "Addison, TX", claim_field="hq")
+        assert result.status == "pass"
+
+    def test_a_full_name_in_the_claim_matches_the_code_in_the_excerpt(self):
+        page = "Visit us at 10 Main Street, Addison, TX 75001."
+        result = check_excerpt("10 Main Street, Addison, TX 75001.", page, "Addison, Texas", claim_field="hq")
+        assert result.status == "pass"
+
+    def test_multi_word_state_names(self):
+        page = "Our headquarters is in Jersey City, New Jersey, near the PATH station."
+        excerpt = "Our headquarters is in Jersey City, New Jersey, near the PATH station."
+        assert check_excerpt(excerpt, page, "Jersey City, NJ", claim_field="hq").status == "pass"
+        page_ny = "Headquarters: New York, NY."
+        assert (
+            check_excerpt("Headquarters: New York, NY.", page_ny, "New York, New York", claim_field="hq").status
+            == "pass"
+        )
+
+    def test_a_different_state_still_fails(self):
+        page = "We are based in Addison, Tennessee."
+        result = check_excerpt("We are based in Addison, Tennessee.", page, "Addison, TX", claim_field="hq")
+        assert result == CheckResult("fail", "value_not_in_excerpt")
+
+    def test_a_different_city_still_fails(self):
+        result = check_excerpt(self.EXCERPT, self.PAGE, "Dallas, TX", claim_field="hq")
+        assert result == CheckResult("fail", "value_not_in_excerpt")
+
+    def test_only_headquarters_claims_get_the_equivalence(self):
+        assert check_excerpt(self.EXCERPT, self.PAGE, "Addison, TX", claim_field="parent").status == "fail"
+        assert check_excerpt(self.EXCERPT, self.PAGE, "Addison, TX").status == "fail"

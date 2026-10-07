@@ -93,12 +93,12 @@ Each CLI step requires the previous status (contracts/cli.md, exit code 2 otherw
 | `runId`, `candidateId` | string | |
 | `name` | string | As written in its origin source |
 | `domain` | string or null | The company's own website domain. Null only for a registry-only company. |
-| `origin` | map | `{kind: listing_link \| profile_hop \| direct_homepage \| registry_only, searchQuery, resultUrl, listingEvidenceId, profileUrl}`: the retrieved source the company came from (FR-006). `profileUrl` is set only for `profile_hop`. |
-| `identifierCheck` | map | `{status: resolves \| fails \| no_website, httpStatus, finalUrl, failReason, checkedAt}` (FR-008). `failReason` is the fetcher's reason (for example `robots_disallowed`) when the website did not load. `resolves` needs a 2xx response from the company's own website, with redirects only within the same company key or its subdomains. `no_website` is used for registry-only companies, which are never fetched. |
+| `origin` | map | `{kind: listing_link \| profile_hop \| direct_homepage \| registry_only, searchQuery, resultUrl, listingEvidenceId, profileUrl, match}`: the retrieved source the company came from (FR-006). `profileUrl` is set only for `profile_hop`. `match` is `{location, metroMatch: in \| out \| unknown, positionMatch: strong \| partial \| weak}`, the ranking inputs after the system's location check (research R19, FR-022). |
+| `identifierCheck` | map | `{status: resolves \| unreadable \| fails \| no_website, httpStatus, finalUrl, failReason, nameMatchesDomain, checkedAt}` (FR-008, research R4). `resolves` needs a 2xx response from the company's own website, with redirects only within the same company key or its subdomains. `fails` means the website does not exist: HTTP 404 or 410, or `failReason: dns_error`. `unreadable` means it exists but could not be read: `robots_disallowed`, HTTP 401, 403, or 429, or any other failure. `failReason` is the fetcher's reason. `nameMatchesDomain` is false when no label of the website's host matches the company name, and null for registry-only companies. `no_website` is used for registry-only companies, which are never fetched. |
 | `existenceEvidenceId` | string or null | The `existence` evidence document built from the homepage (FR-016). Null when the website did not load or the company has no website. |
-| `hq` | map | `{city, state, status: met \| not_met \| unknown, evidenceIds[]}` (research R5) |
+| `hq` | map | `{city, state, status: met \| not_met \| conflict \| unknown, evidenceIds[]}` (research R5). `not_met`: a cited place outside every metro. `conflict`: citations inside and outside. `unknown`: no passing citation, or no city named. |
 | `size` | map | `{signals[{kind: employees \| revenue, low, high, evidenceId}], status: under \| over \| conflict \| unknown}` (research R6) |
-| `parent` | map or null | `{name, evidenceIds[], status: none \| large \| unknown_size}` |
+| `parent` | map or null | `{name, evidenceIds[], status: small \| large \| unknown_size}`. Null when no passing `parent` claim exists. `large`: the parent is on `largeEnterpriseParents` (normalized name) or a passing `parent_employees` or `parent_revenue` claim reaches a threshold. `small`: the parent's cited size is under both thresholds. `unknown_size`: any other parent (research R6). |
 | `fitClaims` | list | `{aspect: buyer \| problem \| trigger, statement, primaryInterestIds[≥1], evidenceIds[]}` (FR-005) |
 | `interestSignals` | list | `{kind: pain \| exploration, statement, evidenceIds[≥1]}` (FR-020) |
 | `unknowns` | list | `{field, reason}`. Covers every required item that has no passing citation, including `interestSignal` when the list is empty (FR-009, FR-020). |
@@ -120,7 +120,7 @@ Each CLI step requires the previous status (contracts/cli.md, exit code 2 otherw
 | `evidenceId` | string | `ev_<runId>_<seq>` |
 | `runId` | string | |
 | `companyRecordId` | string or null | Null for listing-page evidence used at discovery |
-| `claimField` | enum | `origin`, `existence`, `hq`, `employees`, `revenue`, `parent`, `fit_buyer`, `fit_problem`, `fit_trigger`, `signal_pain`, `signal_exploration` |
+| `claimField` | enum | `origin`, `existence`, `hq`, `employees`, `revenue`, `parent`, `parent_employees`, `parent_revenue`, `fit_buyer`, `fit_problem`, `fit_trigger`, `signal_pain`, `signal_exploration` |
 | `claimValue` | string | The structured value, for example `Atlanta, GA` or `120` |
 | `url` | string | The source URL (planning input: every claim stores its source URL) |
 | `sourceType` | enum | `registry`, `news`, `company_site`, `job_board`, `directory` |
@@ -133,10 +133,17 @@ Each CLI step requires the previous status (contracts/cli.md, exit code 2 otherw
 
 Evidence documents are written once and never edited.
 
+**Signal-search evidence** (research R7): pages fetched from signal-search results take their
+`sourceType` from the source type rules in contracts/config.md (`company_site` on the company's own
+domain, a `sourceTypeDomains` category, otherwise `news`) and their reliability from the source policy.
+
 **Existence evidence**: For each company whose website loads, the verify step builds one evidence
-document with `claimField: existence`, `claimValue` = the company name, `sourceType: company_site`,
-and `url` = the homepage. No model is involved. The excerpt is the text around the first occurrence
-of the normalized company name in the homepage text: the containing sentence, or 100 characters on
+document with `claimField: existence`, `claimValue` = the company name, and `sourceType:
+company_site`. No model is involved. It searches the homepage first, then the website's own pages
+already fetched in the run whose path contains `about` or `contact`, in fetch order, and uses the
+first page that names the company; `url` is that page (the homepage when none names it). No page is
+fetched for this (2026-10-07). The excerpt is the text around the first occurrence of the normalized
+company name in that page's text: the containing sentence, or 100 characters on
 each side if no sentence boundary is found, capped at 300 characters. If the name does not occur,
 the document is stored with `check: {status: fail, reason: excerpt_not_found}` and an empty excerpt.
 
@@ -161,10 +168,16 @@ Written only by the Review step. It is created once per company record and never
   record with no passing evidence becomes `needs_verification`.
 - Every `citedEvidenceId` must exist with `check.status == pass`.
 - A company whose existence check fails is never `include` (FR-013).
-- The `existence` rule outcome is:
-  - `fail` when the website does not load (disposition `exclude`);
-  - `unknown` when the company is registry-only (`no_website`), or when its website loads but the
-    existence evidence failed its check (disposition `needs_verification`).
+- The `existence` rule outcome is (revised 2026-10-07):
+  - `fail` when the website does not exist (`fails`: HTTP 404 or 410, or DNS failure; disposition
+    `exclude`);
+  - `unknown` when the website exists but cannot be read (`unreadable`), when the company is
+    registry-only (`no_website`), or when its website loads but the existence evidence failed its
+    check (disposition `needs_verification`). The reason says which, and names the website and the
+    company when `nameMatchesDomain` is false.
+- The `hq` rule outcome is `fail` for `not_met`, `conflict` for `conflict`, and `unknown` for
+  `unknown`. The `large_enterprise` rule outcome is `fail` for a `large` parent, `unknown` for
+  `unknown_size`, and `pass` for a `small` parent or no parent.
 
 ## positionBaselines/{runId}
 

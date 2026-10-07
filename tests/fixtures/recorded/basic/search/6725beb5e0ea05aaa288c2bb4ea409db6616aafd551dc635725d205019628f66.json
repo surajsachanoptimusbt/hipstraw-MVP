@@ -1,0 +1,15 @@
+{
+  "matchKey": "\"Theta Works\" accounts payable OR procurement job",
+  "request": {
+    "params": {
+      "q": "\"Theta Works\" accounts payable OR procurement job"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "web": {
+      "results": []
+    }
+  }
+}

@@ -1,0 +1,220 @@
+# T049: the `us1_sites` replay scenario: websites that exist but cannot be read, websites that do not
+# exist, and name-domain mismatches (FR-008, FR-013, FR-016, research R4, revised 2026-10-07).
+#
+#     python tests/fixtures/build_fixtures.py us1_sites
+#
+# Every company, page, and domain is fictional on a `.test` domain (Constitution IX).
+#
+#   Lark Robots             robots.txt disallows the whole site   -> unreadable -> needs_verification
+#   Maple Forbidden         homepage answers HTTP 403             -> unreadable -> needs_verification
+#   Nettle Throttle         homepage answers HTTP 429             -> unreadable -> needs_verification
+#   Rowan Down              homepage answers HTTP 503             -> unreadable -> needs_verification
+#   Oxbow Gone              homepage answers HTTP 410             -> fails      -> exclude
+#   Pine Nowhere            host name does not resolve (DNS)      -> fails      -> exclude
+#   Larch Health Systems    website quillpad.test names it        -> existence passes; include
+#   Sorrel Analytics        website tallyhub.test does not        -> needs_verification, both named
+#   Teasel Systems          website brightform.test names it only on its about page (FR-016, added
+#                           at the T051 review)                     -> existence passes; include
+#
+# Discovery also sees a linkedin.com result (denylisted) and a listing page that robots.txt
+# disallows (/private/...). Neither is ever fetched: they have no page recordings. Nine companies
+# are kept, so the shortfall is 1.
+#
+# Recordings that are deliberately absent, so calling them raises ReplayMissingError:
+#   - any page on lark-robots.test or pine-nowhere.test, and anything past the homepage of the
+#     403, 429, 503, and 410 sites;
+#   - CompanyEvidence and signal searches for every website that is unreadable or fails;
+#   - ReviewJudgement for every company except Larch Health Systems and Teasel Systems.
+
+candidateId: invoice_alpha_genesis__saas_recurring_fees
+runId: run_20261007T101500
+fetchedAt: "2026-10-07T10:15:00+00:00"
+model: test-model
+
+queries:
+  - query: New York SaaS companies directory
+    purpose: Directory pages that list New York SaaS companies
+    results:
+      - url: https://www.linkedin.com/company/lark-robots-test
+        title: Lark Robots | LinkedIn
+        snippet: Denylisted; never fetched.
+      - url: https://list.example.test/private/ny-saas
+        title: New York SaaS (members only)
+        snippet: Disallowed by robots.txt; never fetched.
+      - url: https://list.example.test/ny-saas
+        title: New York SaaS companies
+        snippet: A directory of SaaS companies in New York.
+
+robots:
+  https://list.example.test: "User-agent: *\nDisallow: /private\n"
+  https://lark-robots.test: "User-agent: *\nDisallow: /\n"
+
+unreachable:
+  https://pine-nowhere.test: dns
+
+pages:
+  https://list.example.test/ny-saas:
+    html: |
+      <h1>New York SaaS companies</h1>
+      <p>A fictional test directory of SaaS companies in New York.</p>
+      <ul>
+        <li>Lark Robots, New York, NY: warehouse robotics software for retailers. <a href="https://lark-robots.test/">Website</a></li>
+        <li>Maple Forbidden, New York, NY: payroll software for agencies. <a href="https://maple-forbidden.test/">Website</a></li>
+        <li>Nettle Throttle, New York, NY: API usage billing for SaaS companies. <a href="https://nettle-throttle.test/">Website</a></li>
+        <li>Rowan Down, New York, NY: vendor onboarding software. <a href="https://rowan-down.test/">Website</a></li>
+        <li>Oxbow Gone, New York, NY: expense reports for small teams. <a href="https://oxbow-gone.test/">Website</a></li>
+        <li>Pine Nowhere, New York, NY: subscription analytics for publishers. <a href="https://pine-nowhere.test/">Website</a></li>
+        <li>Larch Health Systems, New York, NY: charting software for physical therapy clinics. <a href="https://quillpad.test/">Website</a></li>
+        <li>Sorrel Analytics, New York, NY: spend analytics for SaaS buyers. <a href="https://tallyhub.test/">Website</a></li>
+        <li>Teasel Systems, New York, NY: intake forms for clinics. <a href="https://brightform.test/">Website</a></li>
+      </ul>
+
+  https://maple-forbidden.test/:
+    status: 403
+    html: <h1>Forbidden</h1>
+  https://nettle-throttle.test/:
+    status: 429
+    html: <h1>Too many requests</h1>
+  https://rowan-down.test/:
+    status: 503
+    html: <h1>Service unavailable</h1>
+  https://oxbow-gone.test/:
+    status: 410
+    html: <h1>Gone</h1>
+
+  https://quillpad.test/:
+    html: |
+      <h1>QuillPad</h1>
+      <p>QuillPad is charting software for physical therapy clinics.</p>
+      <p>QuillPad is made by Larch Health Systems, Inc.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+  https://quillpad.test/about:
+    html: |
+      <h1>About Larch Health Systems</h1>
+      <p>Larch Health Systems is headquartered in New York, NY.</p>
+      <p>Larch Health Systems has 40 employees.</p>
+  https://quillpad.test/careers:
+    html: |
+      <h1>Careers</h1>
+      <p>Larch Health Systems is hiring an Accounts Payable Coordinator to manage vendor invoices for our SaaS tools.</p>
+
+  https://tallyhub.test/:
+    html: |
+      <h1>TallyHub</h1>
+      <p>TallyHub builds dashboards for retail chains.</p>
+      <a href="/about">About</a>
+  https://tallyhub.test/about:
+    html: |
+      <h1>About TallyHub</h1>
+      <p>TallyHub is a retail analytics company.</p>
+
+  # The homepage never names Teasel Systems; its about page, fetched anyway, does.
+  https://brightform.test/:
+    html: |
+      <h1>BrightForm</h1>
+      <p>BrightForm builds intake forms for clinics.</p>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+  https://brightform.test/about:
+    html: |
+      <h1>About BrightForm</h1>
+      <p>BrightForm is built by Teasel Systems, Inc.</p>
+      <p>Teasel Systems is headquartered in New York, NY.</p>
+      <p>Teasel Systems has 25 employees.</p>
+  https://brightform.test/careers:
+    html: |
+      <h1>Careers</h1>
+      <p>Teasel Systems is hiring an Accounts Payable Assistant to process vendor invoices.</p>
+
+listings:
+  https://list.example.test/ny-saas:
+    - {name: Lark Robots, link: "https://lark-robots.test/", location: "New York, NY", metroMatch: in, positionMatch: weak,
+       excerpt: "Lark Robots, New York, NY: warehouse robotics software for retailers."}
+    - {name: Maple Forbidden, link: "https://maple-forbidden.test/", location: "New York, NY", metroMatch: in, positionMatch: partial,
+       excerpt: "Maple Forbidden, New York, NY: payroll software for agencies."}
+    - {name: Nettle Throttle, link: "https://nettle-throttle.test/", location: "New York, NY", metroMatch: in, positionMatch: partial,
+       excerpt: "Nettle Throttle, New York, NY: API usage billing for SaaS companies."}
+    - {name: Rowan Down, link: "https://rowan-down.test/", location: "New York, NY", metroMatch: in, positionMatch: partial,
+       excerpt: "Rowan Down, New York, NY: vendor onboarding software."}
+    - {name: Oxbow Gone, link: "https://oxbow-gone.test/", location: "New York, NY", metroMatch: in, positionMatch: weak,
+       excerpt: "Oxbow Gone, New York, NY: expense reports for small teams."}
+    - {name: Pine Nowhere, link: "https://pine-nowhere.test/", location: "New York, NY", metroMatch: in, positionMatch: partial,
+       excerpt: "Pine Nowhere, New York, NY: subscription analytics for publishers."}
+    - {name: Larch Health Systems, link: "https://quillpad.test/", location: "New York, NY", metroMatch: in, positionMatch: partial,
+       excerpt: "Larch Health Systems, New York, NY: charting software for physical therapy clinics."}
+    - {name: Sorrel Analytics, link: "https://tallyhub.test/", location: "New York, NY", metroMatch: in, positionMatch: strong,
+       excerpt: "Sorrel Analytics, New York, NY: spend analytics for SaaS buyers."}
+    - {name: Teasel Systems, link: "https://brightform.test/", location: "New York, NY", metroMatch: in, positionMatch: partial,
+       excerpt: "Teasel Systems, New York, NY: intake forms for clinics."}
+
+evidence:
+  quillpad.test:
+    pages: [https://quillpad.test/, https://quillpad.test/about, https://quillpad.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "New York, NY", page: https://quillpad.test/about, verbatim: true,
+         excerpt: "Larch Health Systems is headquartered in New York, NY."}
+      - {claimId: c2, claimField: employees, claimValue: "40", page: https://quillpad.test/about, verbatim: true,
+         excerpt: "Larch Health Systems has 40 employees."}
+      - {claimId: c3, claimField: fit_problem, claimValue: "vendor invoices for SaaS tools",
+         page: https://quillpad.test/careers, verbatim: true,
+         excerpt: "Larch Health Systems is hiring an Accounts Payable Coordinator to manage vendor invoices for our SaaS tools."}
+      - {claimId: c4, claimField: signal_pain, claimValue: "Accounts Payable Coordinator hiring",
+         page: https://quillpad.test/careers, verbatim: true,
+         excerpt: "Larch Health Systems is hiring an Accounts Payable Coordinator to manage vendor invoices for our SaaS tools."}
+    fitClaims:
+      - aspect: problem
+        statement: Larch Health Systems manages vendor invoices for its SaaS tools.
+        primaryInterestIds: [invoice_accuracy_entitlement]
+        claimIds: [c3]
+    interestSignals:
+      - {kind: pain, statement: Hiring an Accounts Payable Coordinator for SaaS vendor invoices., claimIds: [c4]}
+    falsifier: Larch Health Systems is a subsidiary of a large enterprise, or has 500 or more employees.
+
+  # The model finds nothing about Sorrel Analytics on TallyHub's pages.
+  tallyhub.test:
+    pages: [https://tallyhub.test/, https://tallyhub.test/about]
+    claims: []
+    fitClaims: []
+    interestSignals: []
+    falsifier: tallyhub.test is not the website of Sorrel Analytics.
+
+  brightform.test:
+    pages: [https://brightform.test/, https://brightform.test/about, https://brightform.test/careers]
+    claims:
+      - {claimId: c1, claimField: hq, claimValue: "New York, NY", page: https://brightform.test/about, verbatim: true,
+         excerpt: "Teasel Systems is headquartered in New York, NY."}
+      - {claimId: c2, claimField: employees, claimValue: "25", page: https://brightform.test/about, verbatim: true,
+         excerpt: "Teasel Systems has 25 employees."}
+      - {claimId: c3, claimField: signal_pain, claimValue: "Accounts Payable Assistant hiring",
+         page: https://brightform.test/careers, verbatim: true,
+         excerpt: "Teasel Systems is hiring an Accounts Payable Assistant to process vendor invoices."}
+      - {claimId: c4, claimField: fit_problem, claimValue: "vendor invoices to process",
+         page: https://brightform.test/careers, verbatim: true,
+         excerpt: "Teasel Systems is hiring an Accounts Payable Assistant to process vendor invoices."}
+    fitClaims:
+      - aspect: problem
+        statement: Teasel Systems processes a growing volume of vendor invoices.
+        primaryInterestIds: [invoice_accuracy_entitlement]
+        claimIds: [c4]
+    interestSignals:
+      - {kind: pain, statement: Hiring an Accounts Payable Assistant for vendor invoices., claimIds: [c3]}
+    falsifier: Teasel Systems is a subsidiary of a large enterprise, or has 500 or more employees.
+
+# The verify step's three signal searches (research R7), only for websites that resolve.
+noSignalResults:
+  - {name: Larch Health Systems, domain: quillpad.test}
+  - {name: Sorrel Analytics, domain: tallyhub.test}
+  - {name: Teasel Systems, domain: brightform.test}
+
+judgements:
+  quillpad-test:
+    falsifierMet: false
+    fitHolds: true
+    citedEvidenceIds: []
+    reason: "New York company under the size limit, hiring AP staff for SaaS vendor invoices."
+  brightform-test:
+    falsifierMet: false
+    fitHolds: true
+    citedEvidenceIds: []
+    reason: "New York company under the size limit, hiring AP staff for vendor invoices."

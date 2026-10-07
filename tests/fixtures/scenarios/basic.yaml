@@ -365,6 +365,16 @@ evidence:
       - {kind: pain, statement: Hiring a Procurement Specialist for software vendor invoices., claimIds: [c4]}
     falsifier: Theta Works is headquartered outside the metros in force.
 
+# The verify step's three signal searches for each website that loads (research R7; T056). Added
+# in T049 so the run keeps replaying once T056 makes these searches. They all return nothing.
+noSignalResults:
+  - {name: Alpha Ledger, domain: alpha-ledger.test}
+  - {name: Beta Billing, domain: beta-billing.test}
+  - {name: Epsilon Pay, domain: epsilon-pay.test}
+  - {name: Gamma Ops, domain: gamma-ops.test}
+  - {name: Sigma Scale, domain: sigma-scale.test}
+  - {name: Theta Works, domain: theta-works.test}
+
 # ReviewJudgement responses (match key: companyRecordId = <runId>__<domainKey>), only for the
 # records that pass every rule. The model cites no evidence IDs: the system attaches the IDs of the
 # record's passing evidence documents to the decision itself.

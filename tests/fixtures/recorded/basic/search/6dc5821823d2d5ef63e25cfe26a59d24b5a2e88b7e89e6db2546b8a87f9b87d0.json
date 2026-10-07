@@ -1,0 +1,15 @@
+{
+  "matchKey": "\"Alpha Ledger\" invoice automation OR \"AI agents\" finance",
+  "request": {
+    "params": {
+      "q": "\"Alpha Ledger\" invoice automation OR \"AI agents\" finance"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/basic.yaml"
+  },
+  "response": {
+    "web": {
+      "results": []
+    }
+  }
+}

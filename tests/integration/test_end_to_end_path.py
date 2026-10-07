@@ -272,3 +272,12 @@ def test_a_failing_step_stops_the_run_and_marks_it_failed(harness_for):
     assert run["errorStep"] == "discover"
     assert "ReplayMissingError" in run["errorMessage"]
     assert harness.store.list_company_records(RUN_ID) == []
+
+
+def test_verify_runs_three_signal_searches_per_loading_website(basic_run: CompletedRun):
+    """T056 (written in T050): six websites load, so 18 searches; Delta None (404) and the
+    registry-only Zeta Holdings get none. Their recordings were added to basic.yaml in T049."""
+    ends = [
+        e for e in basic_run.harness.log_events(basic_run.run_id) if e["event"] == "step_end" and e["step"] == "verify"
+    ]
+    assert ends[0]["counts"]["signalSearches"] == 18

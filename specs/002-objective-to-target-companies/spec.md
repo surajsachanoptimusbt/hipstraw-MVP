@@ -80,7 +80,8 @@ supplied micro-market. Program updated on 2026-10-07 to the Kozmo Invoice Alpha 
   example, Crunchbase), the Campaign Manager, Jev, and a user interface. (FR-018, FR-019)
 - Q: What does the existence check require? → A: The company's own website must load, and a
   citation from its homepage must contain the company name. A company known only from a registry
-  entry, with no website, is dispositioned needs verification. (FR-008, FR-016)
+  entry, with no website, is dispositioned needs verification. (FR-008, FR-016) *Extended later on
+  2026-10-07: an about or contact page already fetched in the run may also supply the citation.*
 - Q: May stored excerpts mention individual people? → A: Yes, incidentally, inside verbatim excerpts
   only. There are no person fields or person entities, and no email addresses or phone numbers.
   (FR-018)
@@ -97,6 +98,51 @@ supplied micro-market. Program updated on 2026-10-07 to the Kozmo Invoice Alpha 
 - Q: Must the judgement model cite evidence for an include? → A: No. The system attaches the IDs of
   the record's passing evidence documents to every decision itself. An include needs at least one
   passing evidence document; without one, the disposition becomes needs verification. (FR-012)
+
+### Session 2026-10-07 (after the first live run, `run_20261007T140925`)
+
+The first live run on Invoice Alpha returned 10 companies and included none. All 10 came from one
+alphabetical directory page, kept in page order (5Miles to Addison Health Systems), and most were
+headquartered around Dallas. Four websites were excluded only because they blocked automated reading.
+
+- Q: How should discovery choose which candidates to keep? → A: Rank every candidate by how well it
+  matches the first position (segment, company archetype, and headquarters metro) before applying
+  the cap of 10. Never keep listing entries in the order the page shows them. Searches target
+  companies in the three metros; generic or alphabetical (A–Z) directories come after them.
+  (FR-022)
+- Q: What does a website that blocks automated reading mean for the existence check? → A: robots.txt
+  is still respected, and a disallowed page is never fetched. A site blocked by robots.txt, or
+  answering HTTP 401, 403, or 429, exists but cannot be read: the company is dispositioned needs
+  verification, with the reason recorded. Only HTTP 404 or 410, or a domain that does not resolve
+  (DNS failure), fails the existence check and excludes the company. Any other failure (a server
+  error, a timeout, a redirect to another domain) is also needs verification, because it does not
+  show that the website is gone. (FR-008, FR-013)
+- Q: Is a cited headquarters in a metro's state but outside the metro area unknown, or a failure?
+  → A: A failure. A passing headquarters citation that places the company outside all three metro
+  areas excludes it: Buffalo, NY (in New York State, outside the New York CSA) is treated the same
+  as Dallas, TX. The location is unknown only when there is no passing headquarters citation, or
+  when the cited value names no city and only a state with some part in one of the three CSAs (CA,
+  GA, AL, NY, NJ, CT, PA; so "California" or "New York" alone is unknown). A state with no part in
+  any of them ("Texas") excludes. Citations that disagree, one
+  inside and one outside, are a conflict: needs verification, with both values in the reason. This
+  replaces research R5's rule that an unlisted city only makes the location unknown, so each metro's
+  place list must name every place in its CSA. (FR-016)
+- Q: What if the website's domain does not match the company name (for example Addison Health
+  Systems → writepad.com)? → A: The existence citation must show the company name on that website's
+  homepage; otherwise the company is needs verification, and the reason names both the website and
+  the company. (FR-016)
+
+Added at the review of the Phase 4 tests (same day):
+
+- Q: Is "Addison, TX" in a headquarters claim the same as "Addison, Texas" in its excerpt? → A: Yes.
+  When checking that a headquarters claim's value appears in its excerpt, a US state's two-letter
+  code and its full name are equal (TX = Texas, NY = New York). Nothing else about the exact match
+  changes. (FR-007)
+- Q: Can one directory use up the page budget? → A: No. Listing pages are also capped per site and
+  per query, so the other queries' results are still read. (FR-022)
+- Q: Must the existence citation come from the homepage? → A: The homepage first. If the homepage
+  does not name the company, an about or contact page of the same website that the run already
+  fetched may supply it. No page is fetched only for this. (FR-016)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -127,8 +173,10 @@ the company exists and that each source contains the quoted excerpt.
 3. **Given** a claim whose cited source cannot be retrieved, or does not contain the cited excerpt,
    **When** the record is produced, **Then** that claim is recorded as an explicit unknown, not as
    a fact.
-4. **Given** a company whose own website does not load, **When** the record is produced, **Then** the
-   record is marked as failing the existence check.
+4. **Given** a company whose own website does not exist (HTTP 404 or 410, or its domain does not
+   resolve), **When** the record is produced, **Then** the record is marked as failing the existence
+   check. A website that exists but cannot be read (blocked by robots.txt, or HTTP 401, 403, or 429)
+   is marked unreadable, with its reason, instead.
 5. **Given** two sources that disagree about a company fact (for example, two employee counts),
    **When** the record is produced, **Then** both values are kept with their own citations, and
    neither is averaged or dropped.
@@ -139,6 +187,9 @@ the company exists and that each source contains the quoted excerpt.
    marked as a finding awaiting Review, and none is marked as included.
 8. **Given** a company for which no interest signal can be found, **When** the record is produced,
    **Then** the interest signal is shown as an explicit unknown.
+9. **Given** a listing page that names more companies than the cap, in alphabetical order, **When**
+   finding applies the cap, **Then** the companies kept are those that best match the first position
+   (metro, segment, archetype), not the first ones on the page.
 
 ---
 
@@ -174,6 +225,10 @@ disposition with a reason, and that only the fully proven records are included.
    **Then** it does not appear as included.
 8. **Given** a company known only from a registry entry, with no website, **When** it is reviewed,
    **Then** it is dispositioned needs verification.
+9. **Given** a company whose website exists but cannot be read, **When** it is reviewed, **Then** it
+   is dispositioned needs verification, and the reason says why the website could not be read.
+10. **Given** a passing headquarters citation outside all three metro areas, **When** the record is
+    reviewed, **Then** it is excluded, even when the city is in one of the metros' states.
 
 ---
 
@@ -231,6 +286,14 @@ unchanged after a second run.
   exact-match check fails, so the claim becomes an explicit unknown (FR-007).
 - **No companies found**: the run returns an empty list with the reason recorded, not invented
   results.
+- **Website blocked by robots.txt, or answering HTTP 401, 403, or 429**: the company exists but its
+  website cannot be read. It is dispositioned needs verification with the reason (FR-008).
+- **Headquarters in a metro's state but outside the metro area** (for example Buffalo, NY): excluded,
+  like any headquarters outside the metros (FR-016).
+- **Website domain unlike the company name** (for example a product's domain): the homepage must name
+  the company; otherwise needs verification (FR-016).
+- **Alphabetical directory**: its first entries are not kept because they come first. Candidates are
+  ranked by their match to the first position (FR-022).
 
 ## Requirements *(mandatory)*
 
@@ -259,6 +322,13 @@ unchanged after a second run.
   NOT scan broadly beyond them.
 - **FR-004**: Company finding MUST return at most 10 companies. If fewer are found, it MUST record
   the shortfall and MUST NOT pad the list.
+- **FR-022**: Company finding MUST rank candidates by their match to the first position (segment,
+  company archetype, and headquarters metro, as stated on the retrieved page) before applying the
+  cap in FR-004, and MUST NOT keep candidates in the order a page lists them. Searches MUST target
+  companies in the metro areas in force, spread across all of them; generic or alphabetical
+  directories come after metro-targeted results, and no single site or query may use more than
+  its configured share of the listing pages. A location used for ranking MUST appear on the
+  retrieved page. Ranking never decides a disposition.
 
 **Company records**
 
@@ -290,11 +360,17 @@ unchanged after a second run.
   excerpt that supports the claim. Each citation MUST be checked during the run to confirm that the
   source can be retrieved and contains that excerpt word for word. Only differences in spacing, line
   breaks, letter case, quote style (curly or straight), dash style (en or em dash or hyphen), and
-  non-breaking spaces are ignored. Paraphrase or meaning-based matches MUST NOT pass. A claim
-  whose citation fails the check MUST be recorded as an explicit unknown.
-- **FR-008**: Each company's own website MUST be checked during the run to confirm that it loads. A
-  company whose website does not load MUST be marked as failing the existence check. A company known
-  only from an official registry entry, with no website, MUST be dispositioned needs verification.
+  non-breaking spaces are ignored. Paraphrase or meaning-based matches MUST NOT pass. For a
+  headquarters claim, a US state's two-letter code and its full name are equal when checking that
+  the claimed value appears in the excerpt. A claim whose citation fails the check MUST be recorded
+  as an explicit unknown.
+- **FR-008**: Each company's own website MUST be checked during the run to confirm that it loads,
+  without fetching anything its robots rules disallow. A website that does not exist (HTTP 404 or
+  410, or a domain that does not resolve) MUST be marked as failing the existence check. A website
+  that exists but cannot be read (blocked by robots.txt, HTTP 401, 403, or 429, or any other
+  failure) MUST be marked unreadable, with the reason recorded; the company is dispositioned needs
+  verification. A company known only from an official registry entry, with no website, MUST be
+  dispositioned needs verification.
 
 **Evidence handling**
 
@@ -314,14 +390,22 @@ unchanged after a second run.
   and MUST rely only on the record's passing citations. Every include decision MUST carry the IDs of
   at least one passing evidence document, attached by the system; otherwise it becomes needs
   verification.
-- **FR-013**: A company that fails the existence check MUST NOT be included.
+- **FR-013**: A company that fails the existence check MUST NOT be included. A company whose website
+  does not exist MUST be excluded; one whose website cannot be read MUST be dispositioned needs
+  verification.
 - **FR-014**: A company whose falsifier is shown to be true MUST NOT be included.
 - **FR-015**: Review MUST address any conflicting evidence on a constraint in its reason.
 - **FR-016**: A company MUST NOT be included unless all of the following minimum proof is met, each
   backed by a passing citation:
-  - **Existence**: the company's own website loads (FR-008), and a citation from its homepage has an
-    excerpt containing the company name.
-  - **Location**: headquarters in one of the three metro areas (FR-001).
+  - **Existence**: the company's own website loads (FR-008), and a citation from its homepage (or,
+    when the homepage does not name the company, from an about or contact page of that website
+    already fetched in the run) has an excerpt containing the company name. When the website's
+    domain does not match the company name, this citation is what links the two; without it, the
+    company is needs verification.
+  - **Location**: headquarters in one of the three metro areas (FR-001). A passing headquarters
+    citation outside all three excludes the company. The location is unknown only when there is no
+    passing headquarters citation, or the cited value names no city inside a metro's state;
+    disagreeing citations are a conflict.
   - **Size**: at least one signal (employee count or revenue) under the configured threshold, no
     source showing the company over either threshold, and not a Fortune 500 company or other large
     enterprise. Revenue may remain an explicit unknown.
