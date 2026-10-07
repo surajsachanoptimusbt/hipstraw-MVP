@@ -1,10 +1,13 @@
-"""T041 verify (thin): website load, existence evidence, cited claims, and their checks.
+"""T041/T056 verify: website load, existence evidence, signal searches, cited claims, and their checks.
 
 - The company's own website must load, following redirects only within its company key (FR-008).
-- Existence evidence is built from the homepage without a model (FR-016).
+  One that does not exist or cannot be read gets nothing more (research R4).
+- Existence evidence is built without a model from the homepage, or an already-fetched about or
+  contact page (FR-016).
+- Up to three signal searches per loading website (research R7) add own-site and third-party pages.
 - One `CompanyEvidence` call per loading website; every claim becomes an evidence document with its
   check, and a claim without a passing citation is an explicit unknown (FR-007, FR-009).
-- Registry-only companies are never fetched and get no evidence call (FR-005).
+- Registry-only companies are never fetched and get no searches or evidence call (FR-005).
 
 Writes evidence and completed `companyRecords`; it never writes a disposition (FR-011).
 """
@@ -26,7 +29,7 @@ from hipstraw_mm.evidence.existence import find_existence, name_matches_domain, 
 from hipstraw_mm.evidence.location import evaluate_hq
 from hipstraw_mm.evidence.size import evaluate_parent, evaluate_size
 from hipstraw_mm.llm_schemas import CompanyEvidence
-from hipstraw_mm.models import CompanyRecord, Evidence, same_company_or_subdomain
+from hipstraw_mm.models import CompanyRecord, Evidence, SourceType, is_denylisted, same_company_or_subdomain
 from hipstraw_mm.steps.common import (
     UNKNOWN_FIELD_FOR_CLAIM,
     EvidenceIds,
@@ -50,6 +53,19 @@ EMPTY_SIZE: dict[str, Any] = {"signals": [], "status": "unknown"}
 def verify(ctx: Context, run_id: str) -> CommandResult:
     run = require_run(ctx.store, run_id, "discovered")
     return run_step(ctx, run_id, STEP, lambda: _Verification(ctx, run).execute())
+
+
+def signal_queries(name: str, domain: str) -> list[str]:
+    """The signal searches for one company, in order (research R7). The strings are replay match keys."""
+    return [
+        f'"{name}" accounts payable OR procurement job',
+        f'"{name}" invoice automation OR "AI agents" finance',
+        f"site:{domain} careers",
+    ]
+
+
+def _url(page: FetchResult) -> str:
+    return urldefrag(page.final_url or page.url)[0]
 
 
 def _unknown(item: str, reason: str) -> dict[str, str]:
@@ -90,6 +106,7 @@ class _Verification:
         self.ids = EvidenceIds(ctx.store, self.run_id)
         self.counts: Counter[str] = Counter()
         self.model_calls_before = ctx.llm.calls
+        self.searches_before = ctx.search.calls
         in_force = {m["id"] for m in run["constraintsInForce"]["metros"]}
         self.metros: list[Metro] = [m for m in ctx.config.metros.metros if m.id in in_force]
         program = ctx.store.get_program(run["programId"]) or {}
@@ -123,6 +140,8 @@ class _Verification:
         step_counts = {
             "fetches": self.fetcher.fetches,
             "modelCalls": ctx.llm.calls - self.model_calls_before,
+            "signalSearches": ctx.search.calls - self.searches_before,
+            "thirdPartyPages": self.counts["thirdPartyPages"],
             "companiesVerified": self.counts["companiesVerified"],
             "registryOnly": self.counts["registryOnly"],
             "websitesFailed": self.counts["websitesFailed"],
@@ -132,7 +151,12 @@ class _Verification:
             "citationsFailed": self.counts["citationsFailed"],
         }
         run_counts = merge_counts(
-            self.run.get("counts"), {"fetches": step_counts["fetches"], "modelCalls": step_counts["modelCalls"]}
+            self.run.get("counts"),
+            {
+                "searches": step_counts["signalSearches"],
+                "fetches": step_counts["fetches"],
+                "modelCalls": step_counts["modelCalls"],
+            },
         )
         ctx.store.transition_run(
             self.run_id,
@@ -146,7 +170,7 @@ class _Verification:
             message=f"run {self.run_id}: {self.counts['companiesVerified']} websites loaded and read",
             runId=self.run_id,
             status="verified",
-            counts={k: v for k, v in step_counts.items() if k not in ("fetches", "modelCalls")},
+            counts={k: v for k, v in step_counts.items() if k not in ("fetches", "modelCalls", "signalSearches")},
             warnings=warnings,
         )
 
@@ -213,9 +237,11 @@ class _Verification:
             }
 
         self.counts["companiesVerified"] += 1
-        pages = [home, *self._own_site_pages(home)]
-        existence_id, existence_check = self._existence_evidence(record_id, name, pages)
-        extraction = self._extract(record_id, name, domain, pages)
+        own_pages = [home, *self._own_site_pages(home)]
+        found_own, third_party = self._signal_pages(name, domain, own_pages)
+        own_pages += found_own
+        existence_id, existence_check = self._existence_evidence(record_id, name, own_pages)
+        extraction = self._extract(record_id, name, domain, own_pages + third_party)
 
         constraints = self.run["constraintsInForce"]
         hq = evaluate_hq([(value, eid) for _, value, eid in extraction.passing("hq")], self.metros)
@@ -266,13 +292,53 @@ class _Verification:
         }
 
     def _existence_evidence(self, record_id: str, name: str, pages: list[FetchResult]) -> tuple[str, CheckResult]:
-        """From the homepage, or an already-fetched about or contact page that names the company."""
-        by_url = {page.final_url or page.url: page for page in pages}
+        """From the homepage, or an already-fetched about or contact page that names the company.
+        `pages` are the company's own pages only, homepage first."""
+        by_url = {_url(page): page for page in pages}
         url, excerpt = find_existence([(u, p.text or "") for u, p in by_url.items()], name)
         page = by_url[url]
         text = page.text or ""
         check = check_excerpt(excerpt, text, claim_value=name) if excerpt else CheckResult("fail", "excerpt_not_found")
-        return self._store_evidence(record_id, "existence", name, page, excerpt, check), check
+        return self._store_evidence(record_id, "existence", name, page, "company_site", excerpt, check), check
+
+    def _signal_pages(
+        self, name: str, domain: str, own_pages: list[FetchResult]
+    ) -> tuple[list[FetchResult], list[FetchResult]]:
+        """The research R7 signal searches: (own-site pages, third-party pages) newly fetched from their
+        results, in search order and then result order, within the per-company and per-run budgets."""
+        budgets = self.budgets
+        results: list[str] = []
+        for query in signal_queries(name, domain)[: budgets["signalSearchesPerCompany"]]:
+            for result in self.ctx.search.search(query, count=budgets["resultsPerQuery"]):
+                results.append(urldefrag(result.url)[0])
+        home_url = f"https://{domain}/"
+        seen = {_url(page) for page in own_pages} | {urldefrag(page.url)[0] for page in own_pages}
+        own_room = budgets["ownSitePagesPerCompany"] - (len(own_pages) - 1)
+        found_own: list[FetchResult] = []
+        third_party: list[FetchResult] = []
+        for url in dict.fromkeys(results):
+            if url in seen or is_denylisted(url, self.policy.denylistDomains):
+                continue
+            if self._fetches_left() <= 0:
+                break
+            own = same_company_or_subdomain(home_url, url)
+            if (own and len(found_own) >= own_room) or (
+                not own and len(third_party) >= budgets["thirdPartyPagesPerCompany"]
+            ):
+                continue
+            seen.add(url)
+            page = self.fetcher.fetch(url, same_company_only=own)
+            if page.ok:
+                (found_own if own else third_party).append(page)
+        self.counts["thirdPartyPages"] += len(third_party)
+        return found_own, third_party
+
+    def _source_type(self, page: FetchResult, domain: str) -> SourceType:
+        """contracts/config.md: the company's own site, a sourceTypeDomains category, otherwise news."""
+        url = _url(page)
+        if same_company_or_subdomain(f"https://{domain}/", url):
+            return "company_site"
+        return self.policy.category_for(url) or "news"
 
     def _own_site_pages(self, home: FetchResult) -> list[FetchResult]:
         """Own-site pages linked from the homepage whose path names an about, careers, ... page."""
@@ -303,8 +369,10 @@ class _Verification:
                 extraction.failed[item].add("verify model-call budget ran out")
             return extraction
 
-        # Source IDs follow page order: the homepage is s1, then own-site pages in homepage link order.
+        # Source IDs follow page order: the homepage is s1, then own-site pages (homepage links first,
+        # then signal-search results), then third-party pages from the signal searches.
         by_source = {f"s{i}": page for i, page in enumerate(pages, start=1)}
+        source_types = {source_id: self._source_type(page, domain) for source_id, page in by_source.items()}
         payload = {
             "company": name,
             "domain": domain,
@@ -314,7 +382,7 @@ class _Verification:
                 {
                     "sourceId": source_id,
                     "url": page.final_url or page.url,
-                    "sourceType": "company_site",
+                    "sourceType": source_types[source_id],
                     "text": (page.text or "")[: self.max_chars],
                 }
                 for source_id, page in by_source.items()
@@ -349,7 +417,7 @@ class _Verification:
             value = claim.claimValue if claim.claimField in STRUCTURED_FIELDS else None
             check = check_excerpt(claim.excerpt, page.text or "", value, claim_field=claim.claimField)
             evidence_id = self._store_evidence(
-                record_id, claim.claimField, claim.claimValue, page, claim.excerpt, check
+                record_id, claim.claimField, claim.claimValue, page, source_types[claim.sourceId], claim.excerpt, check
             )
             extraction.claims[evidence_id] = (claim.claimField, claim.claimValue, check.status == "pass")
             extraction.evidence_by_claim[claim.claimId] = evidence_id
@@ -387,7 +455,14 @@ class _Verification:
         return fit_claims, signals
 
     def _store_evidence(
-        self, record_id: str, claim_field: str, claim_value: str, page: FetchResult, excerpt: str, check: CheckResult
+        self,
+        record_id: str,
+        claim_field: str,
+        claim_value: str,
+        page: FetchResult,
+        source_type: SourceType,
+        excerpt: str,
+        check: CheckResult,
     ) -> str:
         evidence_id = self.ids.next()
         if check.reason == "contains_contact_data":
@@ -400,8 +475,8 @@ class _Verification:
                 "claimField": claim_field,
                 "claimValue": claim_value,
                 "url": page.final_url or page.url,
-                "sourceType": "company_site",
-                "reliability": reliability_for("company_site", self.policy),
+                "sourceType": source_type,
+                "reliability": reliability_for(source_type, self.policy),
                 "publishedAt": None,
                 "fetchedAt": page.fetched_at or self.ctx.now_iso(),
                 "excerpt": excerpt[:MAX_EXCERPT_CHARS],

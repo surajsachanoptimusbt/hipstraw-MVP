@@ -523,7 +523,7 @@ acceptance scenarios 1–9 and US2 scenarios 9–10, using recorded responses.
   - Add the `parent_employees` and `parent_revenue` claim fields (schema, `company_evidence.v2.txt`, `models.py`, and the unknowns mapping).
   - Fill `parent` in `src/hipstraw_mm/steps/verify.py`.
   - Add the `large_enterprise` rule to `src/hipstraw_mm/steps/review.py` (moved here from T064), so `large` → `exclude` and `unknown_size` → `needs_verification`.
-- [ ] T056 [US1] **Signal searches**: complete `src/hipstraw_mm/steps/verify.py`, making the T050 signal cases and the `basic` signal-search assertion pass:
+- [x] T056 [US1] **Signal searches**: complete `src/hipstraw_mm/steps/verify.py`, making the T050 signal cases and the `basic` signal-search assertion pass:
   - Run up to `signalSearchesPerCompany` signal searches per resolving website, with the exact research R7 query strings. Fetch up to `thirdPartyPagesPerCompany` third-party pages (own-site results count toward `ownSitePagesPerCompany`), and give them to `CompanyEvidence` after the own-site pages.
   - Assign `sourceType` per the source type rules in contracts/config.md, and `reliability` from config.
   - Fill `hq` with `location.py`, and fill `size` and `parent` with `size.py`.
