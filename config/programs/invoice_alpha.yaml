@@ -1,0 +1,21 @@
+programId: invoice_alpha_genesis
+name: Kozmo Invoice Alpha Genesis Cohort
+sourceUrl: https://kozmo.ai/invoice-alpha-genesis.html
+objective: >-
+  Find companies whose procurement, AP, finance, and commercial teams would benefit from continuous
+  obligation intelligence: catching invoice divergence before payment, protecting entitlements, and
+  preventing leakage.
+experimentContexts:
+  - {id: saas_recurring_fees, label: SaaS / recurring fees}
+  - {id: professional_services, label: Professional services}
+  - {id: managed_services, label: Managed services}
+  - {id: consulting_services, label: Consulting + services}
+  - {id: mixed_obligations, label: Mixed obligations}
+  - {id: strategic_suppliers, label: Strategic suppliers}
+primaryInterests:
+  - {id: continuous_obligation_intelligence, label: Continuous obligation intelligence}
+  - {id: invoice_accuracy_entitlement, label: Invoice accuracy / entitlement}
+  - {id: scope_drift_prevention, label: Scope drift / prevention}
+  - {id: payment_timing_working_capital, label: Payment timing / working capital}
+  - {id: supplier_commercial_position, label: Supplier commercial position}
+  - {id: agent_governance_autonomy, label: Agent governance / autonomy}

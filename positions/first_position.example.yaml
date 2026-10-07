@@ -1,0 +1,8 @@
+candidateId: invoice_alpha_genesis__saas_recurring_fees
+segment: "string"
+companyArchetype: "string"
+buyer: "string"
+problem: "string"
+trigger: "string"
+primaryInterestIds: [invoice_accuracy_entitlement]
+searchHints: ["optional keyword"]

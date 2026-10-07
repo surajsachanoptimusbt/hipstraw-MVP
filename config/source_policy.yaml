@@ -1,0 +1,24 @@
+userAgent: "HipStrawMM/0.1 (+https://hipstraw.example/bot)"
+denylistDomains:
+  - linkedin.com
+  - glassdoor.com
+  - indeed.com
+  - zoominfo.com
+  - crunchbase.com
+  - pitchbook.com
+  - fortune.com
+reliabilityBySourceType:
+  registry: high
+  news: medium
+  company_site: medium
+  job_board: medium
+  directory: low
+reliabilityWeights:
+  high: 1.0
+  medium: 0.7
+  low: 0.4
+sourceTypeDomains:
+  registry: [sos.ga.gov, sos.ca.gov, dos.ny.gov]
+  job_board: [greenhouse.io, lever.co, ashbyhq.com, workable.com]
+  directory: [builtin.com, clutch.co, g2.com]
+  news: [businesswire.com, prnewswire.com, techcrunch.com]
