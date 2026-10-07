@@ -1,0 +1,9 @@
+
+candidateId: invoice_alpha_genesis__saas_recurring_fees
+segment: B2B SaaS companies under 500 employees headquartered in the Atlanta, San Francisco, or New York metro
+companyArchetype: Growing subscription software company that pays many recurring SaaS and services vendors
+buyer: Head of finance, controller, or accounts payable lead
+problem: Recurring SaaS and services invoices drift from contracted terms and entitlements and are paid unchecked
+trigger: Hiring accounts payable or procurement staff, or exploring automation or AI for invoice processing
+primaryInterestIds: [invoice_accuracy_entitlement, continuous_obligation_intelligence]
+searchHints: [B2B SaaS companies Atlanta, SaaS startups San Francisco, SaaS companies New York]

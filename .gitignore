@@ -28,3 +28,6 @@ emulator-data/
 # OS
 .DS_Store
 Thumbs.db
+
+# Firebase emulator logs
+*-debug.log
