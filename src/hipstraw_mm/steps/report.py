@@ -176,7 +176,7 @@ def _included(included: list[tuple[Doc, Doc]], evidence: dict[str, Doc], interes
         lines += ["None.", ""]
     for record, decision in included:
         confidence = record.get("confidence")
-        band = confidence["band"] if confidence else "not computed"
+        band = f"{confidence['band']} ({confidence['value']:.2f})" if confidence else "not computed"
         hq = record.get("hq") or {}
         size_values = [
             f"{evidence.get(s['evidenceId'], {}).get('claimValue', '?')} {s['kind']}"

@@ -533,7 +533,7 @@ acceptance scenarios 1–9 and US2 scenarios 9–10, using recorded responses.
   - Keep conflicting values as separate signals.
   - Record the signal-search count in the verify `step_end` event.
   - Build `us1`. The `basic` recordings for these searches were added in T049.
-- [ ] T054 [US1] **Confidence**: implement reliability weights and confidence in `src/hipstraw_mm/evidence/confidence.py` per research R8, making T048 pass. Registry-only records get the normal formula, which gives 0 and the Low band. Set `companyRecords.confidence` in `src/hipstraw_mm/steps/verify.py`, and show the band in `src/hipstraw_mm/steps/report.py`.
+- [x] T054 [US1] **Confidence**: implement reliability weights and confidence in `src/hipstraw_mm/evidence/confidence.py` per research R8, making T048 pass. Registry-only records get the normal formula, which gives 0 and the Low band. Set `companyRecords.confidence` in `src/hipstraw_mm/steps/verify.py`, and show the band in `src/hipstraw_mm/steps/report.py`.
 - [ ] T065 [US2] **Cited-ID validation** (moved here from Phase 5 on 2026-10-07), making T080 pass. Complete judgement handling in `src/hipstraw_mm/steps/review.py`:
   - validate `citedEvidenceIds` against the passing evidence ("judgement cited unknown evidence" → `needs_verification`);
   - apply the invariant "`include` requires every rule to pass and `judgement.falsifierMet == false` and `judgement.fitHolds == true`";

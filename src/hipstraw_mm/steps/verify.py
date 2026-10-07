@@ -24,6 +24,7 @@ from hipstraw_mm.adapters.fetch import FetchResult
 from hipstraw_mm.adapters.llm import LLMSchemaError
 from hipstraw_mm.config import Metro
 from hipstraw_mm.context import CommandResult, Context
+from hipstraw_mm.evidence.confidence import compute_confidence
 from hipstraw_mm.evidence.excerpt_check import MAX_EXCERPT_CHARS, WITHHELD_EXCERPT, CheckResult, check_excerpt
 from hipstraw_mm.evidence.existence import find_existence, name_matches_domain, website_status
 from hipstraw_mm.evidence.location import evaluate_hq
@@ -107,6 +108,7 @@ class _Verification:
         self.counts: Counter[str] = Counter()
         self.model_calls_before = ctx.llm.calls
         self.searches_before = ctx.search.calls
+        self.evidence: dict[str, Doc] = {}  # evidence written by this step, for confidence
         in_force = {m["id"] for m in run["constraintsInForce"]["metros"]}
         self.metros: list[Metro] = [m for m in ctx.config.metros.metros if m.id in in_force]
         program = ctx.store.get_program(run["programId"]) or {}
@@ -176,6 +178,8 @@ class _Verification:
 
     def _save(self, record: Doc, updates: dict[str, Any]) -> None:
         merged = {k: v for k, v in record.items() if k != "createdAt"} | updates
+        # Every record gets confidence (research R8); a registry-only record comes out 0 and Low.
+        merged["confidence"] = compute_confidence(merged, self.evidence, self.policy.reliabilityWeights)
         validated = CompanyRecord.model_validate(merged).model_dump()
         self.ctx.store.upsert_company_record(record["companyRecordId"], validated)
 
@@ -288,7 +292,6 @@ class _Verification:
             "interestSignals": interest_signals,
             "unknowns": unknowns,
             "falsifier": falsifier,
-            "confidence": None,  # T054 computes confidence
         }
 
     def _existence_evidence(self, record_id: str, name: str, pages: list[FetchResult]) -> tuple[str, CheckResult]:
@@ -484,5 +487,7 @@ class _Verification:
                 "check": check.to_dict(),
             }
         )
-        self.ctx.store.create_evidence(evidence.model_dump())
+        doc = evidence.model_dump()
+        self.ctx.store.create_evidence(doc)
+        self.evidence[evidence_id] = doc
         return evidence_id
