@@ -139,7 +139,13 @@ def rule_gate(record: Doc, evidence_by_id: dict[str, Doc]) -> GateResult:
 
 
 def judged_disposition(judgement: ReviewJudgement, passing_evidence_ids: list[str]) -> tuple[Disposition, str]:
-    """The disposition for a record that passed every rule (contracts/llm-outputs.md §5)."""
+    """The disposition for a record that passed every rule (contracts/llm-outputs.md §5).
+
+    Every evidence ID the judgement cites must be one of the record's passing evidence documents;
+    otherwise its reasoning rests on something the system cannot trace, so it never includes."""
+    unknown = [i for i in judgement.citedEvidenceIds if i not in set(passing_evidence_ids)]
+    if unknown:
+        return "needs_verification", f"Needs verification: judgement cited unknown evidence ({', '.join(unknown)})."
     if judgement.falsifierMet:
         return "exclude", f"Excluded: the falsifier is met. {judgement.reason}".strip()
     if not judgement.fitHolds:
@@ -211,6 +217,9 @@ def _review(ctx: Context, run: Doc) -> CommandResult:
             else:
                 disposition, reason = judged_disposition(judgement, passing)
                 judgement_doc = {**judgement.model_dump(), "model": model}
+        if disposition == "include" and any(r["outcome"] != "pass" for r in gate.rule_results):
+            # Invariant (research R9): include needs every rule to pass, which the judgement cannot change.
+            disposition, reason = "needs_verification", f"Needs verification: not every rule passed. {reason}"
 
         decision = ReviewDecision.model_validate(
             {
