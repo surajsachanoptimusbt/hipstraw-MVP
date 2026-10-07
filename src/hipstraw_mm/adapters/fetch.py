@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import functools
 import hashlib
+import socket
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -46,7 +47,7 @@ class FetchResult:
     links: list[dict[str, str]] | None = None
     content_sha256: str | None = None
     fetched_at: str | None = None
-    # robots_disallowed | denylisted | not_html | too_large | http_error | network_error
+    # robots_disallowed | denylisted | not_html | too_large | http_error | network_error | dns_error
     # | redirect_off_site | too_many_redirects | bad_url
     fail_reason: str | None = None
 
@@ -83,6 +84,29 @@ def html_to_text_and_links(html: str, base_url: str) -> tuple[str, list[dict[str
     return "\n".join(line for line in lines if line), links
 
 
+def _origin(url: str) -> str:
+    parsed = urlparse(url)
+    return f"{parsed.scheme}://{parsed.netloc}"
+
+
+def _host_resolves(host: str) -> bool:
+    try:
+        socket.getaddrinfo(host, None)
+    except socket.gaierror:
+        return False
+    return True
+
+
+def _transport_error(url: str, exc: httpx.HTTPError) -> dict[str, Any]:
+    """A failed request. A connection that failed because the host name does not resolve is recorded
+    with `dnsFailed`, because only a missing domain shows the website is gone (research R3)."""
+    raw: dict[str, Any] = {"status": None, "error": type(exc).__name__}
+    host = urlparse(url).hostname
+    if isinstance(exc, httpx.ConnectError) and host and not _host_resolves(host):
+        raw["dnsFailed"] = True
+    return raw
+
+
 class Fetcher:
     """One fetcher per run: its robots.txt cache and per-host delays last for that run."""
 
@@ -107,6 +131,7 @@ class Fetcher:
         self._sleep = sleep
         self._clock = clock
         self._robots: dict[str, RobotFileParser | bool] = {}
+        self._dns_failed: set[str] = set()  # origins whose robots.txt request found no such host
         self._last_request: dict[str, float] = {}
         self._http: httpx.Client | None = None
         self.fetches = 0
@@ -127,12 +152,12 @@ class Fetcher:
                 result.fail_reason = "denylisted"
                 return result
             if not self.robots_allowed(current):
-                result.fail_reason = "robots_disallowed"
+                result.fail_reason = "dns_error" if _origin(current) in self._dns_failed else "robots_disallowed"
                 return result
 
             raw = self.replay.call("fetch", current, {"url": current}, functools.partial(self._live_get, current))
             if raw.get("error"):
-                result.fail_reason = "network_error"
+                result.fail_reason = "dns_error" if raw.get("dnsFailed") else "network_error"
                 return result
             status = int(raw["status"])
             headers = {k.lower(): v for k, v in (raw.get("headers") or {}).items()}
@@ -175,11 +200,12 @@ class Fetcher:
         return result
 
     def robots_allowed(self, url: str) -> bool:
-        parsed = urlparse(url)
-        origin = f"{parsed.scheme}://{parsed.netloc}"
+        origin = _origin(url)
         if origin not in self._robots:
             robots_url = f"{origin}/robots.txt"
             raw = self.replay.call("fetch", robots_url, {"url": robots_url}, lambda: self._live_robots(robots_url))
+            if raw.get("dnsFailed"):
+                self._dns_failed.add(origin)
             self._robots[origin] = self._parse_robots(raw)
         entry = self._robots[origin]
         if isinstance(entry, bool):
@@ -221,7 +247,7 @@ class Fetcher:
         try:
             resp = self._client().get(robots_url, follow_redirects=True)
         except httpx.HTTPError as exc:
-            return {"status": None, "error": type(exc).__name__}
+            return _transport_error(robots_url, exc)
         return {
             "status": resp.status_code,
             "text": resp.text[:500_000],
@@ -256,4 +282,4 @@ class Fetcher:
                     out["text"] = body.decode("utf-8", errors="replace")
                 return out
         except httpx.HTTPError as exc:
-            return {"status": None, "error": type(exc).__name__}
+            return _transport_error(url, exc)

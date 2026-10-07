@@ -10,7 +10,7 @@ from hipstraw_mm.config import SourcePolicy
 from hipstraw_mm.context import Context
 from hipstraw_mm.errors import PreconditionError
 from hipstraw_mm.logging_setup import scrub
-from hipstraw_mm.models import Reliability, SourceType
+from hipstraw_mm.models import Reliability, SourceType, host_of
 from hipstraw_mm.store.base import Doc, Store, StoreError
 
 T = TypeVar("T")
@@ -75,11 +75,30 @@ def reliability_for(source_type: SourceType, policy: SourcePolicy) -> Reliabilit
     return policy.reliabilityBySourceType[source_type]
 
 
-def load_failure(fail_reason: str | None, http_status: int | None) -> str:
-    """Why a website did not load, for reasons and unknowns: "HTTP 404" or "robots_disallowed"."""
-    if fail_reason in (None, "http_error") and http_status is not None:
-        return f"HTTP {http_status}"
-    return f"{fail_reason}, HTTP {http_status}" if http_status is not None else str(fail_reason)
+_CAUSES = {
+    "dns_error": "the domain does not resolve",
+    "robots_disallowed": "robots.txt disallows automated access",
+    "network_error": "the connection failed",
+    "too_many_redirects": "too many redirects",
+    "not_html": "the page is not HTML",
+    "too_large": "the page is too large",
+    "denylisted": "the site is on the denylist",
+    "bad_url": "the address is not a web URL",
+}
+
+
+def website_problem(status: str, fail_reason: str | None, http_status: int | None, final_url: str | None) -> str:
+    """Why the website check did not pass, for unknowns and Review reasons (research R4):
+    "website does not exist (HTTP 404)" or "website could not be read (robots.txt disallows ...)"."""
+    if fail_reason == "http_error" and http_status is not None:
+        cause = f"HTTP {http_status}"
+    elif fail_reason == "redirect_off_site":
+        cause = f"it redirects to another domain ({host_of(final_url or '') or 'unknown'})"
+    else:
+        cause = _CAUSES.get(fail_reason or "", fail_reason or "unknown failure")
+    if status == "fails":
+        return f"website does not exist ({cause})"
+    return f"website could not be read ({cause})"
 
 
 def merge_counts(existing: dict[str, Any] | None, add: dict[str, int]) -> dict[str, int]:

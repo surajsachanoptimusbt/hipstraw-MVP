@@ -45,7 +45,7 @@ CheckReason = Literal[
     "excerpt_too_long",
     "contains_contact_data",
 ]
-IdentifierStatus = Literal["resolves", "fails", "no_website"]
+IdentifierStatus = Literal["resolves", "unreadable", "fails", "no_website"]
 OriginKind = Literal["listing_link", "profile_hop", "direct_homepage", "registry_only"]
 Disposition = Literal["include", "exclude", "needs_verification"]
 RuleName = Literal["existence", "hq", "size", "large_enterprise", "interest_signal"]
@@ -160,7 +160,7 @@ class IdentifierCheck(Doc):
     status: IdentifierStatus
     httpStatus: int | None = None
     finalUrl: str | None = None
-    failReason: str | None = None  # the fetcher's reason when the website did not load
+    failReason: str | None = None  # the fetcher's reason when the website was not read
     checkedAt: str
 
 

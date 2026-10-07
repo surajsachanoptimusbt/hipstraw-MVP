@@ -18,7 +18,7 @@ from hipstraw_mm.context import CommandResult, Context
 from hipstraw_mm.errors import PreconditionError
 from hipstraw_mm.llm_schemas import ReviewJudgement
 from hipstraw_mm.models import Disposition, PositionBaseline, ReviewDecision
-from hipstraw_mm.steps.common import load_failure, require_run, run_step
+from hipstraw_mm.steps.common import require_run, run_step, website_problem
 from hipstraw_mm.store.base import Doc
 
 STEP = "review"
@@ -52,9 +52,11 @@ def rule_gate(record: Doc, evidence_by_id: dict[str, Doc]) -> GateResult:
     identifier = record.get("identifierCheck") or {}
     existence_ids = [record["existenceEvidenceId"]] if record.get("existenceEvidenceId") else []
     status = identifier.get("status")
-    if status == "fails":
-        detail = f"website did not load ({load_failure(identifier.get('failReason'), identifier.get('httpStatus'))})"
-        existence = ("fail", detail)
+    if status in ("fails", "unreadable"):
+        problem = website_problem(
+            status, identifier.get("failReason"), identifier.get("httpStatus"), identifier.get("finalUrl")
+        )
+        existence = ("fail" if status == "fails" else "unknown", problem)
     elif status == "no_website":
         existence = ("unknown", "registry-only: no website, so existence cannot be checked")
     elif status == "resolves" and _passed(evidence_by_id.get(record.get("existenceEvidenceId") or "")):

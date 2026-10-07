@@ -22,7 +22,7 @@ from hipstraw_mm.adapters.llm import LLMSchemaError
 from hipstraw_mm.config import Metro
 from hipstraw_mm.context import CommandResult, Context
 from hipstraw_mm.evidence.excerpt_check import MAX_EXCERPT_CHARS, WITHHELD_EXCERPT, CheckResult, check_excerpt
-from hipstraw_mm.evidence.existence import existence_excerpt
+from hipstraw_mm.evidence.existence import existence_excerpt, website_status
 from hipstraw_mm.evidence.location import evaluate_hq
 from hipstraw_mm.evidence.size import evaluate_size
 from hipstraw_mm.llm_schemas import CompanyEvidence
@@ -30,11 +30,11 @@ from hipstraw_mm.models import CompanyRecord, Evidence, same_company_or_subdomai
 from hipstraw_mm.steps.common import (
     UNKNOWN_FIELD_FOR_CLAIM,
     EvidenceIds,
-    load_failure,
     merge_counts,
     reliability_for,
     require_run,
     run_step,
+    website_problem,
 )
 from hipstraw_mm.store.base import Doc
 
@@ -125,6 +125,7 @@ class _Verification:
             "companiesVerified": self.counts["companiesVerified"],
             "registryOnly": self.counts["registryOnly"],
             "websitesFailed": self.counts["websitesFailed"],
+            "websitesUnreadable": self.counts["websitesUnreadable"],
             "unverified": self.counts["unverified"],
             "citationsPassed": self.counts["citationsPassed"],
             "citationsFailed": self.counts["citationsFailed"],
@@ -186,16 +187,18 @@ class _Verification:
     def _website(self, record: Doc) -> dict[str, Any]:
         record_id, domain, name = record["companyRecordId"], record["domain"], record["name"]
         home = self.fetcher.fetch(f"https://{domain}/", same_company_only=True)
+        status = website_status(home.fail_reason, home.status) if not home.ok else "resolves"
         identifier = {
-            "status": "resolves" if home.ok else "fails",
+            "status": status,
             "httpStatus": home.status,
             "finalUrl": home.final_url,
             "failReason": home.fail_reason,
             "checkedAt": self.ctx.now_iso(),
         }
-        if not home.ok:
-            self.counts["websitesFailed"] += 1
-            reason = f"website did not load ({load_failure(home.fail_reason, home.status)})"
+        if status != "resolves":
+            # Nothing more is fetched or extracted for a website that does not exist or cannot be read.
+            self.counts["websitesFailed" if status == "fails" else "websitesUnreadable"] += 1
+            reason = website_problem(status, home.fail_reason, home.status, home.final_url)
             return {
                 "identifierCheck": identifier,
                 "existenceEvidenceId": None,

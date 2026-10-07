@@ -1,4 +1,4 @@
-"""The existence excerpt, built from homepage text without a model (data-model.md, FR-016).
+"""Website load outcome and the existence excerpt (data-model.md, FR-008, FR-016, research R4).
 
 The excerpt is the sentence containing the first occurrence of the company name, or 100 characters on
 each side when no sentence boundary is found, capped at 300 characters. It is copied from the page
@@ -8,8 +8,24 @@ text, so it passes the citation check exactly when the name occurs on the page.
 from __future__ import annotations
 
 import re
+from typing import Literal
 
 from hipstraw_mm.evidence.excerpt_check import _TYPOGRAPHY, MAX_EXCERPT_CHARS
+
+WebsiteStatus = Literal["resolves", "unreadable", "fails"]
+GONE_HTTP_STATUSES = {404, 410}
+
+
+def website_status(fail_reason: str | None, http_status: int | None) -> WebsiteStatus:
+    """Only a website that does not exist fails: HTTP 404 or 410, or a host name that does not resolve.
+    Anything else that stops the page being read (robots.txt, 401, 403, 429, server errors, timeouts,
+    a redirect to another domain) means it exists but is unreadable (2026-10-07)."""
+    if fail_reason is None:
+        return "resolves"
+    if fail_reason == "dns_error" or (fail_reason == "http_error" and http_status in GONE_HTTP_STATUSES):
+        return "fails"
+    return "unreadable"
+
 
 _SENTENCE_END = re.compile(r"[.!?](?=\s)|\n")
 _WINDOW = 100

@@ -503,7 +503,7 @@ acceptance scenarios 1–9 and US2 scenarios 9–10, using recorded responses.
   - In `src/hipstraw_mm/steps/discover.py`: order the queries, run every search before reading, read round-robin, keep the best-ranked duplicate, rank before the cap, and store `origin.match` (add `OriginMatch` to `models.py`).
   - **Page caps** (added at the T051 review): `listingPagesPerSite` and `listingPagesPerQuery` in `config/run.yaml` and `Budgets`. `select_pages` in `targeting.py` skips a result whose site or query has reached its cap, and the discover counts record `resultsOverSiteCap` and `resultsOverQueryCap`. Tests: `TestSelectPages` in `test_targeting.py`, and the extra A–Z and Atlanta results in `us1_targeting`.
   - Add the ranking fields to the `basic` listing and homepage responses, rebuild `basic`, and build `us1_targeting`.
-- [ ] T083 [US1] **Blocked websites** (FR-008, FR-013, research R3, R4), making T078's `website_status` and fetch cases and T079's website rows pass:
+- [x] T083 [US1] **Blocked websites** (FR-008, FR-013, research R3, R4), making T078's `website_status` and fetch cases and T079's website rows pass:
   - Report `dns_error` from `src/hipstraw_mm/adapters/fetch.py` (live: a failed connection whose host name does not resolve; replay: `dnsFailed: true`), including for `robots.txt`.
   - Implement `website_status` in `src/hipstraw_mm/evidence/existence.py` and add `unreadable` to `IdentifierStatus`.
   - In `src/hipstraw_mm/steps/verify.py`, an `unreadable` website gets no page fetches, no `CompanyEvidence` call, and no signal searches; its unknowns say why.
