@@ -90,6 +90,10 @@ supplied micro-market. Program updated on 2026-10-07 to the Kozmo Invoice Alpha 
   falsifier are explicit unknowns, with an empty falsifier. The spot-check confirms that their
   registry page opens and that none is included. If the same company is also found through its
   website, the registry-only record is dropped. (FR-005, SC-001)
+- Q: Should typographic differences fail the exact excerpt match? → A: No. Before comparing, curly
+  quotes become straight quotes, en and em dashes become hyphens, and non-breaking spaces become
+  normal spaces, on both the excerpt and the page text. This extends the 2026-10-06 answer, which
+  ignored only spacing, line breaks, and letter case. Paraphrases still fail. (FR-007)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -282,7 +286,8 @@ unchanged after a second run.
 - **FR-007**: Every citation MUST record the source's location, its date, its reliability, and the
   excerpt that supports the claim. Each citation MUST be checked during the run to confirm that the
   source can be retrieved and contains that excerpt word for word. Only differences in spacing, line
-  breaks, and letter case are ignored. Paraphrase or meaning-based matches MUST NOT pass. A claim
+  breaks, letter case, quote style (curly or straight), dash style (en or em dash or hyphen), and
+  non-breaking spaces are ignored. Paraphrase or meaning-based matches MUST NOT pass. A claim
   whose citation fails the check MUST be recorded as an explicit unknown.
 - **FR-008**: Each company's own website MUST be checked during the run to confirm that it loads. A
   company whose website does not load MUST be marked as failing the existence check. A company known

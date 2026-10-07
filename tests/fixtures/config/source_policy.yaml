@@ -1,0 +1,21 @@
+# Test source policy: fictional .test domains only (Constitution IX). linkedin.com stays on the
+# denylist so scenarios can prove a denylisted search result is never fetched.
+userAgent: "HipStrawMM-test/0.1"
+denylistDomains:
+  - linkedin.com
+  - denied.example.test
+reliabilityBySourceType:
+  registry: high
+  news: medium
+  company_site: medium
+  job_board: medium
+  directory: low
+reliabilityWeights:
+  high: 1.0
+  medium: 0.7
+  low: 0.4
+sourceTypeDomains:
+  registry: [registry.example.test]
+  job_board: [jobs.example.test]
+  directory: [list.example.test]
+  news: [news.example.test]

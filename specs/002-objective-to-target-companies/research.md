@@ -57,17 +57,18 @@ environment files, never values.
 ## R4. Citation check (exact excerpt match)
 
 - **Decision**: A citation passes only if both checks hold:
-  1. The excerpt appears in the retrieved page text after normalizing both sides:
-     `casefold()` plus collapsing every run of whitespace to a single space. Nothing else is
-     normalized.
+  1. The excerpt appears in the retrieved page text after normalizing both sides: curly quotes
+     mapped to straight quotes, en and em dashes mapped to hyphens, non-breaking spaces mapped to
+     normal spaces, then `casefold()` and collapsing every run of whitespace to a single space.
+     Nothing else is normalized.
   2. For structured claims (headquarters city, employee count, revenue, parent company), the claimed
      value appears inside the excerpt.
 
   Each evidence record stores the URL, the fetch time, and a SHA-256 hash of the page text the check
   ran against. The model is told to copy excerpts verbatim from the text it was given (at most 300
   characters).
-- **Rationale**: This implements the 2026-10-06 clarification (only spacing, line breaks, and letter
-  case are ignored). The second check stops a correct excerpt being attached to a wrong value.
+- **Rationale**: This implements the 2026-10-06 clarification (spacing, line breaks, and letter case
+  are ignored), extended on 2026-10-07 to ignore quote style, dash style, and non-breaking spaces. The second check stops a correct excerpt being attached to a wrong value.
 - **Identifier check and existence (FR-008, FR-016)**:
   - The company's own website must load (2xx), with redirects only within the same company key or
     its subdomains.

@@ -114,16 +114,16 @@ logging, schemas, and the CLI shell. Every later phase depends on these.
 
 ### Tests for Phase 2 (write first; they must fail)
 
-- [ ] T009 [P] Unit tests for the excerpt check in `tests/unit/test_excerpt_check.py`:
-  - Normalization is "`casefold()` plus collapsing every run of whitespace to a single space. Nothing else is normalized".
+- [x] T009 [P] Unit tests for the excerpt check in `tests/unit/test_excerpt_check.py`:
+  - Normalization maps curly quotes to straight quotes, en and em dashes to hyphens, and non-breaking spaces to normal spaces, then applies `casefold()` and collapses every run of whitespace to a single space, on both sides. Nothing else is normalized.
   - An exact substring passes, and so do differences only in case or line breaks.
   - A paraphrase fails with `excerpt_not_found`.
-  - A curly vs. straight quote difference fails.
+  - An excerpt with straight quotes matches a page with curly quotes; the same holds for dashes and non-breaking spaces.
   - A structured claim whose value is not inside the excerpt fails with `value_not_in_excerpt`.
   - An excerpt over 300 characters fails with `excerpt_too_long`.
   - An excerpt containing an email address or phone number fails with `contains_contact_data`.
   - An excerpt naming a person (for example, "CEO Jane Roe said") passes (FR-018).
-- [ ] T010 [P] Unit tests for config loading in `tests/unit/test_config.py`:
+- [x] T010 [P] Unit tests for config loading in `tests/unit/test_config.py`:
   - The shipped config files load.
   - `experimentContexts` must have exactly 6 entries, and so must `primaryInterests`.
   - `projectId` must start with `demo-`.
@@ -133,40 +133,41 @@ logging, schemas, and the CLI shell. Every later phase depends on these.
   - `sourceTypeDomains` accepts only the categories `registry`, `job_board`, `directory`, and `news`.
   - The first-position file requires `candidateId`, `segment`, `companyArchetype`, `buyer`, `problem`, `trigger`, and `primaryInterestIds` (at least 1, known IDs only). `searchHints` is optional.
   - `${LLM_MODEL}` resolves from the environment.
-- [ ] T011 [P] Store contract tests in `tests/contract/test_store_contract.py`, parametrized over `MemoryStore` and `FirestoreStore` (the Firestore variant is marked `emulator` and runs only with `--emulator`):
+- [x] T011 [P] Store contract tests in `tests/contract/test_store_contract.py`, parametrized over `MemoryStore` and `FirestoreStore` (the Firestore variant is marked `emulator` and runs only with `--emulator`):
   - Every collection in data-model.md can be created and read back.
   - Creating `positionBaselines/{runId}`, `reviewDecisions/{id}`, or `evidence/{id}` twice raises an error.
   - The store protocol has no update method for those three collections.
   - Run status transitions follow "created → discovered → verified → reviewed → reported", plus `failed` from any step. An out-of-order transition raises an error.
-- [ ] T012 [P] Replay tests in `tests/unit/test_replay.py`:
+- [x] T012 [P] Replay tests in `tests/unit/test_replay.py`:
   - Replay returns the recorded response for a match key (fetch: URL; search: query; model: schema name + stable ID).
   - A missing recording raises `ReplayMissingError` and never touches the network.
   - Record mode writes `{matchKey, request, response}` JSON to `tests/fixtures/recorded/<scenario>/<kind>/<sha256(matchKey)>.json`.
   - Record mode replaces the `Authorization` and `X-Subscription-Token` headers, and any `api_key` value, with `[redacted]` before writing.
-- [ ] T013 [P] Fetch adapter tests in `tests/unit/test_fetch.py`, using replayed responses:
+- [x] T013 [P] Fetch adapter tests in `tests/unit/test_fetch.py`, using replayed responses:
   - A `robots.txt` disallow gives `robots_disallowed`.
   - A domain on `denylistDomains` gives `denylisted` without any request being made.
   - Non-`text/html` responses are skipped, and responses over `maxBytes` are rejected.
   - HTML to text drops `script` and `style` content.
   - Outbound links are returned as `[{linkId, href, anchorText}]`.
-- [ ] T014 Test harness in `tests/conftest.py`:
+  - **Redirect rule** (FR-008): with `same_company_only`, redirects to `www.` or another subdomain of the same company key are followed; a redirect to another company key, or to a look-alike host such as `notacme.test`, stops with `redirect_off_site` and the 3xx status. Every hop is checked against the denylist and `robots.txt`.
+- [x] T014 Test harness in `tests/conftest.py`:
   - a `--emulator` CLI option that skips `emulator`-marked tests unless it is given and `FIRESTORE_EMULATOR_HOST` is set, and allows sockets to localhost only in that case;
   - a `memory_store` fixture;
   - a `replay_adapters(scenario)` fixture that builds the model, search, and fetch adapters in replay mode for `tests/fixtures/recorded/<scenario>/`;
   - a `test_config` fixture that loads `config/` overrides from `tests/fixtures/config/`, where `sourceTypeDomains` and the denylist use `.test` domains.
-- [ ] T015 [P] Adapter contract tests in `tests/contract/test_adapters_real.py`, replaying the real recordings in `tests/fixtures/recorded/real/` (Constitution IV):
+- [x] T015 [P] Adapter contract tests in `tests/contract/test_adapters_real.py`, replaying the real recordings in `tests/fixtures/recorded/real/` (Constitution IV):
   - The Brave adapter returns at least 1 `{url, title, snippet}`.
   - The fetch adapter returns status 200, non-empty `text`, a `links` list, and a `robots.txt` decision.
   - Each of the five schemas (`QueryPlan`, `ListingExtraction`, `HomepageIdentity`, `CompanyEvidence`, `ReviewJudgement`) parses from its recorded OpenAI response.
   - No recorded file contains a value from the `OPENAI_API_KEY` or `BRAVE_API_KEY` environment variables, or any `sk-` key-like string.
 
   These tests fail until T030 records the responses.
-- [ ] T016 Run `pytest tests/unit tests/contract` to confirm the Phase 2 tests fail, then present them for **user approval** before writing code in `src/hipstraw_mm/` (Constitution III)
+- [x] T016 Run `pytest tests/unit tests/contract` to confirm the Phase 2 tests fail, then present them for **user approval** before writing code in `src/hipstraw_mm/` (Constitution III)
 
 ### Implementation for Phase 2
 
-- [ ] T017 [P] Implement Pydantic config models and loaders for all four config files and the first-position file in `src/hipstraw_mm/config.py`, enforcing every rule tested in T010
-- [ ] T018 [P] Implement domain models in `src/hipstraw_mm/models.py` exactly as in data-model.md:
+- [x] T017 [P] Implement Pydantic config models and loaders for all four config files and the first-position file in `src/hipstraw_mm/config.py`, enforcing every rule tested in T010
+- [x] T018 [P] Implement domain models in `src/hipstraw_mm/models.py` exactly as in data-model.md:
   - **Enums**:
     - run `status`: `created`, `discovered`, `verified`, `reviewed`, `reported`, `failed`;
     - `claimField`: `origin`, `existence`, `hq`, `employees`, `revenue`, `parent`, `fit_buyer`, `fit_problem`, `fit_trigger`, `signal_pain`, `signal_exploration`;
@@ -180,42 +181,42 @@ logging, schemas, and the CLI shell. Every later phase depends on these.
   - `domain_key(url)`: "the website's host in lowercase, with a leading `www.` removed and dots replaced by `-`".
   - `registry_key(name)`: "`registry-` plus its name in lowercase with every run of non-alphanumeric characters replaced by `-`".
   - `runId` format: `run_<UTC yyyymmddThhmmss>`.
-- [ ] T019 Implement the excerpt check in `src/hipstraw_mm/evidence/excerpt_check.py` (depends on T018), making T009 pass
-- [ ] T020 [P] Implement JSON-lines logging in `src/hipstraw_mm/logging_setup.py`:
+- [x] T019 Implement the excerpt check in `src/hipstraw_mm/evidence/excerpt_check.py` (depends on T018), making T009 pass
+- [x] T020 [P] Implement JSON-lines logging in `src/hipstraw_mm/logging_setup.py`:
   - output to stderr and to `.runs/<runId>/run.log`;
   - each event carries `runId`, `step`, and optional `companyRecordId`;
   - values of `OPENAI_API_KEY` and `BRAVE_API_KEY` are never logged.
-- [ ] T021 Define the `Store` protocol in `src/hipstraw_mm/store/base.py` (depends on T018):
+- [x] T021 Define the `Store` protocol in `src/hipstraw_mm/store/base.py` (depends on T018):
   - create and get methods for each collection;
   - upsert only for `programs`, `marketCandidates`, `runs`, and `companyRecords`;
   - create-only for `evidence`, `reviewDecisions`, and `positionBaselines`;
   - `transition_run(runId, from_status, to_status)` enforcing the state machine.
-- [ ] T022 [P] Implement `MemoryStore` in `src/hipstraw_mm/store/memory.py` (depends on T021)
-- [ ] T023 [P] Implement `FirestoreStore` in `src/hipstraw_mm/store/firestore.py` (depends on T021):
+- [x] T022 [P] Implement `MemoryStore` in `src/hipstraw_mm/store/memory.py` (depends on T021)
+- [x] T023 [P] Implement `FirestoreStore` in `src/hipstraw_mm/store/firestore.py` (depends on T021):
   - Use `google-cloud-firestore`.
   - Refuse to start unless `FIRESTORE_EMULATOR_HOST` is set and the project ID starts with `demo-`.
   - Use `document.create()` for create-only collections.
   - Use the collection names `programs`, `marketCandidates`, `runs`, `companyRecords`, `evidence`, `reviewDecisions`, `positionBaselines`, `demoReports`.
-- [ ] T024 Implement record and replay in `src/hipstraw_mm/adapters/replay.py` (depends on T018), making T012 pass, including the secret redaction. The mode comes from `HIPSTRAW_REPLAY` (`replay` or `record`, defaulting to off outside tests).
-- [ ] T025 [P] Implement the OpenAI client in `src/hipstraw_mm/adapters/llm.py`:
+- [x] T024 Implement record and replay in `src/hipstraw_mm/adapters/replay.py` (depends on T018), making T012 pass, including the secret redaction. The mode comes from `HIPSTRAW_REPLAY` (`replay` or `record`, defaulting to off outside tests).
+- [x] T025 [P] Implement the OpenAI client in `src/hipstraw_mm/adapters/llm.py`:
   - `parse(schema, messages, match_key, prompt_version)` via `client.chat.completions.parse` with strict structured output;
   - no `tools` parameter;
   - one retry on a schema validation failure, then raise `LLMSchemaError`;
   - logs the schema name, prompt version, and model;
   - wrapped by replay.
-- [ ] T026 [P] Implement the Brave Search client in `src/hipstraw_mm/adapters/search.py`:
+- [x] T026 [P] Implement the Brave Search client in `src/hipstraw_mm/adapters/search.py`:
   - `GET https://api.search.brave.com/res/v1/web/search` with the `X-Subscription-Token` header and `q` and `count` parameters;
   - returns `[{url, title, snippet}]`;
   - drops results on denylisted domains;
   - wrapped by replay.
-- [ ] T027 [P] Implement the fetcher in `src/hipstraw_mm/adapters/fetch.py`, making T013 pass:
+- [x] T027 [P] Implement the fetcher in `src/hipstraw_mm/adapters/fetch.py`, making T013 pass:
   - `httpx` with the `userAgent` from the source policy, `timeoutSeconds`, `maxBytes`, and `perHostDelaySeconds`;
   - `urllib.robotparser`, cached per host per run, and the denylist check;
   - BeautifulSoup `html.parser` for text, plus links with `linkId`s;
   - returns `{url, finalUrl, redirectChain, status, text, links, contentSha256, fetchedAt, failReason}`;
   - wrapped by replay.
-- [ ] T028 [P] Define the five Pydantic schemas `QueryPlan`, `ListingExtraction`, `HomepageIdentity`, `CompanyEvidence`, and `ReviewJudgement` in `src/hipstraw_mm/llm_schemas.py`, exactly as in contracts/llm-outputs.md. No person, email, or phone fields.
-- [ ] T029 Implement the CLI shell in `src/hipstraw_mm/cli.py` per contracts/cli.md:
+- [x] T028 [P] Define the five Pydantic schemas `QueryPlan`, `ListingExtraction`, `HomepageIdentity`, `CompanyEvidence`, and `ReviewJudgement` in `src/hipstraw_mm/llm_schemas.py`, exactly as in contracts/llm-outputs.md. No person, email, or phone fields.
+- [x] T029 Implement the CLI shell in `src/hipstraw_mm/cli.py` per contracts/cli.md:
   - argparse subcommands `intake`, `candidates`, `position`, `discover`, `verify`, `review`, `report`, `run`, `show`;
   - global `--config-dir` and `--json`;
   - exit codes 0–4;

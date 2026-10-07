@@ -1,0 +1,24 @@
+projectId: demo-hipstraw-mvp
+constraints:
+  maxEmployees: 500
+  maxRevenueUsd: 100000000
+  metroIds: [atlanta, san_francisco, new_york]
+  largeEnterpriseParents: []
+budgets:
+  discoveryQueries: 6
+  resultsPerQuery: 10
+  listingPagesFetched: 12
+  profileHopsPerRun: 10
+  companiesKept: 10
+  ownSitePagesPerCompany: 6
+  signalSearchesPerCompany: 3
+  thirdPartyPagesPerCompany: 4
+  verifyFetchesPerRun: 110
+  verifyModelCallsPerRun: 20
+fetch:
+  timeoutSeconds: 15
+  maxBytes: 2000000
+  perHostDelaySeconds: 1.0
+  maxPageChars: 20000
+model:
+  name: test-model
