@@ -239,7 +239,7 @@ The judgement can never turn a rule-gate failure into `include` (research R9).
    - Registry-only companies are not fetched → `no_website`.
    - `nameMatchesDomain`: true when some label of the website's host (hyphens removed) contains the
      company's compact normalized name, or is contained in it, or contains the name's first word of
-     three or more characters. Otherwise false (for example Addison Health Systems → writepad.com).
+     three or more characters other than "the". Otherwise false (for example Addison Health Systems → writepad.com).
 2. **Existence evidence (FR-016)**: for a website that resolves, build one `existence` evidence
    document from the homepage text, or, if the homepage does not name the company, from the first
    already-fetched about or contact page that does, as defined in data-model.md. Its excerpt is the text around the

@@ -61,8 +61,14 @@ def rule_gate(record: Doc, evidence_by_id: dict[str, Doc]) -> GateResult:
         existence = ("unknown", "registry-only: no website, so existence cannot be checked")
     elif status == "resolves" and _passed(evidence_by_id.get(record.get("existenceEvidenceId") or "")):
         existence = ("pass", "")
+    elif status == "resolves" and identifier.get("nameMatchesDomain") is False:
+        existence = (
+            "unknown",
+            f"the website {record.get('domain')} does not carry the company's name, and neither its homepage "
+            f"nor its about or contact pages name {record.get('name')}",
+        )
     elif status == "resolves":
-        existence = ("unknown", "the homepage citation naming the company failed its check")
+        existence = ("unknown", "no page read on the website names the company")
     else:
         existence = ("unknown", "the website was not checked")
     results.append(({"rule": "existence", "outcome": existence[0], "evidenceIds": existence_ids}, existence[1]))

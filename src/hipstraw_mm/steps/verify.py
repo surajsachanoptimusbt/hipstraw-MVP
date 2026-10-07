@@ -22,7 +22,7 @@ from hipstraw_mm.adapters.llm import LLMSchemaError
 from hipstraw_mm.config import Metro
 from hipstraw_mm.context import CommandResult, Context
 from hipstraw_mm.evidence.excerpt_check import MAX_EXCERPT_CHARS, WITHHELD_EXCERPT, CheckResult, check_excerpt
-from hipstraw_mm.evidence.existence import existence_excerpt, website_status
+from hipstraw_mm.evidence.existence import find_existence, name_matches_domain, website_status
 from hipstraw_mm.evidence.location import evaluate_hq
 from hipstraw_mm.evidence.size import evaluate_size
 from hipstraw_mm.llm_schemas import CompanyEvidence
@@ -193,6 +193,7 @@ class _Verification:
             "httpStatus": home.status,
             "finalUrl": home.final_url,
             "failReason": home.fail_reason,
+            "nameMatchesDomain": name_matches_domain(name, domain),
             "checkedAt": self.ctx.now_iso(),
         }
         if status != "resolves":
@@ -211,8 +212,9 @@ class _Verification:
             }
 
         self.counts["companiesVerified"] += 1
-        existence_id, existence_check = self._existence_evidence(record_id, name, home)
-        extraction = self._extract(record_id, name, domain, [home, *self._own_site_pages(home)])
+        pages = [home, *self._own_site_pages(home)]
+        existence_id, existence_check = self._existence_evidence(record_id, name, pages)
+        extraction = self._extract(record_id, name, domain, pages)
 
         constraints = self.run["constraintsInForce"]
         hq = evaluate_hq([(value, eid) for _, value, eid in extraction.passing("hq")], self.metros)
@@ -253,11 +255,14 @@ class _Verification:
             "confidence": None,  # T054 computes confidence
         }
 
-    def _existence_evidence(self, record_id: str, name: str, home: FetchResult) -> tuple[str, CheckResult]:
-        text = home.text or ""
-        excerpt = existence_excerpt(text, name)
+    def _existence_evidence(self, record_id: str, name: str, pages: list[FetchResult]) -> tuple[str, CheckResult]:
+        """From the homepage, or an already-fetched about or contact page that names the company."""
+        by_url = {page.final_url or page.url: page for page in pages}
+        url, excerpt = find_existence([(u, p.text or "") for u, p in by_url.items()], name)
+        page = by_url[url]
+        text = page.text or ""
         check = check_excerpt(excerpt, text, claim_value=name) if excerpt else CheckResult("fail", "excerpt_not_found")
-        return self._store_evidence(record_id, "existence", name, home, excerpt, check), check
+        return self._store_evidence(record_id, "existence", name, page, excerpt, check), check
 
     def _own_site_pages(self, home: FetchResult) -> list[FetchResult]:
         """Own-site pages linked from the homepage whose path names an about, careers, ... page."""

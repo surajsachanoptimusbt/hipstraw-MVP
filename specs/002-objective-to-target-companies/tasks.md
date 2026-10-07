@@ -514,7 +514,7 @@ acceptance scenarios 1–9 and US2 scenarios 9–10, using recorded responses.
   - Add `conflict` to the `hq` status.
   - Write `scripts/build_metro_places.py`, which builds complete place lists from the Census CSA delineation file and the place-to-county relationship file, and commit the regenerated `config/metros.yaml`, with the source files and their dates in its header. Convert `tests/fixtures/config/metros.yaml` to the new shape.
   - In `src/hipstraw_mm/steps/review.py`, `not_met` → `exclude`, and `conflict` → `needs_verification` with both places.
-- [ ] T084 [US1] **Name–domain mismatch** (research R4), making T078's `name_matches_domain` cases and T079's name–domain rows pass:
+- [x] T084 [US1] **Name–domain mismatch** (research R4), making T078's `name_matches_domain` cases and T079's name–domain rows pass:
   - Implement `name_matches_domain`.
   - Store `identifierCheck.nameMatchesDomain` in `src/hipstraw_mm/steps/verify.py`.
   - When the existence citation fails and the names do not match, the review reason names the website and the company.

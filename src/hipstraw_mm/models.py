@@ -161,6 +161,7 @@ class IdentifierCheck(Doc):
     httpStatus: int | None = None
     finalUrl: str | None = None
     failReason: str | None = None  # the fetcher's reason when the website was not read
+    nameMatchesDomain: bool | None = None  # None for registry-only companies (research R4)
     checkedAt: str
 
 
