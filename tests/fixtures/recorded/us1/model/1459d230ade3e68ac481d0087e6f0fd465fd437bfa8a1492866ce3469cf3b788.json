@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:xenon-contracts.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"Jersey City, NJ\",\"sourceId\":\"s2\",\"excerpt\":\"Xenon Contracts is headquartered in Jersey City, NJ.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"95\",\"sourceId\":\"s2\",\"excerpt\":\"Xenon Contracts has 95 employees.\"},{\"claimId\":\"c3\",\"claimField\":\"parent\",\"claimValue\":\"Heron Holdings\",\"sourceId\":\"s2\",\"excerpt\":\"Xenon Contracts is a subsidiary of Heron Holdings, which employs 12,000 people.\"},{\"claimId\":\"c4\",\"claimField\":\"parent_employees\",\"claimValue\":\"12,000\",\"sourceId\":\"s2\",\"excerpt\":\"Xenon Contracts is a subsidiary of Heron Holdings, which employs 12,000 people.\"},{\"claimId\":\"c5\",\"claimField\":\"signal_pain\",\"claimValue\":\"Procurement Specialist hiring\",\"sourceId\":\"s3\",\"excerpt\":\"Xenon Contracts is hiring a Procurement Specialist to track supplier invoices.\"}],\"fitClaims\":[],\"interestSignals\":[{\"kind\":\"pain\",\"statement\":\"Hiring a Procurement Specialist.\",\"claimIds\":[\"c5\"]}],\"falsifier\":\"Xenon Contracts belongs to a large enterprise.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

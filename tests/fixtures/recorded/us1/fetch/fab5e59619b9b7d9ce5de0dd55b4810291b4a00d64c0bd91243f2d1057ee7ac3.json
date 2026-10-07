@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://news.example.test/ny-saas-list",
+  "request": {
+    "url": "https://news.example.test/ny-saas-list",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>New York SaaS companies</h1>\n<p>Tamarack AP, New York, NY: accounts payable software for agencies. <a href=\"https://tamarack-ap.test/\">Tamarack AP</a></p>\n<p>Umber Freight, New York, NY: freight invoice auditing software. <a href=\"https://umber-freight.test/\">Umber Freight</a></p>\n<p>Vetch Payments, New York, NY: vendor payment software. <a href=\"https://vetch-payments.test/\">Vetch Payments</a></p>\n<p>Xenon Contracts, Jersey City, NJ: contract management for procurement teams. <a href=\"https://xenon-contracts.test/\">Xenon Contracts</a></p>\n<p>Yucca Procure, Brooklyn, NY: procurement software for SaaS renewals. <a href=\"https://yucca-procure.test/\">Yucca Procure</a></p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

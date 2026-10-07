@@ -24,7 +24,7 @@ from hipstraw_mm.context import CommandResult, Context
 from hipstraw_mm.evidence.excerpt_check import MAX_EXCERPT_CHARS, WITHHELD_EXCERPT, CheckResult, check_excerpt
 from hipstraw_mm.evidence.existence import find_existence, name_matches_domain, website_status
 from hipstraw_mm.evidence.location import evaluate_hq
-from hipstraw_mm.evidence.size import evaluate_size
+from hipstraw_mm.evidence.size import evaluate_parent, evaluate_size
 from hipstraw_mm.llm_schemas import CompanyEvidence
 from hipstraw_mm.models import CompanyRecord, Evidence, same_company_or_subdomain
 from hipstraw_mm.steps.common import (
@@ -39,8 +39,9 @@ from hipstraw_mm.steps.common import (
 from hipstraw_mm.store.base import Doc
 
 STEP = "verify"
+PARENT_SIZE_FIELDS = ("parent_employees", "parent_revenue")
 OWN_SITE_KEYWORDS = ("about", "company", "careers", "jobs", "contact", "locations", "press", "news")
-STRUCTURED_FIELDS = {"hq", "employees", "revenue", "parent"}
+STRUCTURED_FIELDS = {"hq", "employees", "revenue", "parent", "parent_employees", "parent_revenue"}
 CLAIM_ITEMS = ("hq", "size", "fit", "interestSignal")
 EMPTY_HQ: dict[str, Any] = {"city": None, "state": None, "status": "unknown", "evidenceIds": []}
 EMPTY_SIZE: dict[str, Any] = {"signals": [], "status": "unknown"}
@@ -233,8 +234,17 @@ class _Verification:
             unknowns.append(_unknown("hq", extraction.missing_reason("hq")))
         if not size["signals"]:
             unknowns.append(_unknown("size", extraction.missing_reason("size")))
-        if extraction.failed.get("parent") and not extraction.passing("parent"):
+        parent = evaluate_parent(
+            [(value, eid) for _, value, eid in extraction.passing("parent")],
+            [(f.removeprefix("parent_"), value, eid) for f, value, eid in extraction.passing(*PARENT_SIZE_FIELDS)],
+            constraints.get("largeEnterpriseParents", []),
+            constraints["maxEmployees"],
+            constraints["maxRevenueUsd"],
+        )
+        if parent is None and extraction.failed.get("parent"):
             unknowns.append(_unknown("parent", extraction.missing_reason("parent")))
+        elif parent is not None and parent["status"] == "unknown_size":
+            unknowns.append(_unknown("parent", f"no passing citation for the size of the parent {parent['name']}"))
         if not fit_claims:
             unknowns.append(_unknown("fit", extraction.missing_reason("fit")))
         if not interest_signals:
@@ -247,7 +257,7 @@ class _Verification:
             "existenceEvidenceId": existence_id,
             "hq": hq,
             "size": size,
-            "parent": None,  # parent evaluation comes with T053
+            "parent": parent,
             "fitClaims": fit_claims,
             "interestSignals": interest_signals,
             "unknowns": unknowns,

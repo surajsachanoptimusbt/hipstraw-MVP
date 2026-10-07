@@ -1,0 +1,21 @@
+{
+  "matchKey": "San Francisco Bay Area SaaS companies hiring finance staff",
+  "request": {
+    "params": {
+      "q": "San Francisco Bay Area SaaS companies hiring finance staff"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "web": {
+      "results": [
+        {
+          "url": "https://list.example.test/bay-area-finance-saas",
+          "title": "Bay Area SaaS companies hiring finance staff",
+          "description": "SaaS companies in the Bay Area that are growing their finance teams."
+        }
+      ]
+    }
+  }
+}

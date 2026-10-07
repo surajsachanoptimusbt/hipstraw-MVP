@@ -1,0 +1,14 @@
+{
+  "matchKey": "ReviewJudgement:run_20261007T101500__yucca-procure-test",
+  "request": {
+    "schema": "ReviewJudgement",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"falsifierMet\":false,\"fitHolds\":true,\"citedEvidenceIds\":[\"ev_run_20261007T101500_9999\"],\"reason\":\"Brooklyn company under the size limit, hiring for SaaS renewals.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

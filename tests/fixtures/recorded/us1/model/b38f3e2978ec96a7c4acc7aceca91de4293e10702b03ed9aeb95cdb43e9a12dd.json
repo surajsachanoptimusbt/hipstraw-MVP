@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:umber-freight.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"Buffalo, NY\",\"sourceId\":\"s2\",\"excerpt\":\"Umber Freight is headquartered in Buffalo, NY.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"150\",\"sourceId\":\"s2\",\"excerpt\":\"Umber Freight has 150 employees.\"},{\"claimId\":\"c3\",\"claimField\":\"signal_pain\",\"claimValue\":\"Accounts Payable Clerk hiring\",\"sourceId\":\"s3\",\"excerpt\":\"Umber Freight is hiring an Accounts Payable Clerk to audit carrier invoices.\"}],\"fitClaims\":[],\"interestSignals\":[{\"kind\":\"pain\",\"statement\":\"Hiring an Accounts Payable Clerk.\",\"claimIds\":[\"c3\"]}],\"falsifier\":\"Umber Freight is headquartered outside the metros in force.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

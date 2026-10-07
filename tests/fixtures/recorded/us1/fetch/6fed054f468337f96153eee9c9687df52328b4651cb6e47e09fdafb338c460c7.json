@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://palisade-ledger.test/careers",
+  "request": {
+    "url": "https://palisade-ledger.test/careers",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Careers at Palisade Ledger</h1>\n<p>Palisade Ledger is exploring AI agents to match vendor invoices against contract terms.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

@@ -519,7 +519,7 @@ acceptance scenarios 1–9 and US2 scenarios 9–10, using recorded responses.
   - Store `identifierCheck.nameMatchesDomain` in `src/hipstraw_mm/steps/verify.py`.
   - When the existence citation fails and the names do not match, the review reason names the website and the company.
   - **Existence from about or contact pages** (FR-016, added at the T051 review): `find_existence` in `existence.py` searches the homepage, then the already-fetched own-site pages whose path contains `about` or `contact`, in fetch order. There are no extra fetches, and own-site pages are now fetched before the existence evidence is built. Tests: `TestFindExistence` in `test_website_checks.py`, and Teasel Systems (named only on its about page) in `us1_sites`.
-- [ ] T053 [US1] **Parent-company check**: complete size, range, conflict, and parent evaluation in `src/hipstraw_mm/evidence/size.py` per research R6, making T047 pass:
+- [x] T053 [US1] **Parent-company check**: complete size, range, conflict, and parent evaluation in `src/hipstraw_mm/evidence/size.py` per research R6, making T047 pass:
   - Add the `parent_employees` and `parent_revenue` claim fields (schema, `company_evidence.v2.txt`, `models.py`, and the unknowns mapping).
   - Fill `parent` in `src/hipstraw_mm/steps/verify.py`.
   - Add the `large_enterprise` rule to `src/hipstraw_mm/steps/review.py` (moved here from T064), so `large` → `exclude` and `unknown_size` → `needs_verification`.

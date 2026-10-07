@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:palisade-ledger.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"Palo Alto, CA\",\"sourceId\":\"s2\",\"excerpt\":\"Palisade Ledger is headquartered in Palo Alto, CA.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"75\",\"sourceId\":\"s2\",\"excerpt\":\"Palisade Ledger has 75 employees.\"},{\"claimId\":\"c3\",\"claimField\":\"signal_exploration\",\"claimValue\":\"AI agents for invoice matching\",\"sourceId\":\"s3\",\"excerpt\":\"Palisade Ledger is exploring AI agents to match vendor invoices against contract terms.\"},{\"claimId\":\"c4\",\"claimField\":\"fit_problem\",\"claimValue\":\"invoice drift\",\"sourceId\":\"s4\",\"excerpt\":\"\\\"Our customers lose money to invoice drift every month,\\\" said Dana Whitfield, chief financial officer of Palisade Ledger.\"}],\"fitClaims\":[{\"aspect\":\"problem\",\"statement\":\"Palisade Ledger sees invoice drift as a monthly cost.\",\"primaryInterestIds\":[\"invoice_accuracy_entitlement\"],\"claimIds\":[\"c4\"]}],\"interestSignals\":[{\"kind\":\"exploration\",\"statement\":\"Exploring AI agents to match vendor invoices against contracts.\",\"claimIds\":[\"c3\"]}],\"falsifier\":\"Palisade Ledger is a subsidiary of a large enterprise, or has 500 or more employees.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

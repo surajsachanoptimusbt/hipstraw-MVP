@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://jobs.example.test/tamarack-ap/accounts-payable-specialist",
+  "request": {
+    "url": "https://jobs.example.test/tamarack-ap/accounts-payable-specialist",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Accounts Payable Specialist at Tamarack AP</h1>\n<p>Tamarack AP is hiring an Accounts Payable Specialist to process recurring vendor invoices.</p>\n<p>Location: New York, NY.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

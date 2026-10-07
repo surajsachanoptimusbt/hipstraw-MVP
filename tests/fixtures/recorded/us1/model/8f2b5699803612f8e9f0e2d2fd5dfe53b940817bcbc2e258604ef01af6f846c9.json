@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:yucca-procure.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"Brooklyn, NY\",\"sourceId\":\"s2\",\"excerpt\":\"Yucca Procure is headquartered in Brooklyn, NY.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"30\",\"sourceId\":\"s2\",\"excerpt\":\"Yucca Procure has 30 employees.\"},{\"claimId\":\"c3\",\"claimField\":\"signal_pain\",\"claimValue\":\"Procurement Coordinator hiring\",\"sourceId\":\"s3\",\"excerpt\":\"Yucca Procure is hiring a Procurement Coordinator to manage SaaS renewals.\"}],\"fitClaims\":[{\"aspect\":\"trigger\",\"statement\":\"Yucca Procure is hiring to manage SaaS renewals.\",\"primaryInterestIds\":[\"continuous_obligation_intelligence\"],\"claimIds\":[\"c3\"]}],\"interestSignals\":[{\"kind\":\"pain\",\"statement\":\"Hiring a Procurement Coordinator for SaaS renewals.\",\"claimIds\":[\"c3\"]}],\"falsifier\":\"Yucca Procure is a subsidiary of a large enterprise, or has 500 or more employees.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

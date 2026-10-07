@@ -1,0 +1,15 @@
+{
+  "matchKey": "\"Saffron Bill\" accounts payable OR procurement job",
+  "request": {
+    "params": {
+      "q": "\"Saffron Bill\" accounts payable OR procurement job"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "web": {
+      "results": []
+    }
+  }
+}

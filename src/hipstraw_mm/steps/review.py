@@ -45,6 +45,16 @@ def _size_values(record: Doc, evidence_by_id: dict[str, Doc]) -> str:
     return " and ".join(values) or "no figures"
 
 
+def _parent_evidence(parent: Doc, evidence_by_id: dict[str, Doc]) -> str:
+    """What shows the parent is large: its cited size, or the configured list."""
+    figures = [
+        f"{evidence_by_id[i]['claimValue']} {evidence_by_id[i]['claimField'].removeprefix('parent_')}"
+        for i in parent.get("evidenceIds", [])
+        if i in evidence_by_id and evidence_by_id[i]["claimField"] in ("parent_employees", "parent_revenue")
+    ]
+    return ", ".join(figures) if figures else "on the configured list of large enterprises"
+
+
 def rule_gate(record: Doc, evidence_by_id: dict[str, Doc]) -> GateResult:
     """Research R9 rules: a failed rule excludes; an unknown or conflicting one needs verification."""
     results: list[tuple[Doc, str]] = []
@@ -97,6 +107,20 @@ def rule_gate(record: Doc, evidence_by_id: dict[str, Doc]) -> GateResult:
         "unknown": "no passing size citation",
     }.get(size_outcome, "")
     results.append(({"rule": "size", "outcome": size_outcome, "evidenceIds": size_ids}, size_detail))
+
+    parent = record.get("parent")
+    if parent is None or parent.get("status") == "small":
+        parent_outcome, parent_detail = "pass", ""
+    elif parent.get("status") == "large":
+        parent_outcome = "fail"
+        parent_detail = (
+            f"the parent {parent['name']} is a large enterprise ({_parent_evidence(parent, evidence_by_id)})"
+        )
+    else:
+        parent_outcome = "unknown"
+        parent_detail = f"the parent {parent['name']} is of unknown size"
+    parent_ids = (parent or {}).get("evidenceIds", [])
+    results.append(({"rule": "large_enterprise", "outcome": parent_outcome, "evidenceIds": parent_ids}, parent_detail))
 
     signals = record.get("interestSignals") or []
     signal_ids = list(dict.fromkeys(i for s in signals for i in s["evidenceIds"]))

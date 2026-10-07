@@ -1,0 +1,15 @@
+{
+  "matchKey": "\"Yucca Procure\" accounts payable OR procurement job",
+  "request": {
+    "params": {
+      "q": "\"Yucca Procure\" accounts payable OR procurement job"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "web": {
+      "results": []
+    }
+  }
+}

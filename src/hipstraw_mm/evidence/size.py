@@ -1,4 +1,4 @@
-"""Size signals against the configured thresholds (research R6). Parent handling comes with T053.
+"""Size signals and the parent company against the configured thresholds (research R6).
 
 - Thresholds come from the run's constraints and are strict "less than".
 - A range uses its upper bound for the "under" test and its lower bound for the "over" test.
@@ -12,6 +12,7 @@ import re
 from typing import Any, Literal
 
 from hipstraw_mm.evidence.excerpt_check import normalize
+from hipstraw_mm.models import normalize_company_name
 
 SizeKind = Literal["employees", "revenue"]
 SizeStatus = Literal["under", "over", "conflict", "unknown"]
@@ -63,3 +64,30 @@ def evaluate_size(claims: list[tuple[str, str, str]], max_employees: int, max_re
         under = under or (high is not None and high < thresholds[kind])
     status: SizeStatus = "conflict" if over and under else "over" if over else "under" if under else "unknown"
     return {"signals": signals, "status": status}
+
+
+def evaluate_parent(
+    parents: list[tuple[str, str]],
+    parent_sizes: list[tuple[str, str, str]],
+    large_parents: list[str],
+    max_employees: int,
+    max_revenue_usd: int,
+) -> dict[str, Any] | None:
+    """`parents` are passing parent claims as (name, evidenceId); `parent_sizes` passing claims about
+    the parent's size as (employees | revenue, value, evidenceId). None when there is no parent.
+
+    large: the parent is on `largeEnterpriseParents` (normalized name), or some size figure reaches a
+    threshold; small: its figures are all under both; unknown_size: no figure.
+    """
+    if not parents:
+        return None
+    listed = {normalize_company_name(name) for name in large_parents}
+    size = evaluate_size(parent_sizes, max_employees, max_revenue_usd)
+    if any(normalize_company_name(name) in listed for name, _ in parents) or size["status"] in ("over", "conflict"):
+        status = "large"
+    elif size["status"] == "under":
+        status = "small"
+    else:
+        status = "unknown_size"
+    evidence_ids = list(dict.fromkeys([e for _, e in parents] + [e for _, _, e in parent_sizes]))
+    return {"name": parents[0][0], "evidenceIds": evidence_ids, "status": status}

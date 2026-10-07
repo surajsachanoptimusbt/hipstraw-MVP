@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:quarry-spend.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"San Jose, CA\",\"sourceId\":\"s2\",\"excerpt\":\"Quarry Spend is headquartered in San Jose, CA.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"450\",\"sourceId\":\"s2\",\"excerpt\":\"Quarry Spend has 450 employees.\"},{\"claimId\":\"c3\",\"claimField\":\"employees\",\"claimValue\":\"620\",\"sourceId\":\"s4\",\"excerpt\":\"Quarry Spend now employs 620 people across three offices.\"},{\"claimId\":\"c4\",\"claimField\":\"signal_pain\",\"claimValue\":\"Accounts Payable Analyst hiring\",\"sourceId\":\"s3\",\"excerpt\":\"Quarry Spend is hiring an Accounts Payable Analyst.\"}],\"fitClaims\":[{\"aspect\":\"trigger\",\"statement\":\"Quarry Spend is adding accounts payable staff.\",\"primaryInterestIds\":[\"invoice_accuracy_entitlement\"],\"claimIds\":[\"c4\"]}],\"interestSignals\":[{\"kind\":\"pain\",\"statement\":\"Hiring an Accounts Payable Analyst.\",\"claimIds\":[\"c4\"]}],\"falsifier\":\"Quarry Spend has 500 or more employees.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

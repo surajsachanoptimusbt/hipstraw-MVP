@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://umber-freight.test/",
+  "request": {
+    "url": "https://umber-freight.test/",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Umber Freight</h1>\n<p>Umber Freight audits freight invoices for shippers.</p>\n<a href=\"/about\">About</a>\n<a href=\"/careers\">Careers</a>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

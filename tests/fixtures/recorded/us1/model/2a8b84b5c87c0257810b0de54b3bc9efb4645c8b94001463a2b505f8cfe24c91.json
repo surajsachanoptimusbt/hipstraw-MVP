@@ -1,0 +1,14 @@
+{
+  "matchKey": "ReviewJudgement:run_20261007T101500__saffron-bill-test",
+  "request": {
+    "schema": "ReviewJudgement",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"falsifierMet\":false,\"fitHolds\":true,\"citedEvidenceIds\":[],\"reason\":\"Oakland company under the size limit, hiring AP staff to review vendor invoices.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

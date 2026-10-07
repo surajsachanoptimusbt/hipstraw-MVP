@@ -1,0 +1,26 @@
+{
+  "matchKey": "\"Tamarack AP\" accounts payable OR procurement job",
+  "request": {
+    "params": {
+      "q": "\"Tamarack AP\" accounts payable OR procurement job"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "web": {
+      "results": [
+        {
+          "url": "https://jobs.linkedin.com/view/tamarack-ap-accounts-payable",
+          "title": "Accounts Payable Specialist | LinkedIn",
+          "description": "Denylisted; never fetched."
+        },
+        {
+          "url": "https://jobs.example.test/tamarack-ap/accounts-payable-specialist",
+          "title": "Accounts Payable Specialist at Tamarack AP",
+          "description": "Process recurring vendor invoices."
+        }
+      ]
+    }
+  }
+}

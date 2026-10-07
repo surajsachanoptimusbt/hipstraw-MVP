@@ -1,0 +1,14 @@
+{
+  "matchKey": "QueryPlan:invoice_alpha_genesis__saas_recurring_fees",
+  "request": {
+    "schema": "QueryPlan",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"queries\":[{\"query\":\"San Francisco Bay Area SaaS companies hiring finance staff\",\"purpose\":\"Bay Area SaaS companies with growing finance teams\"},{\"query\":\"New York SaaS companies list\",\"purpose\":\"Local press lists of New York SaaS companies\"}]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

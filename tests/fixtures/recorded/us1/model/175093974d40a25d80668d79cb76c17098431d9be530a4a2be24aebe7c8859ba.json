@@ -1,0 +1,14 @@
+{
+  "matchKey": "ListingExtraction:https://news.example.test/ny-saas-list",
+  "request": {
+    "schema": "ListingExtraction",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"companies\":[{\"name\":\"Tamarack AP\",\"linkId\":\"L1\",\"excerpt\":\"Tamarack AP, New York, NY: accounts payable software for agencies.\",\"location\":\"New York, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Umber Freight\",\"linkId\":\"L2\",\"excerpt\":\"Umber Freight, New York, NY: freight invoice auditing software.\",\"location\":\"New York, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"partial\"},{\"name\":\"Vetch Payments\",\"linkId\":\"L3\",\"excerpt\":\"Vetch Payments, New York, NY: vendor payment software.\",\"location\":\"New York, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Xenon Contracts\",\"linkId\":\"L4\",\"excerpt\":\"Xenon Contracts, Jersey City, NJ: contract management for procurement teams.\",\"location\":\"Jersey City, NJ\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Yucca Procure\",\"linkId\":\"L5\",\"excerpt\":\"Yucca Procure, Brooklyn, NY: procurement software for SaaS renewals.\",\"location\":\"Brooklyn, NY\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"}]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

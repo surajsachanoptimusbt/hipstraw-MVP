@@ -1,0 +1,21 @@
+{
+  "matchKey": "New York SaaS companies list",
+  "request": {
+    "params": {
+      "q": "New York SaaS companies list"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "web": {
+      "results": [
+        {
+          "url": "https://news.example.test/ny-saas-list",
+          "title": "New York SaaS companies",
+          "description": "A list of New York SaaS companies."
+        }
+      ]
+    }
+  }
+}

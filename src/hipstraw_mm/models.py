@@ -27,6 +27,8 @@ ClaimField = Literal[
     "employees",
     "revenue",
     "parent",
+    "parent_employees",
+    "parent_revenue",
     "fit_buyer",
     "fit_problem",
     "fit_trigger",
@@ -185,9 +187,11 @@ class Size(Doc):
 
 
 class Parent(Doc):
-    name: str | None = None
+    """The company's parent (research R6). A record without a passing parent claim has `parent: null`."""
+
+    name: str
     evidenceIds: list[str] = []
-    status: Literal["none", "large", "unknown_size"] = "none"
+    status: Literal["small", "large", "unknown_size"]
 
 
 class FitClaim(Doc):

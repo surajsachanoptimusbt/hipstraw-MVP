@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:vetch-payments.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"New York, NY\",\"sourceId\":\"s2\",\"excerpt\":\"Vetch Payments is headquartered in New York, NY.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"200\",\"sourceId\":\"s2\",\"excerpt\":\"Vetch Payments has 200 employees.\"},{\"claimId\":\"c3\",\"claimField\":\"parent\",\"claimValue\":\"Omega Conglomerate\",\"sourceId\":\"s2\",\"excerpt\":\"Vetch Payments is a subsidiary of Omega Conglomerate.\"},{\"claimId\":\"c4\",\"claimField\":\"signal_pain\",\"claimValue\":\"Procurement Analyst hiring\",\"sourceId\":\"s3\",\"excerpt\":\"Vetch Payments is hiring a Procurement Analyst to review vendor contracts.\"}],\"fitClaims\":[],\"interestSignals\":[{\"kind\":\"pain\",\"statement\":\"Hiring a Procurement Analyst.\",\"claimIds\":[\"c4\"]}],\"falsifier\":\"Vetch Payments belongs to a large enterprise.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

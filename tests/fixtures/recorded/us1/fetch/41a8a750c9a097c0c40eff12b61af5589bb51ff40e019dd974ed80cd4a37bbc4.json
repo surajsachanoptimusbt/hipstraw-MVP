@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://list.example.test/bay-area-finance-saas",
+  "request": {
+    "url": "https://list.example.test/bay-area-finance-saas",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Bay Area SaaS companies hiring finance staff</h1>\n<ul>\n  <li>Palisade Ledger, Palo Alto, CA: matches vendor invoices to contracts. <a href=\"https://palisade-ledger.test/\">Website</a></li>\n  <li>Quarry Spend, San Jose, CA: spend management for SaaS buyers. <a href=\"https://quarry-spend.test/\">Website</a></li>\n  <li>Ridge Books, San Francisco, CA: bookkeeping software for agencies. <a href=\"https://ridge-books.test/\">Website</a></li>\n  <li>Saffron Bill, Oakland, CA: recurring billing for B2B services. <a href=\"https://saffron-bill.test/\">Website</a></li>\n  <li>Willow Invoice, San Francisco, CA: invoice approval workflows. <a href=\"https://willow-invoice.test/\">Website</a></li>\n</ul>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

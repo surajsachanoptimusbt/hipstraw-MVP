@@ -1,0 +1,14 @@
+{
+  "matchKey": "ListingExtraction:https://list.example.test/bay-area-finance-saas",
+  "request": {
+    "schema": "ListingExtraction",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"companies\":[{\"name\":\"Palisade Ledger\",\"linkId\":\"L1\",\"excerpt\":\"Palisade Ledger, Palo Alto, CA: matches vendor invoices to contracts.\",\"location\":\"Palo Alto, CA\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Quarry Spend\",\"linkId\":\"L2\",\"excerpt\":\"Quarry Spend, San Jose, CA: spend management for SaaS buyers.\",\"location\":\"San Jose, CA\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Ridge Books\",\"linkId\":\"L3\",\"excerpt\":\"Ridge Books, San Francisco, CA: bookkeeping software for agencies.\",\"location\":\"San Francisco, CA\",\"metroMatch\":\"in\",\"positionMatch\":\"partial\"},{\"name\":\"Saffron Bill\",\"linkId\":\"L4\",\"excerpt\":\"Saffron Bill, Oakland, CA: recurring billing for B2B services.\",\"location\":\"Oakland, CA\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"},{\"name\":\"Willow Invoice\",\"linkId\":\"L5\",\"excerpt\":\"Willow Invoice, San Francisco, CA: invoice approval workflows.\",\"location\":\"San Francisco, CA\",\"metroMatch\":\"in\",\"positionMatch\":\"strong\"}]}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

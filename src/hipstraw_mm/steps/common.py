@@ -21,6 +21,8 @@ UNKNOWN_FIELD_FOR_CLAIM = {
     "employees": "size",
     "revenue": "size",
     "parent": "parent",
+    "parent_employees": "parent",
+    "parent_revenue": "parent",
     "fit_buyer": "fit",
     "fit_problem": "fit",
     "fit_trigger": "fit",

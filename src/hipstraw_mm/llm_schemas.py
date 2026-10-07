@@ -57,6 +57,8 @@ EvidenceClaimField = Literal[
     "employees",
     "revenue",
     "parent",
+    "parent_employees",
+    "parent_revenue",
     "fit_buyer",
     "fit_problem",
     "fit_trigger",

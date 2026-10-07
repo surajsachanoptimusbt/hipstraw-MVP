@@ -14,7 +14,7 @@ from typing import Any
 QUERY_PLAN = "query_plan.v2"
 LISTING_EXTRACTION = "listing_extraction.v2"
 HOMEPAGE_IDENTITY = "homepage_identity.v2"
-COMPANY_EVIDENCE = "company_evidence.v1"
+COMPANY_EVIDENCE = "company_evidence.v2"
 REVIEW_JUDGEMENT = "review_judgement.v1"
 
 

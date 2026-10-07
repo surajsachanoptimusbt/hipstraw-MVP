@@ -1,0 +1,15 @@
+{
+  "matchKey": "https://umber-freight.test/robots.txt",
+  "request": {
+    "url": "https://umber-freight.test/robots.txt",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/plain"
+    },
+    "text": "User-agent: *\nAllow: /\n"
+  }
+}

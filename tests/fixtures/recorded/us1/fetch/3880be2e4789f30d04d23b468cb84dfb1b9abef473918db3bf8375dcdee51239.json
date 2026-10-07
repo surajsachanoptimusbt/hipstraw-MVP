@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://saffron-bill.test/about",
+  "request": {
+    "url": "https://saffron-bill.test/about",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>About Saffron Bill</h1>\n<p>Saffron Bill is headquartered in Oakland, CA.</p>\n<p>Saffron Bill has 60 employees.</p>\n<p>Contact our finance team at finance@saffron-bill.test with vendor questions.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

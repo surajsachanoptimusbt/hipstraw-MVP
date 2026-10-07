@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:willow-invoice.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"San Francisco, CA\",\"sourceId\":\"s2\",\"excerpt\":\"Willow Invoice is headquartered in San Francisco, CA.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"110\",\"sourceId\":\"s2\",\"excerpt\":\"Willow Invoice has 110 employees.\"},{\"claimId\":\"c3\",\"claimField\":\"parent\",\"claimValue\":\"Pelican Group\",\"sourceId\":\"s2\",\"excerpt\":\"Willow Invoice is part of the Pelican Group.\"},{\"claimId\":\"c4\",\"claimField\":\"signal_pain\",\"claimValue\":\"Accounts Payable Lead hiring\",\"sourceId\":\"s3\",\"excerpt\":\"Willow Invoice is hiring an Accounts Payable Lead to manage vendor invoices.\"}],\"fitClaims\":[],\"interestSignals\":[{\"kind\":\"pain\",\"statement\":\"Hiring an Accounts Payable Lead.\",\"claimIds\":[\"c4\"]}],\"falsifier\":\"Willow Invoice belongs to a large enterprise.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

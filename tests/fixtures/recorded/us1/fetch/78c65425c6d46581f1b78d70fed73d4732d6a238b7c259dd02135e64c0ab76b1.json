@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://ridge-books.test/about",
+  "request": {
+    "url": "https://ridge-books.test/about",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>About Ridge Books</h1>\n<p>Ridge Books is headquartered in San Francisco, CA.</p>\n<p>Ridge Books has 90 employees.</p>\n<p>Our customers are agency owners and their finance leads.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

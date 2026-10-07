@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:saffron-bill.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"Oakland, CA\",\"sourceId\":\"s2\",\"excerpt\":\"Saffron Bill is headquartered in Oakland, CA.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"60\",\"sourceId\":\"s2\",\"excerpt\":\"Saffron Bill has 60 employees.\"},{\"claimId\":\"c3\",\"claimField\":\"signal_pain\",\"claimValue\":\"Accounts Payable Specialist hiring\",\"sourceId\":\"s3\",\"excerpt\":\"Saffron Bill is hiring an Accounts Payable Specialist to review vendor invoices.\"},{\"claimId\":\"c4\",\"claimField\":\"signal_pain\",\"claimValue\":\"heavy recurring SaaS spend\",\"sourceId\":\"s2\",\"excerpt\":\"Saffron Bill has heavy recurring SaaS spend.\"},{\"claimId\":\"c5\",\"claimField\":\"fit_buyer\",\"claimValue\":\"finance team\",\"sourceId\":\"s2\",\"excerpt\":\"Contact our finance team at finance@saffron-bill.test with vendor questions.\"},{\"claimId\":\"c6\",\"claimField\":\"fit_problem\",\"claimValue\":\"vendor invoices to review\",\"sourceId\":\"s3\",\"excerpt\":\"Saffron Bill is hiring an Accounts Payable Specialist to review vendor invoices.\"}],\"fitClaims\":[{\"aspect\":\"buyer\",\"statement\":\"Saffron Bill's finance team handles vendor questions.\",\"primaryInterestIds\":[\"supplier_commercial_position\"],\"claimIds\":[\"c5\"]},{\"aspect\":\"problem\",\"statement\":\"Saffron Bill reviews a growing volume of vendor invoices.\",\"primaryInterestIds\":[\"invoice_accuracy_entitlement\"],\"claimIds\":[\"c6\"]}],\"interestSignals\":[{\"kind\":\"pain\",\"statement\":\"Hiring an Accounts Payable Specialist to review vendor invoices.\",\"claimIds\":[\"c3\"]},{\"kind\":\"pain\",\"statement\":\"Heavy recurring SaaS spend.\",\"claimIds\":[\"c4\"]}],\"falsifier\":\"Saffron Bill is a subsidiary of a large enterprise, or has 500 or more employees.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

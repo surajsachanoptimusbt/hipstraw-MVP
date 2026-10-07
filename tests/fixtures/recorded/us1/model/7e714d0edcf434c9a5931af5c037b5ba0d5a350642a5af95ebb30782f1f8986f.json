@@ -1,0 +1,14 @@
+{
+  "matchKey": "CompanyEvidence:ridge-books.test",
+  "request": {
+    "schema": "CompanyEvidence",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"claims\":[{\"claimId\":\"c1\",\"claimField\":\"hq\",\"claimValue\":\"San Francisco, CA\",\"sourceId\":\"s2\",\"excerpt\":\"Ridge Books is headquartered in San Francisco, CA.\"},{\"claimId\":\"c2\",\"claimField\":\"employees\",\"claimValue\":\"90\",\"sourceId\":\"s2\",\"excerpt\":\"Ridge Books has 90 employees.\"},{\"claimId\":\"c3\",\"claimField\":\"fit_buyer\",\"claimValue\":\"agency finance leads\",\"sourceId\":\"s2\",\"excerpt\":\"Our customers are agency owners and their finance leads.\"}],\"fitClaims\":[{\"aspect\":\"buyer\",\"statement\":\"Ridge Books sells to agency owners and their finance leads.\",\"primaryInterestIds\":[\"continuous_obligation_intelligence\"],\"claimIds\":[\"c3\"]}],\"interestSignals\":[],\"falsifier\":\"Ridge Books shows no sign of invoice or spend pain.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

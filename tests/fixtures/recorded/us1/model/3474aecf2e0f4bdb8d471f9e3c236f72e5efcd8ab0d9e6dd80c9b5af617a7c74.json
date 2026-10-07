@@ -1,0 +1,14 @@
+{
+  "matchKey": "ReviewJudgement:run_20261007T101500__palisade-ledger-test",
+  "request": {
+    "schema": "ReviewJudgement",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "content": "{\"falsifierMet\":false,\"fitHolds\":true,\"citedEvidenceIds\":[],\"reason\":\"Palo Alto company under the size limit, exploring AI agents for invoice matching.\"}",
+    "refusal": null,
+    "finishReason": "stop",
+    "model": "test-model"
+  }
+}

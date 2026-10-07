@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://xenon-contracts.test/about",
+  "request": {
+    "url": "https://xenon-contracts.test/about",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>About Xenon Contracts</h1>\n<p>Xenon Contracts is headquartered in Jersey City, NJ.</p>\n<p>Xenon Contracts has 95 employees.</p>\n<p>Xenon Contracts is a subsidiary of Heron Holdings, which employs 12,000 people.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

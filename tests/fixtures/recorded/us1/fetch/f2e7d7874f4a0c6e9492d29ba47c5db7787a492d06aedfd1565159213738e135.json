@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://umber-freight.test/about",
+  "request": {
+    "url": "https://umber-freight.test/about",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>About Umber Freight</h1>\n<p>Umber Freight is headquartered in Buffalo, NY.</p>\n<p>Umber Freight has 150 employees.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

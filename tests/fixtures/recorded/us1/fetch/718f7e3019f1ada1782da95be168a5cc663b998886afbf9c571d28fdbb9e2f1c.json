@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://palisade-ledger.test/about",
+  "request": {
+    "url": "https://palisade-ledger.test/about",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>About Palisade Ledger</h1>\n<p>Palisade Ledger is headquartered in Palo Alto, CA.</p>\n<p>We also have a sales office in New York, NY.</p>\n<p>Palisade Ledger has 75 employees.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

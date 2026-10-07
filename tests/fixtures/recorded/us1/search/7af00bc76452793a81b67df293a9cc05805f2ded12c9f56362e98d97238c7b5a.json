@@ -1,0 +1,15 @@
+{
+  "matchKey": "\"Tamarack AP\" invoice automation OR \"AI agents\" finance",
+  "request": {
+    "params": {
+      "q": "\"Tamarack AP\" invoice automation OR \"AI agents\" finance"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "web": {
+      "results": []
+    }
+  }
+}

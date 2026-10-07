@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://palisade-ledger.test/press",
+  "request": {
+    "url": "https://palisade-ledger.test/press",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>Press</h1>\n<p>\"Our customers lose money to invoice drift every month,\" said Dana Whitfield, chief financial officer of Palisade Ledger.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

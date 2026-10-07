@@ -1,0 +1,15 @@
+{
+  "matchKey": "site:umber-freight.test careers",
+  "request": {
+    "params": {
+      "q": "site:umber-freight.test careers"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "web": {
+      "results": []
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "matchKey": "site:xenon-contracts.test careers",
+  "request": {
+    "params": {
+      "q": "site:xenon-contracts.test careers"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "web": {
+      "results": []
+    }
+  }
+}

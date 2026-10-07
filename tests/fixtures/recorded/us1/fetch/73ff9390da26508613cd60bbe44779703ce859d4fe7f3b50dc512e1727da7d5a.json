@@ -1,0 +1,16 @@
+{
+  "matchKey": "https://quarry-spend.test/news",
+  "request": {
+    "url": "https://quarry-spend.test/news",
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "text": "<html><body>\n<h1>News</h1>\n<p>Quarry Spend now employs 620 people across three offices.</p>\n</body></html>",
+    "fetchedAt": "2026-10-07T10:15:00+00:00"
+  }
+}

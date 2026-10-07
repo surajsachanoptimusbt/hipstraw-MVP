@@ -1,0 +1,15 @@
+{
+  "matchKey": "site:ridge-books.test careers",
+  "request": {
+    "params": {
+      "q": "site:ridge-books.test careers"
+    },
+    "builtBy": "tests/fixtures/build_fixtures.py",
+    "scenario": "tests/fixtures/scenarios/us1.yaml"
+  },
+  "response": {
+    "web": {
+      "results": []
+    }
+  }
+}
