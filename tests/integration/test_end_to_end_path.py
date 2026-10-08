@@ -281,3 +281,22 @@ def test_verify_runs_three_signal_searches_per_loading_website(basic_run: Comple
         e for e in basic_run.harness.log_events(basic_run.run_id) if e["event"] == "step_end" and e["step"] == "verify"
     ]
     assert ends[0]["counts"]["signalSearches"] == 18
+
+
+def test_the_run_summary_breaks_down_dropped_candidates_by_reason(basic_run: CompletedRun):
+    """Added 2026-10-08 after run_20261008T093840: the summary gives each drop reason, not just a total.
+    In `basic`, the registry entry "Alpha Ledger, Inc." is dropped by the merge rule."""
+    run = basic_run.store.get_run(basic_run.run_id)
+    assert run["discoveryDrops"] == {
+        "noWebsiteLink": 0,
+        "hopBudgetSpent": 0,
+        "failedExcerpt": 0,
+        "duplicate": 0,
+        "merged": 1,
+        "overCap": 0,
+    }
+    report = (basic_run.harness.reports_dir / f"{basic_run.run_id}.md").read_text(encoding="utf-8")
+    assert (
+        "- Candidates dropped: 1 (no website link: 0; failed excerpt: 0; duplicate: 0; merged: 1; over the cap: 0)"
+        in _section(report, "Run summary")
+    )

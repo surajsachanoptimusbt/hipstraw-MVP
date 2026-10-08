@@ -76,6 +76,7 @@ For example, "Alpha Ledger, Inc." and "Alpha Ledger" both normalize to `alpha le
 | `stepTimes` | map | `{discoveredAt, verifiedAt, reviewedAt, reportedAt}` |
 | `counts` | map | `{searches, fetches, modelCalls, candidatesFound, returned, shortfall}` |
 | `shortfallReason` | string or null | Required when `returned < 10` (FR-004) |
+| `discoveryDrops` | map | Candidates found but not kept, by reason: `{noWebsiteLink, hopBudgetSpent, failedExcerpt, duplicate, merged, overCap}`. `hopBudgetSpent` is the part of `noWebsiteLink` whose directory profile link could not be followed because `profileHopsPerRun` was spent (added 2026-10-08). |
 
 ### Run state transitions
 

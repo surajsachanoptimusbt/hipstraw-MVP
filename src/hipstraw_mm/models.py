@@ -116,6 +116,7 @@ class Run(Doc):
     stepTimes: dict[str, str] = {}
     counts: dict[str, int] = {}
     shortfallReason: str | None = None
+    discoveryDrops: dict[str, int] | None = None  # candidates found but not kept, by reason
     errorStep: str | None = None
     errorMessage: str | None = None
 

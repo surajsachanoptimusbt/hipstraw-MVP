@@ -42,7 +42,7 @@ from hipstraw_mm.models import (
     site_host,
 )
 from hipstraw_mm.models import Origin as OriginModel
-from hipstraw_mm.steps.common import EvidenceIds, reliability_for, require_run, run_step
+from hipstraw_mm.steps.common import EvidenceIds, dropped_summary, reliability_for, require_run, run_step
 from hipstraw_mm.steps.targeting import (
     CandidateMatch,
     MetroMatch,
@@ -169,6 +169,7 @@ class _Discovery:
             {
                 "counts": run_counts,
                 "shortfallReason": shortfall_reason,
+                "discoveryDrops": self._drops(),
                 "stepTimes": {**(self.run.get("stepTimes") or {}), "discoveredAt": ctx.now_iso()},
             },
         )
@@ -279,10 +280,19 @@ class _Discovery:
                         entry, name, site_host(href), "listing_link", query, url, None, page, source_type, page_index
                     )
                 )
-            elif href and domain_key(href) == listing_key and (hop := self._profile_hop(href, name)) is not None:
+                continue
+            hop = None
+            hop_budget_spent = False
+            if href and domain_key(href) == listing_key:
+                if self.counts["profileHops"] >= self.budgets["profileHopsPerRun"]:
+                    self.counts["hopsOverBudget"] += 1
+                    hop_budget_spent = True
+                else:
+                    hop = self._profile_hop(href, name)
+            if hop is not None:
                 website, profile, profile_entry = hop
-                profile_type: SourceType = self.policy.category_for(href) or "directory"
-                profile_url = profile.final_url or href
+                profile_type: SourceType = self.policy.category_for(profile.url) or "directory"
+                profile_url = profile.final_url or profile.url
                 self.found.append(
                     self._found(
                         profile_entry,
@@ -303,6 +313,8 @@ class _Discovery:
                 )
             else:
                 self.counts["droppedNoWebsite"] += 1
+                if hop_budget_spent:  # it had a directory profile link, but no hop was left to follow it
+                    self.counts["droppedHopBudget"] += 1
 
     def _found(
         self,
@@ -335,10 +347,8 @@ class _Discovery:
         )
 
     def _profile_hop(self, profile_url: str, name: str) -> tuple[str, FetchResult, ListedCompany] | None:
-        """One budgeted hop to a directory's own profile page, looking for the company's external link."""
-        if self.counts["profileHops"] >= self.budgets["profileHopsPerRun"]:
-            self.counts["hopsOverBudget"] += 1
-            return None
+        """One hop to a directory's own profile page, looking for the company's external link. The caller
+        checks the `profileHopsPerRun` budget first."""
         self.counts["profileHops"] += 1
         page = self.fetcher.fetch(profile_url)
         if not page.ok:
@@ -462,14 +472,25 @@ class _Discovery:
             )
             store.upsert_company_record(record_id, record.model_dump())
 
+    def _drops(self) -> dict[str, int]:
+        """Candidates found but not kept, by reason (data-model.md `runs.discoveryDrops`)."""
+        c = self.counts
+        return {
+            "noWebsiteLink": c["droppedNoWebsite"],
+            "hopBudgetSpent": c["droppedHopBudget"],
+            "failedExcerpt": c["droppedFailedExcerpt"],
+            "duplicate": c["droppedDuplicates"],
+            "merged": c["droppedByMerge"],
+            "overCap": c["droppedOverCap"],
+        }
+
     def _shortfall_reason(self, kept: int, target: int, searches: int) -> str:
         c = self.counts
-        dropped = c["droppedNoWebsite"] + c["droppedFailedExcerpt"] + c["droppedDuplicates"] + c["droppedByMerge"]
         skipped = c["resultsOverBudget"] + c["resultsOverSiteCap"] + c["resultsOverQueryCap"]
         return (
             f"{kept} of {target} companies found within the discovery budgets "
             f"(searches: {searches}, pages read: {c['pagesRead']}, profile hops: {c['profileHops']}, "
             f"results not read: {skipped}, of them {c['resultsOverSiteCap']} for the per-site cap and "
             f"{c['resultsOverQueryCap']} for the per-query cap). "
-            f"Candidates dropped: {dropped} (no website link, failed excerpt, duplicate, or merged)."
+            f"Candidates dropped: {dropped_summary(self._drops())}."
         )

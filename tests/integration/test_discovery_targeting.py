@@ -84,6 +84,14 @@ def test_every_planned_query_is_searched_and_the_cap_drops_nine(targeting_run):
     assert run["counts"]["returned"] == 10
     assert run["counts"]["shortfall"] == 0
     assert run["shortfallReason"] is None
+    assert run["discoveryDrops"] == {
+        "noWebsiteLink": 0,
+        "hopBudgetSpent": 0,
+        "failedExcerpt": 0,
+        "duplicate": 0,
+        "merged": 0,
+        "overCap": 9,
+    }
 
 
 def test_listing_pages_are_capped_per_site_and_per_query(targeting_run):

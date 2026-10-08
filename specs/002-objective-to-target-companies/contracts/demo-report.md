@@ -12,7 +12,9 @@ names may appear only incidentally, inside quoted excerpts.
    - the program and its source URL;
    - the experiment context and candidate ID;
    - the run date and model;
-   - the counts: returned, included, excluded, needs verification, and shortfall with its reason.
+   - the counts: returned, included, excluded, needs verification, and shortfall with its reason;
+   - the candidates dropped during discovery, by reason: no website link (and how many of those for
+     lack of profile hops), failed excerpt, duplicate, merged, and over the cap (added 2026-10-08).
 3. **First position**: segment, company archetype, buyer, problem, trigger, and primary interests.
 4. **Constraints in force**: the size thresholds and the three metros (CSA names), taken from
    `runs.constraintsInForce`.

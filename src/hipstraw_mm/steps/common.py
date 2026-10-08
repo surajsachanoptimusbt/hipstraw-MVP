@@ -108,3 +108,16 @@ def merge_counts(existing: dict[str, Any] | None, add: dict[str, int]) -> dict[s
     for key, value in add.items():
         out[key] = int(out.get(key, 0)) + value
     return out
+
+
+def dropped_summary(drops: dict[str, int]) -> str:
+    """`runs.discoveryDrops` as text: "100 (no website link: 68, of which 42 because the profile-hop
+    budget was spent; failed excerpt: 32; duplicate: 0; merged: 0; over the cap: 0)"."""
+    total = sum(v for k, v in drops.items() if k != "hopBudgetSpent")
+    website = f"no website link: {drops.get('noWebsiteLink', 0)}"
+    if drops.get("hopBudgetSpent"):
+        website += f", of which {drops['hopBudgetSpent']} because the profile-hop budget was spent"
+    return (
+        f"{total} ({website}; failed excerpt: {drops.get('failedExcerpt', 0)}; duplicate: {drops.get('duplicate', 0)}; "
+        f"merged: {drops.get('merged', 0)}; over the cap: {drops.get('overCap', 0)})"
+    )

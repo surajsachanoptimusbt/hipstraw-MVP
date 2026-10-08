@@ -10,7 +10,7 @@ from pathlib import Path
 
 from hipstraw_mm.context import CommandResult, Context
 from hipstraw_mm.models import DemoReport
-from hipstraw_mm.steps.common import require_run, run_step
+from hipstraw_mm.steps.common import dropped_summary, require_run, run_step
 from hipstraw_mm.store.base import Doc
 
 STEP = "report"
@@ -122,6 +122,8 @@ def _title_and_summary(run: Doc, program: Doc, candidate: Doc, counts: dict[str,
         lines.append(f"- Shortfall: {counts['shortfall']}. {run.get('shortfallReason') or ''}".rstrip())
     else:
         lines.append("- Shortfall: none")
+    if run.get("discoveryDrops") is not None:
+        lines.append(f"- Candidates dropped: {dropped_summary(run['discoveryDrops'])}")
     return [*lines, ""]
 
 
