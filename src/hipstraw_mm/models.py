@@ -78,7 +78,9 @@ class MarketCandidate(Doc):
     programId: str
     experimentContextId: str
     label: str
-    origin: Literal["program_experiment_context"] = "program_experiment_context"
+    # "traced_path": a synthetic candidate for one final path of feature 003's traced pipeline
+    # (specs/003-traced-market-discovery), reusing feature 002's run machinery unchanged.
+    origin: Literal["program_experiment_context", "traced_path"] = "program_experiment_context"
 
 
 class Position(Doc):
