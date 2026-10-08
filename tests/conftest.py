@@ -32,6 +32,8 @@ def pytest_collection_modifyitems(config, items):
     enabled = config.getoption("--emulator") and os.environ.get("FIRESTORE_EMULATOR_HOST")
     reason = "needs --emulator and FIRESTORE_EMULATOR_HOST"
     for item in items:
+        if "viewer" in item.keywords:
+            item.add_marker(pytest.mark.allow_hosts(LOCALHOST))
         if "emulator" not in item.keywords:
             continue
         if enabled:

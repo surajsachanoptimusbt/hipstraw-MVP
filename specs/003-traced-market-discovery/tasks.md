@@ -39,8 +39,8 @@ story 3 = Phase 5, increment 4 = Phase 6, increment 5 = Phase 7.
 
 **Purpose**: package skeleton and test plumbing.
 
-- [ ] T001 Create `src/hipstraw_mm/market/__init__.py` and `src/hipstraw_mm/viewer/__init__.py`, each with a docstring stating the package's purpose and bounded responsibility (Constitution I, VI: the market package runs the traced pipeline and writes findings and decisions only through its steps; the viewer package only reads), and the empty directory `src/hipstraw_mm/viewer/static/`.
-- [ ] T002 [P] Update `pyproject.toml`: include `src/hipstraw_mm/viewer/static/*` and `src/hipstraw_mm/prompts/*.txt` in the wheel; add the pytest marker `viewer` ("starts the read-only viewer on 127.0.0.1"). In `tests/conftest.py`, give tests marked `viewer` the `allow_hosts(["127.0.0.1", "localhost", "::1"])` socket exception, as the `emulator` marker has.
+- [x] T001 Create `src/hipstraw_mm/market/__init__.py` and `src/hipstraw_mm/viewer/__init__.py`, each with a docstring stating the package's purpose and bounded responsibility (Constitution I, VI: the market package runs the traced pipeline and writes findings and decisions only through its steps; the viewer package only reads), and the empty directory `src/hipstraw_mm/viewer/static/`.
+- [x] T002 [P] Update `pyproject.toml`: include `src/hipstraw_mm/viewer/static/*` and `src/hipstraw_mm/prompts/*.txt` in the wheel; add the pytest marker `viewer` ("starts the read-only viewer on 127.0.0.1"). In `tests/conftest.py`, give tests marked `viewer` the `allow_hosts(["127.0.0.1", "localhost", "::1"])` socket exception, as the `emulator` marker has.
 
 **Checkpoint**: `pytest tests -q` still passes unchanged.
 

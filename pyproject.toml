@@ -30,11 +30,16 @@ hipstraw-mm = "hipstraw_mm.cli:main"
 [tool.hatch.build.targets.wheel]
 packages = ["src/hipstraw_mm"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"src/hipstraw_mm/viewer/static" = "hipstraw_mm/viewer/static"
+"src/hipstraw_mm/prompts" = "hipstraw_mm/prompts"
+
 [tool.pytest.ini_options]
 addopts = "--disable-socket"
 testpaths = ["tests"]
 markers = [
     "emulator: requires the Firestore emulator (deselected by default)",
+    "viewer: starts the read-only viewer on 127.0.0.1",
 ]
 
 [tool.ruff]
