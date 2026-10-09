@@ -225,8 +225,18 @@ const LAYERS = {
   position_evaluation: ["Position & Evaluation", "#d97706"],
   workers: ["Workers", "#64748b"],
 };
-const TABS = [["overview", "Overview"], ["trace", "Trace"], ["deliberations", "Vichara"], ["graph", "Graph"],
-  ["links", "Links"], ["beam", "Beam"], ["paths", "Paths"], ["companies", "Companies"], ["decisions", "Decisions"]];
+const TABS = [
+  { k: "overview", label: "Overview" },
+  { k: "decisions", label: "Market Position" },
+  { k: "companies", label: "Companies" },
+  { k: "paths", label: "Paths" },
+  { k: "graph", label: "Graph" },
+  { k: "beam", label: "Beam" },
+  { k: "links", label: "Links" },
+  { k: "deliberations", label: "Vichara", tech: true },
+  { k: "trace", label: "Trace", tech: true },
+];
+const TECH_KEY = "hipstraw.tech";
 const GRAPH_LEVELS = ["segment", "archetype", "problem", "trigger", "buyerRole", "useCase"];
 
 async function api(path) {
@@ -276,6 +286,24 @@ function tone(v) {
 function safeUrl(u) { return /^https?:\/\//i.test(String(u || "")) ? u : null; }
 function href(runId, tab, seq) { return `#/run/${enc(runId)}/${tab}${seq != null ? `/${seq}` : ""}`; }
 
+function readTech() {
+  try { return localStorage.getItem(TECH_KEY) === "1"; } catch (e) { return false; }
+}
+
+function useTech() {
+  const [on, setOn] = useState(readTech);
+  useEffect(() => {
+    const f = () => setOn(readTech());
+    addEventListener("hipstraw-tech", f);
+    return () => removeEventListener("hipstraw-tech", f);
+  }, []);
+  const toggle = () => {
+    try { localStorage.setItem(TECH_KEY, readTech() ? "0" : "1"); } catch (e) { /* ignore */ }
+    dispatchEvent(new Event("hipstraw-tech"));
+  };
+  return [on, toggle];
+}
+
 function useHash() {
   const [h, setH] = useState(location.hash);
   useEffect(() => {
@@ -288,7 +316,7 @@ function useHash() {
 
 function parseRoute(hash) {
   const p = hash.replace(/^#\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
-  if (p[0] === "run" && p[1]) return { runId: p[1], tab: p[2] || "trace", seq: p[3] ? Number(p[3]) : null };
+  if (p[0] === "run" && p[1]) return { runId: p[1], tab: p[2] || "overview", seq: p[3] ? Number(p[3]) : null };
   return { runId: null, tab: "trace", seq: null };
 }
 
@@ -390,6 +418,12 @@ function Loading({ state, empty, children }) {
 
 /* ---------- app shell ---------- */
 
+function TechToggle() {
+  const [on, toggle] = useTech();
+  return html`<button className=${`chip ${on ? "on" : ""}`} onClick=${toggle}
+    title="Show the technical trace and vichara tabs">${on ? "Technical: on" : "Technical details"}</button>`;
+}
+
 function App() {
   const route = parseRoute(useHash());
   const runs = usePoll("/api/runs", 3000);
@@ -400,12 +434,13 @@ function App() {
       <div className="logo"></div>
       <div className="brand">hipstraw<span>Trace</span></div>
       <div className="spacer"></div>
+      <${TechToggle} />
       <span className="readonly" title="This viewer never changes stored data">read-only</span>
     </header>
     <aside className="sidebar">
       <div className="side-title">Market runs</div>
       ${runs.error && !runs.data ? html`<div className="alert fail" style=${{ margin: "8px 12px" }}>${runs.error}</div>` : null}
-      ${list.map(r => html`<a key=${r.marketRunId} href=${href(r.marketRunId, route.runId === r.marketRunId ? route.tab : "trace")}
+      ${list.map(r => html`<a key=${r.marketRunId} href=${href(r.marketRunId, route.runId === r.marketRunId ? route.tab : "overview")}
           className=${`run-item ${r.marketRunId === runId ? "active" : ""}`}>
         <div className="rid"><${StatusDot} status=${TERMINAL.has(r.status) ? r.status : "running"} />${r.marketRunId}</div>
         <div className="rmeta">${r.programId || ""} · ${r.status}${r.counts && r.counts.modelCalls ? ` · ${r.counts.modelCalls} calls` : ""}</div>
@@ -421,6 +456,7 @@ function App() {
 
 function RunView({ runId, tab, seq }) {
   const [live, setLive] = useState(true);
+  const [tech] = useTech();
   const runState = usePoll(`/api/runs/${enc(runId)}`, 2000, live);
   const run = runState.data;
   useEffect(() => { if (run && TERMINAL.has(run.status)) setLive(false); }, [run && run.status]);
@@ -470,7 +506,7 @@ function RunView({ runId, tab, seq }) {
         <${Stat} label="Duration" value=${fmt.ms(duration)} />
       </div>
       <${Stepper} run=${run} />
-      <nav className="tabs">${TABS.map(([k, label]) => html`<a key=${k} href=${href(runId, k)} className=${`tab ${tab === k ? "active" : ""}`}>${label}</a>`)}</nav>
+      <nav className="tabs">${TABS.filter(t => tech || !t.tech).map(t => html`<a key=${t.k} href=${href(runId, t.k)} className=${`tab ${tab === t.k ? "active" : ""}`}>${t.label}</a>`)}</nav>
     </div>
     <div className="content">
       ${run.status === "failed" ? html`<div className="alert fail" style=${{ marginBottom: 16 }}><b>Failed at ${STAGE_LABEL[COMMAND_STATUS[run.errorStage]] || run.errorStage || "an unknown stage"}.</b> ${run.errorMessage || ""}</div>` : null}
@@ -855,19 +891,58 @@ function CompaniesView({ runId, live }) {
   </div>`}<//>`;
 }
 
+function Narrative({ items }) {
+  const [open, setOpen] = useState(false);
+  if (!items || !items.length) return null;
+  return html`<div style=${{ marginTop: 10 }}>
+    <button className="more" onClick=${() => setOpen(!open)}>${open ? "Hide" : "Show"} the seven assessment dimensions</button>
+    ${open ? html`<table style=${{ marginTop: 6 }}><thead><tr><th>Dimension</th><th>State (hypothesis)</th><th>Rationale</th></tr></thead><tbody>
+      ${items.map(a => html`<tr key=${a.dimensionKey}><td>${a.dimensionKey}</td><td><${Pill}>${a.state}<//></td><td className="wrap muted">${a.rationale}</td></tr>`)}
+    </tbody></table>` : null}
+  </div>`;
+}
+
+function PositionCard({ position }) {
+  const p = position;
+  return html`<${Card}>
+    <div style=${{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+      <h3 style=${{ fontSize: 15 }}>${(p.pathLabels || []).join(" › ")}</h3>
+      <${Pill} value=${p.decision}>${p.disposition}<//>
+      <span className="muted">confidence: ${p.confidence}</span>
+    </div>
+    <p style=${{ marginTop: 6 }}>${p.headline}</p>
+    <div style=${{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
+      <${Pill} value=${p.evidence.sufficiency}>evidence: ${p.evidence.sufficiency}<//>
+      <${Pill} value=${p.evidence.quality}>quality: ${p.evidence.quality}<//>
+      <${Pill} value=${p.evidence.criticalUnknowns}>unknowns: ${p.evidence.criticalUnknowns}<//>
+    </div>
+    <dl className="kv" style=${{ marginTop: 10 }}>
+      ${p.valueProposition ? html`<dt>Value proposition</dt><dd>${p.valueProposition}</dd>` : null}
+      ${p.economics ? html`<dt>Economics</dt><dd>${p.economics}</dd>` : null}
+      ${p.risks ? html`<dt>Risks</dt><dd>${p.risks}</dd>` : null}
+      <dt>Recommended action</dt><dd>${p.recommendedAction} <span className="muted mono">(${p.ruleFired})</span></dd>
+    </dl>
+    ${(p.openGaps || []).length ? html`<div className="muted" style=${{ marginTop: 8 }}>Open gaps: ${p.openGaps.map(g => `${g.field} (${g.companies})`).join(", ")}</div>` : null}
+    ${(p.targetCompanies || []).length ? html`<div style=${{ marginTop: 10 }}>
+      <div className="eyebrow">Target companies (${p.companiesIncluded} verified)</div>
+      <table><tbody>${p.targetCompanies.map(c => html`<tr key=${c.name}>
+        <td><b>${c.name}</b> <span className="muted">${c.domain || ""}</span></td>
+        <td><${Pill} value=${c.disposition} /></td>
+        <td><${Bar} value=${c.evidenceConfidence} kind="evidence" /></td>
+      </tr>`)}</tbody></table>
+    </div>` : html`<div className="muted" style=${{ marginTop: 10 }}>No verified companies found for this path yet.</div>`}
+    <${Narrative} items=${p.narrative} />
+  <//>`;
+}
+
 function DecisionsView({ runId, live }) {
   const st = usePoll(`/api/runs/${enc(runId)}/decisions`, 4000, live);
-  const paths = usePoll(`/api/runs/${enc(runId)}/paths`, 4000, live);
-  const labels = new Map((paths.data || []).map(p => [p.pathId, p.nodeLabels]));
   return html`<${Loading} state=${st} empty=${d => !(d.decisions || []).length && !d.marketStatus}>${d => html`<div className="stack">
-    ${d.marketStatus ? html`<div className=${`alert ${tone(d.marketStatus.state) || "info"}`}><b>Market status: ${d.marketStatus.state}.</b> ${d.marketStatus.reason}</div>` : null}
-    <${Card} title="Path decisions" hint="Made by the Market Manager from final paths and their evaluations only" flush=${true}>
-      <table><thead><tr><th>Path</th><th>Decision</th><th>Rule</th><th>Reason</th></tr></thead><tbody>
-        ${(d.decisions || []).map(x => html`<tr key=${x.pathId}>
-          <td className="wrap">${labels.get(x.pathId) ? html`<${Chain} labels=${labels.get(x.pathId)} />` : x.pathId}</td>
-          <td><${Pill} value=${x.decision} /></td><td className="mono muted">${x.ruleFired}</td><td className="wrap muted">${x.reason}</td></tr>`)}
-      </tbody></table>
-    <//>
+    ${d.marketStatus ? html`<div className=${`alert ${tone(d.marketStatus.state) || "info"}`}>
+      <b>Market status: ${d.marketStatus.state}.</b> ${d.marketStatus.reason}</div>` : null}
+    ${(d.decisions || []).map(x => x.marketPosition
+      ? html`<${PositionCard} key=${x.pathId} position=${x.marketPosition} />`
+      : html`<${Card} key=${x.pathId}><b>${x.pathId}</b> — <${Pill} value=${x.decision} /> <span className="muted">${x.reason}</span><//>`)}
     ${(d.unassessed || []).length ? html`<${Card} title="Not assessed in this run" flush=${true}><table><tbody>
       ${d.unassessed.map(u => html`<tr key=${u.dimensionKey}><td>${u.dimensionKey}</td><td className="muted">${u.reason}</td></tr>`)}</tbody></table><//>` : null}
   </div>`}<//>`;

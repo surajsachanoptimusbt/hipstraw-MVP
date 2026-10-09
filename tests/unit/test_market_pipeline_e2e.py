@@ -138,10 +138,11 @@ class ScriptedLLM:
         def factor(v: float) -> schemas.ScoredFactor:
             return schemas.ScoredFactor(value=v, rationale="r")
 
+        # High enough that the top paths clear the 0.75 search-score threshold.
         return schemas.BeamScoring(candidates=[
             schemas.BeamCandidateScore(
-                pathId=c["pathId"], relevance=factor(0.9 - 0.1 * i), feasibility=factor(0.6),
-                timing=factor(0.5), cost=factor(0.7),
+                pathId=c["pathId"], relevance=factor(0.95 - 0.05 * i), feasibility=factor(0.85),
+                timing=factor(0.8), cost=factor(0.8),
             )
             for i, c in enumerate(p["candidates"])
         ])
@@ -342,6 +343,21 @@ def test_decisions_pursue_paths_with_included_companies(pipeline: tuple[Context,
     assert {d["decision"] for d in ctx.store.list_path_decisions(run_id)} == {"pursue"}
 
 
+def test_market_position_is_built_for_each_final_path(pipeline: tuple[Context, str]) -> None:
+    ctx, run_id = pipeline
+    decisions = ctx.store.list_path_decisions(run_id)
+    assert decisions and all("marketPosition" in d for d in decisions)
+    pos = decisions[0]["marketPosition"]
+    assert pos["disposition"] == "Pursue"
+    assert pos["pathLabels"] and pos["headline"]
+    assert len(pos["narrative"]) == 7
+    assert pos["evidence"]["sufficiency"] == "sufficient"
+    assert any(c["disposition"] == "include" for c in pos["targetCompanies"])
+    # the stored path carries the same position, so the viewer can read it from either place
+    path = next(p for p in ctx.store.list_paths(run_id) if p["pathId"] == decisions[0]["pathId"])
+    assert path["marketPosition"]["disposition"] == "Pursue"
+
+
 def test_buyer_roles_cite_the_company_own_evidence(pipeline: tuple[Context, str]) -> None:
     ctx, run_id = pipeline
     docs = ctx.store.list_buyer_roles(run_id)
@@ -380,6 +396,32 @@ def test_viewer_shapes_read_the_run(pipeline: tuple[Context, str]) -> None:
     assert api.shape_documents(ctx.store, run_id)[0]["excerpt"].startswith(PDF_PHRASE)
     assert any(c["buyerRoles"] for c in api.shape_companies(ctx.store, run_id))
     assert api.shape_decisions(ctx.store, run_id)["marketStatus"]["state"] == "progressing"
+
+
+def test_low_search_scores_are_held_below_the_threshold(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Every candidate scores well under 0.75, so no path becomes final and the market is blocked."""
+    monkeypatch.setenv("LLM_MODEL", "gpt-4o")
+    monkeypatch.setattr(stages, "_child_steps", lambda: ())
+
+    class LowLLM(ScriptedLLM):
+        def _beam_scoring(self, p: dict[str, Any]) -> Any:
+            f = schemas.ScoredFactor(value=0.5, rationale="r")
+            return schemas.BeamScoring(candidates=[
+                schemas.BeamCandidateScore(pathId=c["pathId"], relevance=f, feasibility=f, timing=f, cost=f)
+                for c in p["candidates"]
+            ])
+
+    ctx = Context(
+        config=load_config(CONFIG_DIR), store=MemoryStore(), log=EventLog(runs_dir=tmp_path, stream=None),
+        llm=LowLLM(), search=ScriptedSearch(), new_fetcher=lambda: None,  # type: ignore[arg-type, return-value]
+    )
+    run_id = _run(ctx, [])
+    Path("reports", f"{run_id}.md").unlink(missing_ok=True)
+    run = ctx.store.get_market_run(run_id)
+    assert run["status"] == "reported"
+    assert [p for p in ctx.store.list_paths(run_id) if p.get("isFinal")] == []
+    assert "75% search-score threshold" in run["finalPathShortfall"]["reason"]
+    assert run["marketStatus"]["state"] == "blocked"
 
 
 def test_a_failed_child_run_is_recorded_not_fatal(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

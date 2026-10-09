@@ -141,24 +141,38 @@ def keep_top(
 
 
 def select_final(
-    kept: list[dict[str, Any]], final_paths: int
+    kept: list[dict[str, Any]], final_paths: int, min_search_score: float = 0.0
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any] | None]:
-    """Top `final_paths` of the last level are final; the rest are deferred.
+    """Top `final_paths` whose search score clears `min_search_score` are final; the rest are deferred.
 
-    Returns (final, deferred, finalPathShortfall or None).
+    A high search score or mean link confidence does not by itself make a strong market, so a path
+    below the floor is deferred with its score, never made final. Returns (final, deferred, shortfall).
     """
     ordered = sort_candidates(kept)
-    final = ordered[:final_paths]
+    pct = round(min_search_score * 100)
+    below = [
+        {**c, "outcome": "deferred", "reason": f"search score below the {pct}% threshold",
+         "pathsBelow": c.get("pathsBelow", 0)}
+        for c in ordered if float(c.get("searchScore", 0.0)) < min_search_score
+    ]
+    eligible = [c for c in ordered if float(c.get("searchScore", 0.0)) >= min_search_score]
+    final = eligible[:final_paths]
     deferred = [
         {**c, "outcome": "deferred", "reason": "below the final-path limit",
          "pathsBelow": c.get("pathsBelow", 0)}
-        for c in ordered[final_paths:]
-    ]
+        for c in eligible[final_paths:]
+    ] + below
     shortfall: dict[str, Any] | None = None
     if len(final) < final_paths:
-        reason = (
-            "no path survived the beam" if not final
-            else f"only {len(final)} path(s) survived the beam"
-        )
+        if ordered and not eligible:
+            reason = f"no path reached the {pct}% search-score threshold"
+        elif below:
+            reason = f"only {len(final)} path(s) cleared the {pct}% search-score threshold"
+        elif not final:
+            reason = "no path survived the beam"
+        else:
+            reason = f"only {len(final)} path(s) survived the beam"
         shortfall = {"wanted": final_paths, "found": len(final), "reason": reason}
+        if below:
+            shortfall["belowThreshold"] = len(below)
     return final, deferred, shortfall

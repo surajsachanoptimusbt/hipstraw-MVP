@@ -13,6 +13,14 @@ class BeamSettings(BaseModel):
     width: int
     finalPaths: int
     companiesPerPath: int
+    minSearchScore: float = 0.0
+
+    @field_validator("minSearchScore")
+    @classmethod
+    def _score_in_range(cls, v: float) -> float:
+        if not (0.0 <= v <= 1.0):
+            raise ValueError("beam.minSearchScore must be between 0 and 1")
+        return v
 
     @field_validator("companiesPerPath")
     @classmethod

@@ -640,7 +640,7 @@ def stage_beam(ctx: Context, run_id: str, config_dir: Path) -> Doc:
         current = kept
 
     complete = [c for c in current if len(c["nodeIds"]) == len(levels)] if levels else []
-    final, deferred, shortfall = select_final(complete, settings.beam.finalPaths)
+    final, deferred, shortfall = select_final(complete, settings.beam.finalPaths, settings.beam.minSearchScore)
     if not complete and levels:
         shortfall = {"wanted": settings.beam.finalPaths, "found": 0, "reason": "no path reached the last level"}
 

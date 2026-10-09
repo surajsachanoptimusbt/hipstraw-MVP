@@ -347,6 +347,7 @@ def _market_decide(ctx: Context, args: argparse.Namespace) -> CommandResult:
 
     from hipstraw_mm.market.decide import compute_market_status, decide_path, unassessed_dimensions
     from hipstraw_mm.market.layers import load_layers
+    from hipstraw_mm.market.position import build_market_position, companies_for_path
     from hipstraw_mm.market.settings import load_pipeline_settings
     from hipstraw_mm.market.trace import Tracer
 
@@ -378,12 +379,16 @@ def _market_decide(ctx: Context, args: argparse.Namespace) -> CommandResult:
         with tracer.step("market_manager", "market_manager", "decide_path", right="decide_path") as step_ctx:
             step_ctx.set_inputs({"pathId": pid, **view})
             result = decide_path(view)
-            step_ctx.set_outputs(result)
+            position = build_market_position(path, companies_for_path(pid, companies), result)
+            step_ctx.set_outputs({**result, "marketPosition": position["disposition"]})
             step_ctx.set_decision(result["decision"])
             ctx.store.create_path_decision({
-                "marketRunId": run_id, "pathId": pid, **result,
+                "marketRunId": run_id, "pathId": pid, **result, "marketPosition": position,
                 "inputs": view, "decidedAt": datetime.now(timezone.utc).isoformat(),
             })
+            stored = ctx.store.get_path(pid) or {}
+            ctx.store.upsert_path({"pathId": pid, "marketRunId": run_id, "marketPosition": position,
+                                   "statusHistory": stored.get("statusHistory", [])})
         decided.append({"pathId": pid, "decision": result["decision"]})
     with tracer.step("market_manager", "market_manager", "set_market_status", right="set_market_status") as step_ctx:
         status = compute_market_status(decided)

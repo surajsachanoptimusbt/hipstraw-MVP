@@ -118,7 +118,7 @@ class TestTraceStoreContractMemory:
 class TestMarketRunTransitions:
     def test_valid_stage_sequence(self, store) -> None:
         _make_run(store, "mrun_trans")
-        for from_s, to_s in zip(MARKET_RUN_STAGES, MARKET_RUN_STAGES[1:]):
+        for from_s, to_s in zip(MARKET_RUN_STAGES, MARKET_RUN_STAGES[1:], strict=False):
             store.transition_market_run("mrun_trans", from_s, to_s)
 
     def test_any_stage_can_fail(self, store) -> None:

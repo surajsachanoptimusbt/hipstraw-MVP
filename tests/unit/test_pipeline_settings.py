@@ -13,6 +13,7 @@ class TestPipelineSettings:
         assert s.beam.width == 5
         assert s.beam.finalPaths == 3
         assert s.beam.companiesPerPath == 5
+        assert s.beam.minSearchScore == 0.75
         assert s.repair.maxAttempts == 3
         assert s.vichara.maxItemsPerDimension == 3
         assert s.links.lowConfidenceThreshold == 0.5

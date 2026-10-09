@@ -95,7 +95,7 @@ Validation: the six level dimensions, `perPathDimensions` (7), `verificationResu
 ## `config/pipeline.yaml`
 
 ```yaml
-beam: {width: 5, finalPaths: 3, companiesPerPath: 5}
+beam: {width: 5, finalPaths: 3, companiesPerPath: 5, minSearchScore: 0.75}
 defaultInterestIds: [invoice_accuracy_entitlement, continuous_obligation_intelligence]   # child-run interests (R13)
 factorWeights: {objectiveFit: 1, informationValue: 1, evidenceGap: 1, cost: 1}   # normalized when used
 repair: {maxAttempts: 3}
