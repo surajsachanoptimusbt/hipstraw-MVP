@@ -17,6 +17,18 @@ HOMEPAGE_IDENTITY = "homepage_identity.v2"
 COMPANY_EVIDENCE = "company_evidence.v2"
 REVIEW_JUDGEMENT = "review_judgement.v1"
 
+VICHARA = "vichara.v1"
+VICHARA_COVERAGE = "vichara_coverage.v1"
+VICHARA_REPAIR = "vichara_repair.v1"
+VICHARA_PROPOSE = "vichara_propose.v1"
+GRAPH_LEVEL = "graph_level.v2"
+GRAPH_COVERAGE = "graph_coverage.v1"
+GRAPH_REPAIR = "graph_repair.v1"
+LINK_VERIFICATION = "link_verification.v1"
+PATH_ASSESSMENT = "path_assessment.v1"
+BEAM_SCORING = "beam_scoring.v1"
+BUYER_ROLES = "buyer_roles.v2"
+
 
 @cache
 def load(version: str) -> str:

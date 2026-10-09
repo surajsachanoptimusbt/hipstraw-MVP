@@ -5,15 +5,13 @@ These tests require the observer protocol on adapters (T021). They are skipped u
 
 from __future__ import annotations
 
+import contextlib
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 
 from hipstraw_mm.adapters.llm import LLMClient
-from hipstraw_mm.adapters.replay import ReplayStore
-from hipstraw_mm.adapters.search import BraveSearch
-from hipstraw_mm.adapters.fetch import Fetcher
 
 pytestmark = pytest.mark.skipif(
     not hasattr(LLMClient, "observer"),
@@ -29,16 +27,14 @@ class TestLLMClientObserver:
         observer = MagicMock()
         adapters.llm.observer = observer
         from hipstraw_mm.steps.schemas import DiscoveryBatch
-        # Use an existing recorded call to test the observer fires
-        try:
+
+        with contextlib.suppress(Exception):
             adapters.llm.parse(
                 DiscoveryBatch,
                 [{"role": "user", "content": "test"}],
                 match_key="test_observer",
                 prompt_version="v1",
             )
-        except Exception:
-            pass
         if observer.call_count > 0:
             call_args = observer.call_args
             assert call_args is not None
@@ -51,7 +47,6 @@ class TestLLMClientObserver:
         adapters = replay_adapters("us1")
         observer = MagicMock()
         adapters.llm.observer = observer
-        # The observer should receive usage info when available
 
 
 class TestBraveSearchObserver:
@@ -59,10 +54,8 @@ class TestBraveSearchObserver:
         adapters = replay_adapters("us1")
         observer = MagicMock()
         adapters.search.observer = observer
-        try:
+        with contextlib.suppress(Exception):
             adapters.search.search("test query")
-        except Exception:
-            pass
         if observer.call_count > 0:
             call_args = observer.call_args
             assert call_args is not None
@@ -78,10 +71,8 @@ class TestFetcherObserver:
         fetcher = adapters.new_fetcher()
         observer = MagicMock()
         fetcher.observer = observer
-        try:
+        with contextlib.suppress(Exception):
             fetcher.fetch("https://example.test")
-        except Exception:
-            pass
         if observer.call_count > 0:
             call_args = observer.call_args
             assert call_args is not None

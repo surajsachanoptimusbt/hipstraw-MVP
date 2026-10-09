@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-import pytest
-
 from hipstraw_mm.store.memory import MemoryStore
-from hipstraw_mm.viewer.api import shape_runs, shape_steps, shape_step, shape_blob
+from hipstraw_mm.viewer.api import shape_blob, shape_runs, shape_step, shape_steps
 
 
 def _seed_store():
@@ -122,3 +120,73 @@ class TestEvidenceConfidenceRename:
         """Feature 002's company `confidence` is renamed `evidenceConfidence` in viewer responses."""
         # This will be extended once the companies route is added
         pass
+
+
+class TestShapeDeliberations:
+    """T039: /api/runs/<id>/deliberations shaping."""
+
+    def _seed_with_deliberations(self):
+        store, run_id = _seed_store()
+        for i, key in enumerate([
+            "market_scope", "problem", "segment_fit", "buyer", "use_case",
+            "value_proposition", "demand_signals", "adoption_readiness", "economics",
+            "timing", "alternatives", "risks", "dependencies",
+            "evidence_sufficiency", "evidence_quality", "critical_unknowns",
+            "trajectory", "transition", "market_status",
+        ]):
+            store.create_deliberation({
+                "deliberationId": f"{run_id}__delib_{key}",
+                "marketRunId": run_id,
+                "dimensionKey": key,
+                "items": [
+                    {"question": f"Q about {key}?", "status": "answered",
+                     "answer": f"Answer for {key}", "basis": [f"basis for {key}"],
+                     "reason": None}
+                ] if i < 15 else [
+                    {"question": f"Q about {key}?", "status": "unresolved",
+                     "answer": None, "basis": [],
+                     "reason": "no information in the objective"}
+                ],
+                "basisCheck": {"status": "pass" if i < 15 else "skip"},
+                "coverage": {"addressesDimension": i < 15, "reason": "ok" if i < 15 else "missing"},
+                "repairAttempts": 0,
+            })
+        return store, run_id
+
+    def test_returns_19_dimensions(self) -> None:
+        from hipstraw_mm.viewer.api import shape_deliberations
+
+        store, run_id = self._seed_with_deliberations()
+        delibs = shape_deliberations(store, run_id)
+        assert len(delibs) == 19
+
+    def test_each_has_dimension_key(self) -> None:
+        from hipstraw_mm.viewer.api import shape_deliberations
+
+        store, run_id = self._seed_with_deliberations()
+        delibs = shape_deliberations(store, run_id)
+        for d in delibs:
+            assert "dimensionKey" in d
+
+    def test_includes_items_and_checks(self) -> None:
+        from hipstraw_mm.viewer.api import shape_deliberations
+
+        store, run_id = self._seed_with_deliberations()
+        delibs = shape_deliberations(store, run_id)
+        for d in delibs:
+            assert "items" in d
+            assert "basisCheck" in d or "coverage" in d
+
+    def test_unresolved_has_reason(self) -> None:
+        from hipstraw_mm.viewer.api import shape_deliberations
+
+        store, run_id = self._seed_with_deliberations()
+        delibs = shape_deliberations(store, run_id)
+        unresolved = [d for d in delibs if any(
+            it.get("status") == "unresolved" for it in d.get("items", [])
+        )]
+        assert len(unresolved) >= 1
+        for d in unresolved:
+            for item in d["items"]:
+                if item["status"] == "unresolved":
+                    assert item["reason"] is not None

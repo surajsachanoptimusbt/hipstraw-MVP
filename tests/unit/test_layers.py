@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from hipstraw_mm.market.layers import LayerConfig, check_layer_right, load_layers
+from hipstraw_mm.market.layers import check_layer_right, load_layers
 
 EXPECTED_LAYER_IDS = [
     "market_manager",

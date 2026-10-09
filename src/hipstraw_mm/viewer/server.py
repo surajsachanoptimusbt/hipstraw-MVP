@@ -13,9 +13,29 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
-from hipstraw_mm.viewer.api import shape_blob, shape_run_detail, shape_runs, shape_step, shape_steps
+from hipstraw_mm.viewer.api import (
+    shape_beam,
+    shape_blob,
+    shape_companies,
+    shape_decisions,
+    shape_deliberations,
+    shape_documents,
+    shape_graph,
+    shape_links,
+    shape_paths,
+    shape_run_detail,
+    shape_runs,
+    shape_step,
+    shape_steps,
+)
 
 STATIC_DIR = Path(__file__).parent / "static"
+VENDOR_DIR = STATIC_DIR / "vendor"
+VENDOR_NAME = re.compile(r"^[a-z0-9][a-z0-9.\-]*\.js$")
+PAGE_CSP = (
+    "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; "
+    "connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+)
 WRITE_PREFIXES = ("create", "upsert", "transition", "finish", "seal", "delete", "set", "put")
 ALLOWED_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
@@ -119,6 +139,11 @@ class _Handler(BaseHTTPRequestHandler):
             self._serve_index(head)
             return
 
+        m = re.match(r"^/vendor/([^/]+)$", path)
+        if m:
+            self._serve_vendor(m.group(1), head)
+            return
+
         if path == "/api/runs":
             data = shape_runs(self.store)
             if head:
@@ -135,6 +160,50 @@ class _Handler(BaseHTTPRequestHandler):
                 self._json_error(404, f"run {run_id} not found")
             else:
                 self._json_response(200, run_detail)
+            return
+
+        m = re.match(r"^/api/runs/([^/]+)/deliberations$", path)
+        if m:
+            run_id = m.group(1)
+            delibs = shape_deliberations(self.store, run_id)
+            self._json_response(200, delibs)
+            return
+
+        for suffix, shaper in (
+            ("beam", shape_beam),
+            ("companies", shape_companies),
+            ("decisions", shape_decisions),
+            ("documents", shape_documents),
+        ):
+            m = re.match(rf"^/api/runs/([^/]+)/{suffix}$", path)
+            if m:
+                self._json_response(200, shaper(self.store, m.group(1)))
+                return
+
+        m = re.match(r"^/api/runs/([^/]+)/graph$", path)
+        if m:
+            run_id = m.group(1)
+            ver_str = qs.get("version", [None])[0]
+            try:
+                ver = int(ver_str) if ver_str else None
+            except ValueError:
+                self._json_error(400, "version must be an integer")
+                return
+            graph_data = shape_graph(self.store, run_id, ver)
+            if graph_data is None:
+                self._json_error(404, f"graph not found for run {run_id}")
+            else:
+                self._json_response(200, graph_data)
+            return
+
+        m = re.match(r"^/api/runs/([^/]+)/links$", path)
+        if m:
+            self._json_response(200, shape_links(self.store, m.group(1)))
+            return
+
+        m = re.match(r"^/api/runs/([^/]+)/paths$", path)
+        if m:
+            self._json_response(200, shape_paths(self.store, m.group(1)))
             return
 
         m = re.match(r"^/api/runs/([^/]+)/steps$", path)
@@ -178,13 +247,29 @@ class _Handler(BaseHTTPRequestHandler):
             self._html_response(200, b"<html><body>Viewer not built yet</body></html>")
             return
         content = index_path.read_bytes()
-        if head:
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(content)))
-            self.end_headers()
-        else:
-            self._html_response(200, content)
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(content)))
+        self.send_header("Content-Security-Policy", PAGE_CSP)
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.end_headers()
+        if not head:
+            self.wfile.write(content)
+
+    def _serve_vendor(self, name: str, head: bool) -> None:
+        file = (VENDOR_DIR / name).resolve()
+        if not VENDOR_NAME.match(name) or file.parent != VENDOR_DIR.resolve() or not file.is_file():
+            self._json_error(404, f"unknown vendor file: {name}")
+            return
+        content = file.read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/javascript; charset=utf-8")
+        self.send_header("Content-Length", str(len(content)))
+        self.send_header("Cache-Control", "max-age=86400")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.end_headers()
+        if not head:
+            self.wfile.write(content)
 
 
 class ViewerServer(HTTPServer):

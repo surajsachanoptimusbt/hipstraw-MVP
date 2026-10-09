@@ -9,8 +9,10 @@ evidenceStates:
   decisionReadyMinCompanies: 3
   qualityMixedFloor: 0.5
   qualityStrongFloor: 0.8
-budgets: {modelCallsPerRun: 150}
+budgets: {modelCallsPerRun: 300}
 trace: {maxBlobBytes: 900000}
 modelPricing:
   gpt-4o: {input: 2.50, output: 10.00}
 viewer: {host: 127.0.0.1, port: 8765, pollSeconds: 2}
+# Objective PDFs: text beyond this many characters is cut and recorded as unresolved.
+objective: {maxChars: 120000}

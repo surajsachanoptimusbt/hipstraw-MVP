@@ -27,16 +27,16 @@
       "more_results_available": true,
       "state": "",
       "related_queries": [
-        "top software companies in atlanta",
-        "software companies in atlanta georgia",
         "highest paying tech companies in atlanta",
-        "top saas companies",
+        "software companies in atlanta georgia",
+        "top software companies in atlanta",
+        "list of saas companies atlanta",
+        "tech startups in atlanta",
         "fastest growing tech companies in atlanta",
-        "faang companies in atlanta",
+        "saas companies atlanta hiring",
+        "top saas companies",
         "best software companies to work for in atlanta",
-        "tech companies in atlanta 2022",
-        "top saas companies atlanta",
-        "mailchimp"
+        "faang companies in atlanta"
       ]
     },
     "faq": {
@@ -392,8 +392,8 @@
           "opening_hours": {
             "current_day": [
               {
-                "abbr_name": "Wed",
-                "full_name": "Wednesday",
+                "abbr_name": "Thu",
+                "full_name": "Thursday",
                 "opens": "09:00",
                 "closes": "17:30"
               }
@@ -417,8 +417,8 @@
               ],
               [
                 {
-                  "abbr_name": "Thu",
-                  "full_name": "Thursday",
+                  "abbr_name": "Wed",
+                  "full_name": "Wednesday",
                   "opens": "09:00",
                   "closes": "17:30"
                 }
@@ -465,8 +465,8 @@
           "opening_hours": {
             "current_day": [
               {
-                "abbr_name": "Wed",
-                "full_name": "Wednesday",
+                "abbr_name": "Thu",
+                "full_name": "Thursday",
                 "opens": "08:00",
                 "closes": "21:00"
               }
@@ -490,8 +490,8 @@
               ],
               [
                 {
-                  "abbr_name": "Thu",
-                  "full_name": "Thursday",
+                  "abbr_name": "Wed",
+                  "full_name": "Wednesday",
                   "opens": "08:00",
                   "closes": "21:00"
                 }

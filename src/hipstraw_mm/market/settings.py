@@ -83,6 +83,11 @@ class ViewerSettings(BaseModel):
         return v
 
 
+class ObjectiveSettings(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    maxChars: int = 120_000
+
+
 class PipelineSettings(BaseModel):
     model_config = ConfigDict(extra="forbid")
     beam: BeamSettings
@@ -96,6 +101,7 @@ class PipelineSettings(BaseModel):
     trace: TraceSettings
     modelPricing: dict[str, ModelPricing]
     viewer: ViewerSettings
+    objective: ObjectiveSettings = ObjectiveSettings()
 
     @field_validator("beam")
     @classmethod

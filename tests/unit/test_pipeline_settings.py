@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from hipstraw_mm.market.settings import PipelineSettings, load_pipeline_settings
+from hipstraw_mm.market.settings import load_pipeline_settings
 
 
 class TestPipelineSettings:
@@ -17,7 +17,7 @@ class TestPipelineSettings:
         assert s.vichara.maxItemsPerDimension == 3
         assert s.links.lowConfidenceThreshold == 0.5
         assert s.links.linksPerCall == 12
-        assert s.budgets.modelCallsPerRun == 150
+        assert s.budgets.modelCallsPerRun == 300
         assert s.trace.maxBlobBytes == 900_000
         assert s.viewer.host == "127.0.0.1"
         assert s.viewer.port == 8765

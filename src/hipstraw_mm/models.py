@@ -121,6 +121,9 @@ class Run(Doc):
     discoveryDrops: dict[str, int] | None = None  # candidates found but not kept, by reason
     errorStep: str | None = None
     errorMessage: str | None = None
+    # Set only on child runs started by feature 003 for one final path (data-model.md).
+    parentMarketRunId: str | None = None
+    pathId: str | None = None
 
 
 class EvidenceCheck(Doc):

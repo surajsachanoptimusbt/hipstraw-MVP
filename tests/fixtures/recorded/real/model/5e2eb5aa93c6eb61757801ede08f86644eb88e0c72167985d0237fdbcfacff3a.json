@@ -16,7 +16,7 @@
     ]
   },
   "response": {
-    "content": "{\"queries\":[{\"query\":\"small SaaS companies headquartered in Atlanta\",\"purpose\":\"Find small SaaS companies based in Atlanta.\"},{\"query\":\"Atlanta based SaaS startups\",\"purpose\":\"Identify SaaS startups located in Atlanta.\"},{\"query\":\"list of small SaaS businesses in Atlanta\",\"purpose\":\"Compile a list of small SaaS businesses headquartered in Atlanta.\"}]}",
+    "content": "{\"queries\":[{\"query\":\"small SaaS companies headquartered in Atlanta\",\"purpose\":\"To find a list of small SaaS companies based in Atlanta.\"},{\"query\":\"Atlanta startup directory SaaS companies\",\"purpose\":\"To locate directories or listings of Atlanta-based SaaS startups.\"},{\"query\":\"emerging SaaS firms Atlanta location\",\"purpose\":\"To discover information about emerging SaaS firms headquartered in Atlanta.\"}]}",
     "refusal": null,
     "finishReason": "stop",
     "model": "gpt-4o-2024-08-06"

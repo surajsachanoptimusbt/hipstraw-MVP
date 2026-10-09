@@ -6,15 +6,25 @@ import copy
 from datetime import datetime, timezone
 
 from hipstraw_mm.store.base import (
+    BEAM_LEVELS,
+    BUYER_ROLES,
     CANDIDATES,
     COMPANY_RECORDS,
+    DELIBERATIONS,
     DEMO_REPORTS,
     EVIDENCE,
+    GRAPH_MEANINGS,
+    LINK_CHECKS,
+    MARKET_COMPANIES,
     MARKET_RUNS,
+    OBJECTIVE_DOCUMENTS,
+    PATH_DECISIONS,
+    PATHS,
     POSITION_BASELINES,
     PROGRAMS,
     REVIEW_DECISIONS,
     RUNS,
+    SEED_GRAPHS,
     TRACE_BLOBS,
     TRACE_STEPS,
     AlreadyExistsError,
@@ -47,6 +57,16 @@ class MemoryStore:
                 MARKET_RUNS,
                 TRACE_STEPS,
                 TRACE_BLOBS,
+                DELIBERATIONS,
+                GRAPH_MEANINGS,
+                BEAM_LEVELS,
+                MARKET_COMPANIES,
+                BUYER_ROLES,
+                PATH_DECISIONS,
+                SEED_GRAPHS,
+                LINK_CHECKS,
+                PATHS,
+                OBJECTIVE_DOCUMENTS,
             )
         }
 
@@ -224,3 +244,90 @@ class MemoryStore:
 
     def get_trace_blob(self, blob_id: str) -> Doc | None:
         return self._get(TRACE_BLOBS, blob_id)
+
+    # -- deliberations (create-only) -------------------------------------------
+
+    def create_deliberation(self, data: Doc) -> None:
+        self._create(DELIBERATIONS, data["deliberationId"], data)
+
+    def list_deliberations(self, run_id: str) -> list[Doc]:
+        return self._list(DELIBERATIONS, "marketRunId", run_id)
+
+    # -- graph meanings (create-only, one per run) ------------------------------
+
+    def create_graph_meaning(self, run_id: str, data: Doc) -> None:
+        self._create(GRAPH_MEANINGS, run_id, data)
+
+    def get_graph_meaning(self, run_id: str) -> Doc | None:
+        return self._get(GRAPH_MEANINGS, run_id)
+
+    # -- seed graphs (create-only, versioned per run) ----------------------------
+
+    def create_seed_graph(self, data: Doc) -> None:
+        self._create(SEED_GRAPHS, data["graphId"], data)
+
+    def list_seed_graphs(self, run_id: str) -> list[Doc]:
+        graphs = self._list(SEED_GRAPHS, "marketRunId", run_id)
+        graphs.sort(key=lambda g: g.get("version", 0))
+        return graphs
+
+    def get_seed_graph(self, graph_id: str) -> Doc | None:
+        return self._get(SEED_GRAPHS, graph_id)
+
+    # -- beam levels (create-only) ------------------------------------------------
+
+    def create_beam_level(self, run_id: str, level_no: int, data: Doc) -> None:
+        self._create(BEAM_LEVELS, f"{run_id}__L{level_no}", {**data, "marketRunId": run_id})
+
+    def list_beam_levels(self, run_id: str) -> list[Doc]:
+        return self._list(BEAM_LEVELS, "marketRunId", run_id)
+
+    # -- market companies (upsert) --------------------------------------------------
+
+    def upsert_market_company(self, data: Doc) -> None:
+        self._upsert(MARKET_COMPANIES, f"{data['marketRunId']}__{data['domainKey']}", data)
+
+    def list_market_companies(self, run_id: str) -> list[Doc]:
+        return self._list(MARKET_COMPANIES, "marketRunId", run_id)
+
+    # -- buyer roles (create-only) --------------------------------------------------
+
+    def create_buyer_roles(self, data: Doc) -> None:
+        doc_id = f"{data['marketRunId']}__{data['pathId']}__{data['domainKey']}"
+        self._create(BUYER_ROLES, doc_id, data)
+
+    def list_buyer_roles(self, run_id: str) -> list[Doc]:
+        return self._list(BUYER_ROLES, "marketRunId", run_id)
+
+    # -- path decisions (create-only) -----------------------------------------------
+
+    def create_path_decision(self, data: Doc) -> None:
+        self._create(PATH_DECISIONS, f"{data['marketRunId']}__{data['pathId']}", data)
+
+    def list_path_decisions(self, run_id: str) -> list[Doc]:
+        return self._list(PATH_DECISIONS, "marketRunId", run_id)
+
+    # -- link checks (create-only) and paths (upsert) ---------------------------
+
+    def create_link_check(self, data: Doc) -> None:
+        self._create(LINK_CHECKS, data["linkCheckId"], data)
+
+    def list_link_checks(self, run_id: str) -> list[Doc]:
+        return self._list(LINK_CHECKS, "marketRunId", run_id)
+
+    def upsert_path(self, data: Doc) -> None:
+        self._upsert(PATHS, data["pathId"], data)
+
+    def get_path(self, path_id: str) -> Doc | None:
+        return self._get(PATHS, path_id)
+
+    def list_paths(self, run_id: str) -> list[Doc]:
+        return self._list(PATHS, "marketRunId", run_id)
+
+    # -- objective documents (create-only) -----------------------------------------
+
+    def create_objective_document(self, data: Doc) -> None:
+        self._create(OBJECTIVE_DOCUMENTS, data["documentId"], data)
+
+    def list_objective_documents(self, run_id: str) -> list[Doc]:
+        return self._list(OBJECTIVE_DOCUMENTS, "marketRunId", run_id)

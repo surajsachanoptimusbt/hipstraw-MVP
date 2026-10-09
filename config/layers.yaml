@@ -2,7 +2,7 @@ layers:
   - id: market_manager
     responsibility: Decides. Owns path decisions, Market Status, and Review dispositions. Never traverses the graph.
     actors: [market_manager, review]
-    rights: [open_run, decide_path, set_market_status, record_disposition]
+    rights: [open_run, ingest_objective, decide_path, set_market_status, record_disposition]
   - id: market_development_controller
     responsibility: Defines what the graph means - levels, relationships, mandatory filters, what a promising path is.
     actors: [graph_meaning]

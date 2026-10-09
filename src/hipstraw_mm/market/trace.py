@@ -147,9 +147,10 @@ class Tracer:
         self._settings = settings
         self._run_id = run_id
         self._clock = clock
-        self._seq = 0
         self._current_step: TraceStepContext | None = None
-        self._model_call_count = 0
+        existing = store.get_market_run(run_id) or {}
+        self._seq = int(existing.get("lastSeq") or 0)
+        self._model_call_count = int((existing.get("counts") or {}).get("modelCalls") or 0)
 
     @contextlib.contextmanager
     def step(
@@ -207,10 +208,7 @@ class Tracer:
         })
         self._store.create_trace_step(step_doc)
 
-        run_doc = self._store.get_market_run(self._run_id)
-        if run_doc:
-            run_doc["lastSeq"] = seq
-            self._store.upsert_market_run(run_doc)
+        self._update_run({"lastSeq": seq}, counts={"traceSteps": seq})
 
         ctx = TraceStepContext(self, step_id, seq)
         prev_step = self._current_step
@@ -245,6 +243,10 @@ class Tracer:
             if detail is not None:
                 tc["detail"] = detail
             self._current_step._tool_calls.append(tc)
+        count_key = {"search": "searches", "fetch": "fetches"}.get(kind)
+        if count_key:
+            run = self._store.get_market_run(self._run_id) or {}
+            self._update_run({}, counts={count_key: int((run.get("counts") or {}).get(count_key) or 0) + 1})
 
     def observe_model_call(self) -> None:
         self._model_call_count += 1
@@ -253,6 +255,26 @@ class Tracer:
             raise ModelCallCeilingError(
                 f"model call ceiling exceeded: {self._model_call_count} > {ceiling}"
             )
+        self._update_run({}, counts={"modelCalls": self._model_call_count})
+
+    def record_usage(self, *, model_calls: int = 0, searches: int = 0, fetches: int = 0) -> None:
+        """Usage made outside this tracer's model_call (feature 002 child runs): counted toward the ceiling."""
+        run = self._store.get_market_run(self._run_id) or {}
+        counts = run.get("counts") or {}
+        self._update_run({}, counts={
+            "searches": int(counts.get("searches") or 0) + searches,
+            "fetches": int(counts.get("fetches") or 0) + fetches,
+        })
+        for _ in range(model_calls):
+            self.observe_model_call()
+
+    def _update_run(self, fields: dict[str, Any], counts: dict[str, int]) -> None:
+        run_doc = self._store.get_market_run(self._run_id)
+        if not run_doc:
+            return
+        run_doc.update(fields)
+        run_doc["counts"] = {**(run_doc.get("counts") or {}), **counts}
+        self._store.upsert_market_run(run_doc)
 
     def _write_blob(
         self, step_id: str, seq: int, n: int, kind: str, content: str

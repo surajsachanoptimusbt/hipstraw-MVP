@@ -199,3 +199,34 @@ class TestPortInUse:
         store, _ = _seed_store()
         with pytest.raises((OSError, SystemExit)):
             ViewerServer(as_read_store(store), host="127.0.0.1", port=port)
+
+
+class TestStaticPage:
+    def test_index_sets_a_strict_content_security_policy(self, viewer_server) -> None:
+        port, _, _ = viewer_server
+        status, body, headers = _get(port, "/")
+        assert status == 200
+        assert "<div id=\"root\">" in body
+        csp = headers["Content-Security-Policy"]
+        assert "default-src 'none'" in csp and "connect-src 'self'" in csp
+        assert "http" not in csp
+
+    def test_page_loads_scripts_only_from_this_server(self, viewer_server) -> None:
+        port, _, _ = viewer_server
+        _, body, _ = _get(port, "/")
+        assert "src=\"http" not in body and "src=\"//" not in body
+        for name in ("react.production.min.js", "react-dom.production.min.js", "htm.umd.js"):
+            assert f"/vendor/{name}" in body
+            status, script, headers = _get(port, f"/vendor/{name}")
+            assert status == 200
+            assert headers["Content-Type"].startswith("text/javascript")
+            assert len(script) > 500
+
+    @pytest.mark.parametrize("path", [
+        "/vendor/..%2Fserver.py", "/vendor/../server.py", "/vendor/missing.js",
+        "/vendor/README.md", "/vendor/.hidden.js",
+    ])
+    def test_vendor_route_serves_only_known_files(self, viewer_server, path: str) -> None:
+        port, _, _ = viewer_server
+        status, _, _ = _get(port, path)
+        assert status == 404

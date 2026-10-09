@@ -1,0 +1,61 @@
+# Graph meaning definition (T047): levels, per-path dimensions, mandatory filters, caps.
+# Maintained by the market_development_controller layer.
+
+levels:
+  - level: segment
+    minNodes: 4
+    dimension: market_scope
+    maxNodes: 8
+    maxParents: 0
+  - level: archetype
+    minNodes: 5
+    dimension: problem
+    maxNodes: 12
+    maxParents: 3
+  - level: problem
+    minNodes: 6
+    dimension: segment_fit
+    maxNodes: 15
+    maxParents: 3
+  - level: trigger
+    minNodes: 5
+    dimension: timing
+    maxNodes: 15
+    maxParents: 3
+  - level: buyerRole
+    minNodes: 4
+    dimension: buyer
+    maxNodes: 10
+    maxParents: 3
+  - level: useCase
+    minNodes: 5
+    dimension: use_case
+    maxNodes: 10
+    maxParents: 3
+
+perPathDimensions:
+  - value_proposition
+  - demand_signals
+  - adoption_readiness
+  - economics
+  - alternatives
+  - risks
+  - dependencies
+
+verificationResults:
+  - evidence_sufficiency
+  - evidence_quality
+  - critical_unknowns
+
+managerOnly:
+  - trajectory
+  - transition
+  - market_status
+
+mandatoryFilters:
+  - id: metro_in_force
+    appliesTo: segment
+    description: Segments must reference at least one metro from the run's constraintsInForce.
+  - id: no_enterprise
+    appliesTo: archetype
+    description: Archetypes with sizeBand 'enterprise' are excluded.

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from hipstraw_mm.context import Context
 from hipstraw_mm.errors import PreconditionError
 from hipstraw_mm.market.layers import load_layers
@@ -13,7 +15,7 @@ def new_market_run_id(ctx: Context) -> str:
     return f"mrun_{ctx.now():%Y%m%dT%H%M%S}"
 
 
-def market_start(ctx: Context, program_id: str) -> str:
+def market_start(ctx: Context, program_id: str, objective_pdfs: list[Path] | None = None) -> str:
     program = ctx.store.get_program(program_id)
     if program is None:
         raise PreconditionError(f"program {program_id!r} not loaded (run intake first)")
@@ -53,6 +55,10 @@ def market_start(ctx: Context, program_id: str) -> str:
 
     with tracer.step("market_manager", "market_manager", "open_run", right="open_run") as step:
         step.set_inputs({"programId": program_id})
-        step.set_outputs({"marketRunId": run_id})
+        step.set_outputs({"marketRunId": run_id, "objectiveDocuments": len(objective_pdfs or [])})
 
+    if objective_pdfs:
+        from hipstraw_mm.market.objective import ingest_documents
+
+        ingest_documents(ctx, tracer, run_id, objective_pdfs, settings.objective.maxChars)
     return run_id

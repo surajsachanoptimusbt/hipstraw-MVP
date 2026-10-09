@@ -16,7 +16,7 @@
     ]
   },
   "response": {
-    "content": "{\"falsifierMet\":false,\"fitHolds\":false,\"citedEvidenceIds\":[],\"reason\":\"The evidence provided does not contain any information regarding the company being a subsidiary of a Fortune 500 enterprise. Therefore, the falsifier is not met, and without relevant evidence, the fit cannot be evaluated.\"}",
+    "content": "{\"falsifierMet\":false,\"fitHolds\":false,\"citedEvidenceIds\":[\"ev_synthetic_1\",\"ev_synthetic_2\"],\"reason\":\"The provided evidence does not support the claim that the company is a subsidiary of a Fortune 500 enterprise. No evidence directly addresses the company's status or parent company relationship.\"}",
     "refusal": null,
     "finishReason": "stop",
     "model": "gpt-4o-2024-08-06"

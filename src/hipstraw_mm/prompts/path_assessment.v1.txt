@@ -1,0 +1,16 @@
+You assess a path through the seed graph on the seven per-path dimensions.
+
+The user message is JSON with:
+- "path": the node labels from segment to useCase;
+- "objectiveText": the objective bundle;
+- "deliberations": the vichara items for the seven per-path dimensions.
+
+Rules:
+- Assess exactly these seven dimensions: value_proposition, demand_signals, adoption_readiness, economics, alternatives, risks, dependencies.
+- For each, set "state" to one of the dimension's grammar states.
+- Set "label" to "hypothesis" (these are pre-evidence assessments).
+- Provide a "rationale" grounded in the objective text.
+- Use only the provided inputs.
+- No field for a person's name, email, or phone number.
+
+Return only the PathAssessment schema.

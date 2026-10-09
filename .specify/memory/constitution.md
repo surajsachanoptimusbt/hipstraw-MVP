@@ -1,18 +1,23 @@
 <!--
 SYNC IMPACT REPORT (temporary - remove before commit)
-Version change: 1.0.0 → 1.1.0 (MINOR: new principles added, none removed or redefined)
-Modified principles: none (I-V retained verbatim)
+Version change: 1.1.0 → 1.2.0 (MINOR: four principles added; none removed or redefined)
+Modified principles: none (I-XI retained verbatim)
 Added principles:
-  - VI. Faculty Systems Design Methodology
-  - VII. System-Level Intelligence (No Agent SDK)
-  - VIII. Evidence Provenance
-  - IX. Real-World Data Integrity
-  - X. Smallest-Unit Increments
-  - XI. Deferred Technology: Jev
+  - XII. Traceability
+  - XIII. Read-Only Viewer
+  - XIV. Layer Boundaries
+  - XV. Bounded Search
 Added sections: none
 Removed sections: none
 Templates: plan/spec/tasks templates read the constitution at runtime; not modified here
-Follow-up TODOs: none
+Follow-up TODOs (compliance gaps in existing work, not placeholders):
+  - Feature 002 logs step start/end and model-call events only; it does not yet record the full
+    per-step trace that XII requires (inputs, outputs, decision and right used, rationale, checks,
+    prompt and structured response, tool calls, cost/latency).
+  - Feature 002 spec FR-019 excludes any user interface; XIII permits only a read-only viewer, so
+    the two agree, but a viewer needs its own spec.
+  - XIV names layers that feature 002's plan does not yet map: discover/verify (Search & Research),
+    Review (Market Manager), report. The plan's Constitution Check should record the mapping.
 -->
 
 # hipstraw MVP Constitution
@@ -134,6 +139,56 @@ this constitution.
 **Rationale**: Adopting an unvalidated technology would bake unknown assumptions into the system's
 core before their value is established.
 
+### XII. Traceability
+
+Every pipeline step MUST record a structured trace as a stored record, containing:
+- layer, actor, and operation;
+- inputs and outputs;
+- the decision made and the right under which it was made;
+- the rationale and the checks applied, with their results;
+- for each model call, the prompt and the structured response;
+- tool calls (searches, fetches, store writes);
+- cost and latency.
+
+Traces MUST NOT contain the model's hidden reasoning; only what the system sent and received is
+recorded. Traces MUST NOT contain secrets (API keys, tokens, credentials).
+
+**Rationale**: Review, debugging, and audit all depend on being able to reconstruct why the system
+did what it did from stored records, not from memory or opaque model state.
+
+### XIII. Read-Only Viewer
+
+A user interface is in scope only as a read-only viewer of stored state and traces. A viewer MUST
+NOT write, edit, or delete data, and MUST NOT trigger pipeline steps. All changes to state go
+through the governed pipeline (Principle VI).
+
+**Rationale**: A viewer that can write would be a second, ungoverned path to canonical state.
+
+### XIV. Layer Boundaries
+
+Each layer has one responsibility and MUST NOT take over another's:
+- **Market Manager**: decides (Review, dispositions, the Position). It MUST NOT traverse the graph.
+- **Market Development Controller**: defines what the graph means (its schema and semantics).
+- **Search & Research**: builds, validates, verifies, and searches the graph.
+- **Position & Evaluation**: assesses positions and outcomes.
+- **Workers**: perform bounded tasks with explicit inputs and structured outputs.
+
+Every trace (Principle XII) names its layer, so a crossing of these boundaries is visible.
+
+**Rationale**: Separating deciding from searching and assessing keeps each layer testable and keeps
+decisions with the layer that is accountable for them (Principle VI).
+
+### XV. Bounded Search
+
+- Search MUST keep a bounded frontier: filter → score → diversity → keep the top N, with N set in
+  configuration.
+- Exhaustive traversal is a defect.
+- Search scores rank what to look at next. They MUST NOT be presented as evidence confidence, which
+  comes only from cited evidence (Principle VIII).
+
+**Rationale**: Bounded search keeps cost, latency, and attention predictable, and keeping ranking
+scores apart from confidence stops a heuristic from passing as evidence.
+
 ## Technology & Dependencies
 
 - **Language**: Determined per library; prefer statically typed languages for contract clarity
@@ -170,4 +225,4 @@ requests MUST include written justification.
 - **MINOR** bump: New principles added or existing ones materially expanded
 - **PATCH** bump: Clarifications, wording improvements, or non-semantic refinements
 
-**Version**: 1.1.0 | **Ratified**: 2026-10-05 | **Last Amended**: 2026-10-05
+**Version**: 1.2.0 | **Ratified**: 2026-10-05 | **Last Amended**: 2026-10-08

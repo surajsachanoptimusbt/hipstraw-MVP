@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -44,14 +43,14 @@ def setup():
 class TestTracerStep:
     def test_opening_writes_running_record(self, setup) -> None:
         store, tracer, run_id = setup
-        with tracer.step("market_manager", "market_manager", "test_op", right="open_run") as step:
+        with tracer.step("market_manager", "market_manager", "test_op", right="open_run"):
             doc = store.get_trace_step(f"{run_id}__000001")
             assert doc is not None
             assert doc["status"] == "running"
 
     def test_all_fr023_fields_present_and_empty_when_not_set(self, setup) -> None:
         store, tracer, run_id = setup
-        with tracer.step("market_manager", "market_manager", "test_op", right="open_run") as step:
+        with tracer.step("market_manager", "market_manager", "test_op", right="open_run"):
             pass
         doc = store.get_trace_step(f"{run_id}__000001")
         for field in FR023_FIELDS:
@@ -67,16 +66,17 @@ class TestTracerStep:
 
     def test_exception_seals_failed_and_reraises(self, setup) -> None:
         store, tracer, run_id = setup
-        with pytest.raises(ValueError, match="boom"):
-            with tracer.step("market_manager", "market_manager", "test_op", right="open_run") as step:
-                raise ValueError("boom")
+        with pytest.raises(ValueError, match="boom"), tracer.step(
+            "market_manager", "market_manager", "test_op", right="open_run",
+        ):
+            raise ValueError("boom")
         doc = store.get_trace_step(f"{run_id}__000001")
         assert doc["status"] == "failed"
         assert doc["error"] is not None
 
     def test_sealing_twice_raises(self, setup) -> None:
         store, tracer, run_id = setup
-        with tracer.step("market_manager", "market_manager", "test_op", right="open_run") as step:
+        with tracer.step("market_manager", "market_manager", "test_op", right="open_run"):
             pass
         with pytest.raises(InvalidTransitionError):
             store.finish_trace_step(f"{run_id}__000001", {"status": "ok"})
@@ -94,35 +94,38 @@ class TestTracerStep:
 
     def test_parent_step_id_set_for_nested_steps(self, setup) -> None:
         store, tracer, run_id = setup
-        with tracer.step("market_manager", "market_manager", "parent_op", right="open_run") as parent:
-            with tracer.step("workers", "llm_worker", "child_op", right="call_model") as child:
+        with tracer.step("market_manager", "market_manager", "parent_op", right="open_run"):  # noqa: SIM117
+            with tracer.step("workers", "llm_worker", "child_op", right="call_model"):
                 pass
         child_doc = store.get_trace_step(f"{run_id}__000002")
         assert child_doc["parentStepId"] == f"{run_id}__000001"
 
     def test_undeclared_layer_raises(self, setup) -> None:
         store, tracer, run_id = setup
-        with pytest.raises(ValueError, match="layer"):
-            with tracer.step("bad_layer", "market_manager", "op", right="open_run"):
-                pass
+        with pytest.raises(ValueError, match="layer"), tracer.step(
+            "bad_layer", "market_manager", "op", right="open_run",
+        ):
+            pass
 
     def test_undeclared_actor_raises(self, setup) -> None:
         store, tracer, run_id = setup
-        with pytest.raises(ValueError, match="actor"):
-            with tracer.step("market_manager", "bad_actor", "op", right="open_run"):
-                pass
+        with pytest.raises(ValueError, match="actor"), tracer.step(
+            "market_manager", "bad_actor", "op", right="open_run",
+        ):
+            pass
 
     def test_undeclared_right_raises(self, setup) -> None:
         store, tracer, run_id = setup
-        with pytest.raises(ValueError, match="right"):
-            with tracer.step("market_manager", "market_manager", "op", right="bad_right"):
-                pass
+        with pytest.raises(ValueError, match="right"), tracer.step(
+            "market_manager", "market_manager", "op", right="bad_right",
+        ):
+            pass
 
 
 class TestTracerObserver:
     def test_observer_events_become_tool_calls(self, setup) -> None:
         store, tracer, run_id = setup
-        with tracer.step("workers", "llm_worker", "model_op", right="call_model") as step:
+        with tracer.step("workers", "llm_worker", "model_op", right="call_model"):
             tracer.observe_tool_call(kind="model", target="gpt-4o", status="ok", detail="test")
         doc = store.get_trace_step(f"{run_id}__000001")
         assert len(doc["toolCalls"]) == 1
@@ -179,10 +182,12 @@ class TestTracerBlobTruncation:
 class TestTracerModelCallCeiling:
     def test_exceeding_ceiling_raises(self, setup) -> None:
         store, tracer, run_id = setup
-        tracer._model_call_count = 149
-        with tracer.step("workers", "llm_worker", "op", right="call_model") as step:
+        ceiling = load_pipeline_settings().budgets.modelCallsPerRun
+        tracer._model_call_count = ceiling - 1
+        with tracer.step("workers", "llm_worker", "op", right="call_model"):
             tracer.observe_model_call()
-        assert tracer._model_call_count == 150
-        with pytest.raises(Exception, match="ceiling|budget"):
-            with tracer.step("workers", "llm_worker", "op2", right="call_model") as step:
-                tracer.observe_model_call()
+        assert tracer._model_call_count == ceiling
+        with pytest.raises(Exception, match="ceiling|budget"), tracer.step(
+            "workers", "llm_worker", "op2", right="call_model",
+        ):
+            tracer.observe_model_call()

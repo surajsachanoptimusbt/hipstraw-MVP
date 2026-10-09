@@ -42,6 +42,7 @@ class LLMClient:
         self._client_factory = client_factory
         self._client: Any | None = None
         self.calls = 0
+        self.last_usage: dict[str, int] | None = None
 
     def parse(
         self,
@@ -65,6 +66,7 @@ class LLMClient:
         for attempt in (1, 2):
             self.calls += 1
             raw = self.replay.call("model", key, request, lambda: self._live(schema, messages))
+            self.last_usage = raw.get("usage")
             self._log(run_id, step, company_record_id, schema, prompt_version, attempt, raw)
             content = raw.get("content")
             if content:
@@ -93,11 +95,13 @@ class LLMClient:
         except openai.OpenAIError as exc:
             raise ExternalServiceError(f"model call failed: {type(exc).__name__}: {exc}") from exc
         choice = completion.choices[0]
+        usage = getattr(completion, "usage", None)
         return {
             "content": choice.message.content,
             "refusal": choice.message.refusal,
             "finishReason": choice.finish_reason,
             "model": completion.model,
+            "usage": {"inputTokens": usage.prompt_tokens, "outputTokens": usage.completion_tokens} if usage else None,
         }
 
     def _log(

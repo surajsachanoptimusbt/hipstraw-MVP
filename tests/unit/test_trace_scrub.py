@@ -59,7 +59,7 @@ class TestTraceScrub:
 
     def test_request_headers_never_recorded_in_tool_call(self, scrub_setup) -> None:
         store, tracer, run_id = scrub_setup
-        with tracer.step("workers", "fetch_worker", "fetch_op", right="fetch_page") as step:
+        with tracer.step("workers", "fetch_worker", "fetch_op", right="fetch_page"):
             tracer.observe_tool_call(
                 kind="fetch", target="https://example.test",
                 status="ok", detail="200",

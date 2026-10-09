@@ -106,7 +106,7 @@ evidenceStates:                                  # research R16
   decisionReadyMinCompanies: 3
   qualityMixedFloor: 0.5
   qualityStrongFloor: 0.8
-budgets: {modelCallsPerRun: 150}
+budgets: {modelCallsPerRun: 300}
 trace: {maxBlobBytes: 900000}
 modelPricing:                                    # USD per million tokens; a model not listed gives cost unknown
   gpt-4o: {input: 2.50, output: 10.00}

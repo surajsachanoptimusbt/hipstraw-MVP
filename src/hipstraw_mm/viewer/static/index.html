@@ -3,253 +3,877 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>hipstraw-mm trace viewer</title>
+<link rel="icon" href="data:,">
+<title>hipstraw trace</title>
 <style>
 :root {
-  --bg: #fff; --fg: #1a1a1a; --muted: #666; --border: #ddd;
-  --accent: #2563eb; --accent-light: #eff6ff;
-  --ok: #16a34a; --fail: #dc2626; --running: #d97706;
-  font-family: system-ui, -apple-system, sans-serif;
-  font-size: 14px;
+  --bg: #f6f7f9; --panel: #ffffff; --fg: #0f172a; --muted: #64748b; --faint: #94a3b8;
+  --border: #e2e8f0; --subtle: #f1f5f9; --hover: #f8fafc; --sel: #eef4ff;
+  --accent: #2563eb; --ok: #15803d; --ok-bg: #dcfce7; --warn: #b45309; --warn-bg: #fef3c7;
+  --fail: #b91c1c; --fail-bg: #fee2e2; --info: #1d4ed8; --info-bg: #dbeafe; --neutral-bg: #f1f5f9;
+  --code: #f8fafc; --shadow: 0 1px 2px rgba(15, 23, 42, .05);
+  color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #111; --fg: #e5e5e5; --muted: #999; --border: #333;
-    --accent: #60a5fa; --accent-light: #1e293b;
-    --ok: #4ade80; --fail: #f87171; --running: #fbbf24;
+  :root {
+    --bg: #0b0e14; --panel: #11151d; --fg: #e5e7eb; --muted: #94a3b8; --faint: #64748b;
+    --border: #1f2633; --subtle: #161c27; --hover: #151b25; --sel: #172238;
+    --accent: #60a5fa; --ok: #4ade80; --ok-bg: #052e1a; --warn: #fbbf24; --warn-bg: #3a2a06;
+    --fail: #f87171; --fail-bg: #3b0d0d; --info: #93c5fd; --info-bg: #102445; --neutral-bg: #1b2230;
+    --code: #0d1118; --shadow: none;
+    color-scheme: dark;
   }
 }
-:root[data-theme="dark"] {
-  --bg: #111; --fg: #e5e5e5; --muted: #999; --border: #333;
-  --accent: #60a5fa; --accent-light: #1e293b;
-  --ok: #4ade80; --fail: #f87171; --running: #fbbf24;
-}
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--fg); padding: 16px; max-width: 960px; margin: 0 auto; }
-h1 { font-size: 1.3rem; margin-bottom: 12px; }
-h2 { font-size: 1.1rem; margin: 16px 0 8px; }
+html, body, #root { height: 100%; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 13px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
-th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
-th { font-weight: 600; font-size: 0.85rem; color: var(--muted); }
-.status { font-weight: 600; font-size: 0.85rem; }
-.status-ok, .status-opened, .status-deliberated, .status-defined,
-.status-graphed, .status-validated, .status-linked, .status-searched,
-.status-assessed, .status-verified, .status-roled, .status-decided,
-.status-reported { color: var(--ok); }
-.status-failed { color: var(--fail); }
-.status-running { color: var(--running); }
-.empty { color: var(--muted); font-style: italic; padding: 24px 0; text-align: center; }
-.breadcrumb { font-size: 0.85rem; margin-bottom: 12px; color: var(--muted); }
-.breadcrumb a { margin: 0 4px; }
-pre { background: var(--accent-light); padding: 12px; border-radius: 4px; overflow-x: auto;
-      font-size: 0.85rem; line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
-.meta { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 8px 0; }
-.meta dt { font-weight: 600; color: var(--muted); font-size: 0.85rem; }
-.meta dd { font-size: 0.85rem; }
-nav { margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+code, pre, .mono { font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace; font-size: 12px; }
+h2 { font-size: 15px; font-weight: 600; }
+h3 { font-size: 13px; font-weight: 600; }
+
+.app { display: grid; grid-template-columns: 272px 1fr; grid-template-rows: 48px 1fr; height: 100%; }
+.topbar {
+  grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  background: var(--panel); border-bottom: 1px solid var(--border);
+}
+.brand { font-weight: 650; letter-spacing: -.01em; }
+.brand span { color: var(--muted); font-weight: 450; margin-left: 6px; }
+.logo { width: 20px; height: 20px; border-radius: 5px; background: linear-gradient(135deg, #2563eb, #7c3aed); }
+.topbar .spacer { flex: 1; }
+.readonly { font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; }
+
+.sidebar { background: var(--panel); border-right: 1px solid var(--border); overflow-y: auto; }
+.side-title { padding: 14px 16px 6px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.run-item { display: block; padding: 10px 16px; border-left: 2px solid transparent; color: var(--fg); }
+.run-item:hover { background: var(--hover); text-decoration: none; }
+.run-item.active { background: var(--sel); border-left-color: var(--accent); }
+.run-item .rid { font-weight: 550; display: flex; align-items: center; gap: 8px; }
+.run-item .rmeta { color: var(--muted); font-size: 12px; margin-top: 2px; padding-left: 16px; }
+
+.main { overflow-y: auto; min-width: 0; }
+.run-head { background: var(--panel); border-bottom: 1px solid var(--border); padding: 16px 24px 0; }
+.title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.title-row h1 { font-size: 18px; font-weight: 650; letter-spacing: -.01em; }
+.sub { color: var(--muted); margin-top: 2px; }
+.stats { display: flex; gap: 28px; margin: 14px 0; flex-wrap: wrap; }
+.stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.stat .value { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.stepper { display: flex; list-style: none; margin: 4px 0 14px; overflow-x: auto; }
+.stage { flex: 1; min-width: 72px; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; color: var(--faint); position: relative; }
+.stage::before { content: ""; position: absolute; top: 5px; left: -50%; right: 50%; height: 2px; background: var(--border); }
+.stage:first-child::before { display: none; }
+.stage-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); z-index: 1; }
+.stage.done { color: var(--muted); }
+.stage.done .stage-dot { background: var(--ok); border-color: var(--ok); }
+.stage.done::before, .stage.active::before, .stage.failed::before { background: var(--ok); }
+.stage.active { color: var(--info); font-weight: 600; }
+.stage.active .stage-dot { border-color: var(--info); animation: pulse 1.4s infinite; }
+.stage.failed { color: var(--fail); font-weight: 600; }
+.stage.failed .stage-dot { background: var(--fail); border-color: var(--fail); }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, .45); } 50% { box-shadow: 0 0 0 5px rgba(37, 99, 235, 0); } }
+
+.tabs { display: flex; gap: 2px; overflow-x: auto; }
+.tab { padding: 9px 12px; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; font-weight: 500; }
+.tab:hover { color: var(--fg); text-decoration: none; }
+.tab.active { color: var(--fg); border-bottom-color: var(--accent); }
+
+.content { padding: 20px 24px 40px; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow); }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.card-head .hint { color: var(--muted); font-size: 12px; }
+.card-body { padding: 14px 16px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; align-items: start; }
+
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-weight: 600; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding: 8px 16px; background: var(--subtle); border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 9px 16px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.wrap { max-width: 520px; }
+
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 550; white-space: nowrap; background: var(--neutral-bg); color: var(--muted); }
+.pill.ok { background: var(--ok-bg); color: var(--ok); }
+.pill.warn { background: var(--warn-bg); color: var(--warn); }
+.pill.fail { background: var(--fail-bg); color: var(--fail); }
+.pill.info { background: var(--info-bg); color: var(--info); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; background: var(--faint); }
+.dot.ok { background: var(--ok); } .dot.fail { background: var(--fail); } .dot.warn { background: var(--warn); }
+.dot.info { background: var(--info); animation: pulse 1.4s infinite; }
+
+.layer { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.layer i { width: 3px; height: 14px; border-radius: 2px; display: inline-block; }
+
+.bar { display: inline-flex; align-items: center; gap: 8px; min-width: 120px; }
+.bar .track { flex: 1; height: 6px; border-radius: 3px; background: var(--subtle); overflow: hidden; min-width: 60px; }
+.bar .fill { display: block; height: 100%; border-radius: 3px; background: var(--accent); }
+.bar .fill.link { background: #0d9488; } .bar .fill.evidence { background: #d97706; }
+.bar .v { font-variant-numeric: tabular-nums; width: 36px; text-align: right; color: var(--muted); font-size: 12px; }
+
+.trace { display: grid; grid-template-columns: minmax(0, 1fr) 460px; gap: 16px; align-items: start; }
+.toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.search { flex: 1; min-width: 160px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel); color: var(--fg); font: inherit; }
+.search:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.chip { border: 1px solid var(--border); background: var(--panel); color: var(--muted); border-radius: 999px; padding: 2px 10px; font: inherit; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.chip.on { border-color: var(--accent); color: var(--fg); background: var(--sel); }
+.trows { max-height: calc(100vh - 330px); min-height: 240px; overflow-y: auto; }
+.trow { display: grid; grid-template-columns: 16px 34px 12px minmax(0, 1fr) auto 64px 70px 64px; gap: 8px; align-items: center; padding: 7px 12px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.trow:hover { background: var(--hover); }
+.trow.sel { background: var(--sel); box-shadow: inset 2px 0 0 var(--accent); }
+.trow.child { padding-left: 32px; }
+.trow.child .tmain .top { font-weight: 450; }
+.caret { color: var(--faint); font-size: 10px; text-align: center; user-select: none; }
+.tseq { color: var(--faint); font-variant-numeric: tabular-nums; font-size: 12px; }
+.tmain { min-width: 0; }
+.tmain .top { font-weight: 550; }
+.tmain .tsub { display: block; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tnum { text-align: right; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.detail { position: sticky; top: 16px; max-height: calc(100vh - 100px); overflow-y: auto; }
+.dhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.eyebrow { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.dsec { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.dsec:last-child { border-bottom: none; }
+.dsec > h3 { margin-bottom: 8px; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+.kv { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 6px 12px; align-items: center; }
+.kv dt { color: var(--muted); }
+.kv dd { min-width: 0; overflow-wrap: anywhere; }
+
+pre.json { background: var(--code); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; line-height: 1.55; }
+.more { margin-top: 6px; background: none; border: none; color: var(--accent); cursor: pointer; font: inherit; font-size: 12px; }
+.msg { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.msg + .msg { margin-top: 8px; }
+.msg-role { padding: 4px 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); background: var(--subtle); border-bottom: 1px solid var(--border); }
+.msg pre.json { border: none; border-radius: 0; margin: 0; }
+.msg .more { margin: 0 10px 8px; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.seg button { border: none; background: var(--panel); color: var(--muted); padding: 4px 12px; font: inherit; font-size: 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button.on { background: var(--sel); color: var(--fg); font-weight: 550; }
+
+.checks { list-style: none; display: grid; gap: 6px; }
+.checks li { display: grid; grid-template-columns: 16px 1fr; gap: 8px; }
+.ico-ok { color: var(--ok); font-weight: 700; } .ico-fail { color: var(--fail); font-weight: 700; }
+.alert { border-radius: 8px; padding: 10px 14px; background: var(--neutral-bg); }
+.alert.fail { background: var(--fail-bg); color: var(--fail); }
+.alert.warn { background: var(--warn-bg); color: var(--warn); }
+.alert.info { background: var(--info-bg); color: var(--info); }
+.alert.ok { background: var(--ok-bg); color: var(--ok); }
+.alert b { font-weight: 650; }
+.stack > * + * { margin-top: 16px; }
+.tight > * + * { margin-top: 12px; }
+.muted { color: var(--muted); }
+.quote { border-left: 2px solid var(--border); padding-left: 8px; color: var(--muted); font-size: 12px; margin-top: 4px; }
+.chain { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.chain .arrow { color: var(--faint); }
+.chain .node { background: var(--subtle); border-radius: 4px; padding: 1px 6px; }
+
+.cols { display: grid; grid-template-columns: repeat(6, minmax(190px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 4px; }
+.col-head { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 8px; }
+.gnode { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; box-shadow: var(--shadow); }
+.gnode + .gnode { margin-top: 8px; }
+.gnode .nid { color: var(--faint); font-size: 11px; }
+.gnode .desc { color: var(--muted); font-size: 12px; margin-top: 4px; }
+.gnode .par { font-size: 11px; color: var(--faint); margin-top: 6px; }
+
+.empty { text-align: center; padding: 56px 16px; color: var(--muted); }
+.empty h3 { color: var(--fg); font-size: 14px; margin-bottom: 4px; }
+.empty code { background: var(--subtle); padding: 2px 6px; border-radius: 4px; }
+
+@media (max-width: 1180px) { .trace { grid-template-columns: 1fr; } .detail { position: static; max-height: none; } }
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: 48px auto 1fr; }
+  .sidebar { max-height: 180px; border-right: none; border-bottom: 1px solid var(--border); }
+  .run-head, .content { padding-left: 16px; padding-right: 16px; }
+  .trow { grid-template-columns: 16px 30px 12px minmax(0, 1fr) 60px; }
+  .trow .layer, .trow .tnum:nth-last-child(-n+2) { display: none; }
+  .grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
-<nav>
-  <h1>hipstraw-mm <span style="color:var(--muted);font-weight:400">trace viewer</span></h1>
-</nav>
-<div id="app"><p class="empty">Loading...</p></div>
-
+<div id="root"></div>
+<noscript><p style="padding:24px">The trace viewer needs JavaScript.</p></noscript>
+<script src="/vendor/react.production.min.js"></script>
+<script src="/vendor/react-dom.production.min.js"></script>
+<script src="/vendor/htm.umd.js"></script>
 <script>
 "use strict";
-const $ = (s, p) => (p || document).querySelector(s);
-const $$ = (s, p) => [...(p || document).querySelectorAll(s)];
-const h = (tag, attrs, ...children) => {
-  const el = document.createElement(tag);
-  if (attrs) Object.entries(attrs).forEach(([k, v]) => {
-    if (k === "className") el.className = v;
-    else if (k.startsWith("on")) el.addEventListener(k.slice(2).toLowerCase(), v);
-    else el.setAttribute(k, v);
-  });
-  children.flat().forEach(c => {
-    if (c == null) return;
-    el.append(typeof c === "string" ? document.createTextNode(c) : c);
-  });
-  return el;
-};
+const { useState, useEffect, useMemo, useRef } = React;
+const html = htm.bind(React.createElement);
+const enc = encodeURIComponent;
 
-const app = $("#app");
-const api = async (path) => {
-  const r = await fetch(path);
-  if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+const TERMINAL = new Set(["reported", "failed"]);
+const STAGES = ["opened", "deliberated", "defined", "graphed", "validated", "linked",
+  "searched", "assessed", "verified", "roled", "decided", "reported"];
+const STAGE_LABEL = { opened: "Start", deliberated: "Vichara", defined: "Meaning", graphed: "Graph",
+  validated: "Validate", linked: "Links", searched: "Beam", assessed: "Assess", verified: "Companies",
+  roled: "Buyers", decided: "Decide", reported: "Report" };
+const COMMAND_STATUS = { vichara: "deliberated", meaning: "defined", graph: "graphed", validate: "validated",
+  links: "linked", beam: "searched", assess: "assessed", companies: "verified", buyers: "roled",
+  decide: "decided", report: "reported" };
+const LAYERS = {
+  market_manager: ["Market Manager", "#7c3aed"],
+  market_development_controller: ["Market Dev Controller", "#0d9488"],
+  search_research: ["Search & Research", "#2563eb"],
+  position_evaluation: ["Position & Evaluation", "#d97706"],
+  workers: ["Workers", "#64748b"],
+};
+const TABS = [["overview", "Overview"], ["trace", "Trace"], ["deliberations", "Vichara"], ["graph", "Graph"],
+  ["links", "Links"], ["beam", "Beam"], ["paths", "Paths"], ["companies", "Companies"], ["decisions", "Decisions"]];
+const GRAPH_LEVELS = ["segment", "archetype", "problem", "trigger", "buyerRole", "useCase"];
+
+async function api(path) {
+  const r = await fetch(path, { headers: { Accept: "application/json" } });
+  if (!r.ok) {
+    let msg = `${r.status} ${r.statusText}`;
+    try { msg = (await r.json()).error || msg; } catch (e) { /* not json */ }
+    throw new Error(msg);
+  }
   return r.json();
+}
+
+const fmt = {
+  ms: v => v == null ? "—" : v < 1000 ? `${v} ms` : v < 60000 ? `${(v / 1000).toFixed(1)} s`
+    : `${Math.floor(v / 60000)}m ${Math.round((v % 60000) / 1000)}s`,
+  usd: v => v == null ? "—" : v < 0.01 ? `$${v.toFixed(4)}` : `$${v.toFixed(2)}`,
+  num: v => v == null ? "—" : Number(v).toLocaleString(),
+  time: iso => iso ? new Date(iso).toLocaleTimeString() : "—",
+  ago: iso => {
+    if (!iso) return "";
+    const s = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (s < 60) return "just now";
+    if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+    if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
+    return new Date(iso).toLocaleDateString();
+  },
+  op: s => s ? s.replace(/_/g, " ").replace(/^\w/, c => c.toUpperCase()) : "",
 };
 
-function statusBadge(s) {
-  return h("span", { className: `status status-${s || "unknown"}` }, s || "?");
+const OK = new Set(["ok", "pass", "reported", "kept", "final", "pursue", "answered", "has_evidence", "unique",
+  "progressing", "decision-ready", "sufficient", "high-confidence", "strong", "resolved", "valid", "grounded",
+  "include", "pursue"]);
+const FAIL = new Set(["failed", "fail", "drop", "pruned", "blocked", "insufficient", "contradictory", "weak",
+  "no_evidence_found", "repair exhausted", "exclude", "research failed"]);
+const WARN = new Set(["deferred", "unresolved", "needs more evidence", "partial", "mixed", "open", "reduced",
+  "at-risk", "awaiting-evidence", "needs-attention", "flagged", "duplicate", "unreviewed", "needs_verification",
+  "evidence ceiling", "partial"]);
+function tone(v) {
+  const s = String(v || "").toLowerCase();
+  if (OK.has(s)) return "ok";
+  if (FAIL.has(s)) return "fail";
+  if (WARN.has(s)) return "warn";
+  if (s === "running" || s === "live" || s === "proposed" || STAGES.includes(s)) return "info";
+  return "";
 }
 
-function timeAgo(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  const diff = (Date.now() - d.getTime()) / 1000;
-  if (diff < 60) return "just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return d.toLocaleDateString();
+function safeUrl(u) { return /^https?:\/\//i.test(String(u || "")) ? u : null; }
+function href(runId, tab, seq) { return `#/run/${enc(runId)}/${tab}${seq != null ? `/${seq}` : ""}`; }
+
+function useHash() {
+  const [h, setH] = useState(location.hash);
+  useEffect(() => {
+    const f = () => setH(location.hash);
+    addEventListener("hashchange", f);
+    return () => removeEventListener("hashchange", f);
+  }, []);
+  return h;
 }
 
-function navigate(hash) {
-  location.hash = hash;
-  route();
+function parseRoute(hash) {
+  const p = hash.replace(/^#\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
+  if (p[0] === "run" && p[1]) return { runId: p[1], tab: p[2] || "trace", seq: p[3] ? Number(p[3]) : null };
+  return { runId: null, tab: "trace", seq: null };
 }
 
-function parseHash() {
-  const p = new URLSearchParams(location.hash.slice(1));
-  return { run: p.get("run"), view: p.get("view") || "timeline", step: p.get("step"), blob: p.get("blob") };
+function usePoll(path, intervalMs, live = true) {
+  const [st, setSt] = useState({ data: null, error: null });
+  const liveRef = useRef(live);
+  liveRef.current = live;
+  useEffect(() => {
+    if (!path) return undefined;
+    let alive = true, timer;
+    setSt({ data: null, error: null });
+    const load = async () => {
+      try {
+        const d = await api(path);
+        if (alive) setSt({ data: d, error: null });
+      } catch (e) {
+        if (alive) setSt(s => ({ data: s.data, error: e.message }));
+      }
+      if (alive && intervalMs && liveRef.current) timer = setTimeout(load, intervalMs);
+    };
+    load();
+    return () => { alive = false; clearTimeout(timer); };
+  }, [path, intervalMs]);
+  return st;
 }
 
-async function renderRuns() {
-  app.innerHTML = "";
-  try {
-    const runs = await api("/api/runs");
-    if (!runs.length) { app.append(h("p", { className: "empty" }, "No runs yet.")); return; }
-    const table = h("table", null,
-      h("thead", null, h("tr", null,
-        h("th", null, "Run"), h("th", null, "Status"), h("th", null, "Program"),
-        h("th", null, "Model"), h("th", null, "Steps"), h("th", null, "Created")
-      )),
-      h("tbody", null, ...runs.map(r =>
-        h("tr", null,
-          h("td", null, h("a", { href: `#run=${r.marketRunId}`, onClick: e => { e.preventDefault(); navigate(`run=${r.marketRunId}`); } }, r.marketRunId)),
-          h("td", null, statusBadge(r.status)),
-          h("td", null, r.programId || ""),
-          h("td", null, r.model || ""),
-          h("td", null, String((r.counts && r.counts.traceSteps) || 0)),
-          h("td", { title: r.createdAt || "" }, timeAgo(r.createdAt))
-        )
-      ))
-    );
-    app.append(h("h2", null, "Market Runs"), table);
-  } catch (e) { app.append(h("p", { className: "empty" }, `Error: ${e.message}`)); }
+function useSteps(runId, live) {
+  const [steps, setSteps] = useState([]);
+  const liveRef = useRef(live);
+  liveRef.current = live;
+  useEffect(() => {
+    let alive = true, timer;
+    const bySeq = new Map();
+    setSteps([]);
+    const tick = async () => {
+      try {
+        const last = bySeq.size ? Math.max(...bySeq.keys()) : 0;
+        (await api(`/api/runs/${enc(runId)}/steps?after=${last}`)).forEach(s => bySeq.set(s.seq, s));
+        const running = [...bySeq.values()].filter(s => s.status === "running").map(s => s.seq);
+        if (running.length) {
+          (await api(`/api/runs/${enc(runId)}/steps?refresh=${running.join(",")}`)).forEach(s => bySeq.set(s.seq, s));
+        }
+        if (alive) setSteps([...bySeq.values()].sort((a, b) => a.seq - b.seq));
+      } catch (e) { /* the next tick retries */ }
+      if (alive && liveRef.current) timer = setTimeout(tick, 1500);
+    };
+    tick();
+    return () => { alive = false; clearTimeout(timer); };
+  }, [runId]);
+  return steps;
 }
 
-async function renderTimeline(runId) {
-  app.innerHTML = "";
-  app.append(
-    h("div", { className: "breadcrumb" }, h("a", { href: "#", onClick: e => { e.preventDefault(); navigate(""); } }, "Runs"), " / ", runId)
-  );
-  try {
-    const steps = await api(`/api/runs/${runId}/steps?after=0`);
-    if (!steps.length) { app.append(h("p", { className: "empty" }, "No steps yet.")); return; }
-    const table = h("table", null,
-      h("thead", null, h("tr", null,
-        h("th", null, "#"), h("th", null, "Layer"), h("th", null, "Operation"),
-        h("th", null, "Status"), h("th", null, "Latency"), h("th", null, "Decision")
-      )),
-      h("tbody", null, ...steps.map(s =>
-        h("tr", null,
-          h("td", null, h("a", { href: `#run=${runId}&view=step&step=${s.seq}`,
-            onClick: e => { e.preventDefault(); navigate(`run=${runId}&view=step&step=${s.seq}`); }
-          }, String(s.seq))),
-          h("td", null, s.layer || ""),
-          h("td", null, s.operation || ""),
-          h("td", null, statusBadge(s.status)),
-          h("td", null, s.latencyMs != null ? `${s.latencyMs}ms` : ""),
-          h("td", null, s.decision || "")
-        )
-      ))
-    );
-    app.append(h("h2", null, "Timeline"), table);
-  } catch (e) { app.append(h("p", { className: "empty" }, `Error: ${e.message}`)); }
+/* ---------- small components ---------- */
+
+function Pill({ value, children }) {
+  return html`<span className=${`pill ${tone(value)}`}>${children || value || "—"}</span>`;
+}
+function StatusDot({ status }) { return html`<span className=${`dot ${tone(status)}`} title=${status}></span>`; }
+function LayerTag({ layer, text }) {
+  const [label, color] = LAYERS[layer] || [layer, "#94a3b8"];
+  return html`<span className="layer" title=${label}><i style=${{ background: color }}></i>${text || label}</span>`;
+}
+function Bar({ value, kind }) {
+  if (value == null) return html`<span className="muted">—</span>`;
+  const pct = Math.max(0, Math.min(100, Math.round(value * 100)));
+  return html`<span className="bar"><span className="track"><span className=${`fill ${kind || ""}`} style=${{ width: `${pct}%` }}></span></span><span className="v">${pct}%</span></span>`;
+}
+function Empty({ title, hint }) {
+  return html`<div className="empty"><h3>${title}</h3>${hint ? html`<div>${hint}</div>` : null}</div>`;
+}
+function Card({ title, hint, right, children, flush }) {
+  return html`<section className="card">
+    ${title ? html`<div className="card-head"><div><h3>${title}</h3>${hint ? html`<div className="hint">${hint}</div>` : null}</div>${right || null}</div>` : null}
+    ${flush ? children : html`<div className="card-body">${children}</div>`}
+  </section>`;
+}
+function Json({ value, limit = 28 }) {
+  const [all, setAll] = useState(false);
+  const text = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+  const lines = text.split("\n");
+  const cut = !all && lines.length > limit;
+  return html`<div>
+    <pre className="json">${cut ? lines.slice(0, limit).join("\n") + "\n…" : text}</pre>
+    ${lines.length > limit ? html`<button className="more" onClick=${() => setAll(!all)}>${all ? "Show less" : `Show all ${lines.length} lines`}</button>` : null}
+  </div>`;
+}
+function Chain({ labels }) {
+  return html`<span className="chain">${(labels || []).map((l, i) => html`<${React.Fragment} key=${i}>${i ? html`<span className="arrow">›</span>` : null}<span className="node">${l}</span><//>`)}</span>`;
+}
+function Loading({ state, empty, children }) {
+  if (state.error && !state.data) return html`<${Empty} title="Nothing here yet" hint=${state.error} />`;
+  if (!state.data) return html`<${Empty} title="Loading…" />`;
+  const d = state.data;
+  if ((Array.isArray(d) && !d.length) || (empty && empty(d))) {
+    return html`<${Empty} title="Nothing here yet" hint="This stage has not produced anything for this run." />`;
+  }
+  return children(d);
 }
 
-async function renderStep(runId, seq) {
-  app.innerHTML = "";
-  app.append(
-    h("div", { className: "breadcrumb" },
-      h("a", { href: "#", onClick: e => { e.preventDefault(); navigate(""); } }, "Runs"), " / ",
-      h("a", { href: `#run=${runId}`, onClick: e => { e.preventDefault(); navigate(`run=${runId}`); } }, runId), " / ",
-      `Step ${seq}`
-    )
-  );
-  try {
-    const s = await api(`/api/runs/${runId}/steps/${seq}`);
-    if (!s) { app.append(h("p", { className: "empty" }, "Step not found.")); return; }
-    const dl = h("dl", { className: "meta" });
-    const fields = [
-      ["Layer", s.layer], ["Actor", s.actor], ["Operation", s.operation],
-      ["Right", s.right], ["Status", null], ["Decision", s.decision || "none"],
-      ["Rationale", s.rationale || ""], ["Started", s.startedAt], ["Ended", s.endedAt],
-      ["Latency", s.latencyMs != null ? `${s.latencyMs}ms` : ""],
-      ["Error", s.error || ""],
-    ];
-    fields.forEach(([label, val]) => {
-      dl.append(h("dt", null, label));
-      if (label === "Status") dl.append(h("dd", null, statusBadge(s.status)));
-      else dl.append(h("dd", null, val || ""));
+/* ---------- app shell ---------- */
+
+function App() {
+  const route = parseRoute(useHash());
+  const runs = usePoll("/api/runs", 3000);
+  const list = runs.data || [];
+  const runId = route.runId || (list[0] && list[0].marketRunId) || null;
+  return html`<div className="app">
+    <header className="topbar">
+      <div className="logo"></div>
+      <div className="brand">hipstraw<span>Trace</span></div>
+      <div className="spacer"></div>
+      <span className="readonly" title="This viewer never changes stored data">read-only</span>
+    </header>
+    <aside className="sidebar">
+      <div className="side-title">Market runs</div>
+      ${runs.error && !runs.data ? html`<div className="alert fail" style=${{ margin: "8px 12px" }}>${runs.error}</div>` : null}
+      ${list.map(r => html`<a key=${r.marketRunId} href=${href(r.marketRunId, route.runId === r.marketRunId ? route.tab : "trace")}
+          className=${`run-item ${r.marketRunId === runId ? "active" : ""}`}>
+        <div className="rid"><${StatusDot} status=${TERMINAL.has(r.status) ? r.status : "running"} />${r.marketRunId}</div>
+        <div className="rmeta">${r.programId || ""} · ${r.status}${r.counts && r.counts.modelCalls ? ` · ${r.counts.modelCalls} calls` : ""}</div>
+      </a>`)}
+      ${runs.data && !list.length ? html`<div className="muted" style=${{ padding: "8px 16px" }}>No runs yet.</div>` : null}
+    </aside>
+    <main className="main">
+      ${runId ? html`<${RunView} key=${runId} runId=${runId} tab=${route.tab} seq=${route.seq} />`
+        : html`<${Empty} title="No market runs yet" hint=${html`Start one with <code>hipstraw-mm market run --program invoice_alpha_genesis --memory --serve</code>`} />`}
+    </main>
+  </div>`;
+}
+
+function RunView({ runId, tab, seq }) {
+  const [live, setLive] = useState(true);
+  const runState = usePoll(`/api/runs/${enc(runId)}`, 2000, live);
+  const run = runState.data;
+  useEffect(() => { if (run && TERMINAL.has(run.status)) setLive(false); }, [run && run.status]);
+  const steps = useSteps(runId, live);
+
+  if (runState.error && !run) return html`<div className="content"><div className="alert fail">${runState.error}</div></div>`;
+  if (!run) return html`<${Empty} title="Loading run…" />`;
+
+  const sum = f => steps.reduce((a, s) => a + ((s.cost && s.cost[f]) || 0), 0);
+  const cost = sum("usd");
+  const tokens = sum("inputTokens") + sum("outputTokens");
+  const started = run.createdAt || (steps[0] && steps[0].startedAt);
+  const ends = steps.map(s => s.endedAt).filter(Boolean).sort();
+  const duration = started && ends.length ? new Date(ends[ends.length - 1]) - new Date(started) : null;
+  const counts = run.counts || {};
+  const isLive = !TERMINAL.has(run.status);
+
+  const views = {
+    overview: () => html`<${Overview} run=${run} />`,
+    trace: () => html`<${TraceView} runId=${runId} steps=${steps} seq=${seq} />`,
+    deliberations: () => html`<${Deliberations} runId=${runId} live=${isLive} />`,
+    graph: () => html`<${GraphView} runId=${runId} live=${isLive} />`,
+    links: () => html`<${LinksView} runId=${runId} live=${isLive} />`,
+    beam: () => html`<${BeamView} runId=${runId} live=${isLive} />`,
+    paths: () => html`<${PathsView} runId=${runId} live=${isLive} />`,
+    companies: () => html`<${CompaniesView} runId=${runId} live=${isLive} />`,
+    decisions: () => html`<${DecisionsView} runId=${runId} live=${isLive} />`,
+  };
+  const view = views[tab] || (() => html`<${Empty} title="Unknown view" />`);
+
+  return html`<div>
+    <div className="run-head">
+      <div className="title-row">
+        <h1>${run.marketRunId}</h1>
+        ${isLive
+          ? html`<${Pill} value="live"><span className="dot info"></span>Running · ${STAGE_LABEL[run.status] || run.status}<//>`
+          : html`<${Pill} value=${run.status} />`}
+        ${run.marketStatus ? html`<${Pill} value=${run.marketStatus.state}>Market: ${run.marketStatus.state}<//>` : null}
+      </div>
+      <div className="sub">${run.programId} · model ${run.model || "—"} · started ${started ? fmt.ago(started) : "—"}</div>
+      <div className="stats">
+        <${Stat} label="Steps" value=${fmt.num(steps.length)} />
+        <${Stat} label="Model calls" value=${fmt.num(counts.modelCalls)} />
+        <${Stat} label="Searches" value=${fmt.num(counts.searches)} />
+        <${Stat} label="Tokens" value=${tokens ? fmt.num(tokens) : "—"} />
+        <${Stat} label="Cost" value=${cost ? fmt.usd(cost) : "—"} />
+        <${Stat} label="Duration" value=${fmt.ms(duration)} />
+      </div>
+      <${Stepper} run=${run} />
+      <nav className="tabs">${TABS.map(([k, label]) => html`<a key=${k} href=${href(runId, k)} className=${`tab ${tab === k ? "active" : ""}`}>${label}</a>`)}</nav>
+    </div>
+    <div className="content">
+      ${run.status === "failed" ? html`<div className="alert fail" style=${{ marginBottom: 16 }}><b>Failed at ${STAGE_LABEL[COMMAND_STATUS[run.errorStage]] || run.errorStage || "an unknown stage"}.</b> ${run.errorMessage || ""}</div>` : null}
+      ${view()}
+    </div>
+  </div>`;
+}
+
+function Stat({ label, value }) {
+  return html`<div className="stat"><div className="label">${label}</div><div className="value">${value}</div></div>`;
+}
+
+function Stepper({ run }) {
+  const failed = run.status === "failed";
+  const failIdx = failed ? Math.max(0, STAGES.indexOf(COMMAND_STATUS[run.errorStage] || "opened")) : -1;
+  const cur = STAGES.indexOf(run.status);
+  return html`<ol className="stepper">${STAGES.map((s, i) => {
+    let st = "todo";
+    if (failed) st = i < failIdx ? "done" : i === failIdx ? "failed" : "todo";
+    else if (i <= cur) st = "done";
+    else if (i === cur + 1 && !TERMINAL.has(run.status)) st = "active";
+    return html`<li key=${s} className=${`stage ${st}`}><span className="stage-dot"></span><span>${STAGE_LABEL[s]}</span></li>`;
+  })}</ol>`;
+}
+
+/* ---------- trace ---------- */
+
+function stepSummary(s) {
+  const i = s.inputs || {};
+  if (s.operation === "call_model") return [i.schema, i.promptVersion].filter(Boolean).join(" · ");
+  const parts = [];
+  for (const k of ["dimensionKey", "level", "pathId", "query", "chunk", "dimensions"]) {
+    if (i[k] != null) parts.push(`${k}: ${Array.isArray(i[k]) ? i[k].join(", ") : i[k]}`);
+  }
+  if (s.decision) parts.push(`→ ${s.decision}`);
+  if (s.error) parts.push(s.error);
+  return parts.join("  ·  ");
+}
+
+function TraceView({ runId, steps, seq }) {
+  const [q, setQ] = useState("");
+  const [layers, setLayers] = useState(() => new Set());
+  const [open, setOpen] = useState(() => new Set());
+  const { byId, bySeq, kids } = useMemo(() => {
+    const byId = new Map(), bySeq = new Map(), kids = new Map();
+    steps.forEach(s => { byId.set(s.stepId, s); bySeq.set(s.seq, s); });
+    steps.forEach(s => {
+      if (s.parentStepId && byId.has(s.parentStepId)) {
+        if (!kids.has(s.parentStepId)) kids.set(s.parentStepId, []);
+        kids.get(s.parentStepId).push(s);
+      }
     });
-    app.append(h("h2", null, `Step ${seq}: ${s.operation}`), dl);
+    return { byId, bySeq, kids };
+  }, [steps]);
+  const selected = seq != null ? bySeq.get(seq) : null;
+  useEffect(() => {
+    const p = selected && selected.parentStepId && byId.get(selected.parentStepId);
+    if (p && !open.has(p.seq)) setOpen(o => new Set(o).add(p.seq));
+  }, [selected && selected.seq, byId]);
 
-    if (s.inputs && Object.keys(s.inputs).length) {
-      app.append(h("h2", null, "Inputs"), h("pre", null, JSON.stringify(s.inputs, null, 2)));
-    }
-    if (s.outputs && Object.keys(s.outputs).length) {
-      app.append(h("h2", null, "Outputs"), h("pre", null, JSON.stringify(s.outputs, null, 2)));
-    }
-    if (s.checks && s.checks.length) {
-      app.append(h("h2", null, "Checks"), h("pre", null, JSON.stringify(s.checks, null, 2)));
-    }
-    if (s.toolCalls && s.toolCalls.length) {
-      app.append(h("h2", null, "Tool Calls"), h("pre", null, JSON.stringify(s.toolCalls, null, 2)));
-    }
-    if (s.cost) {
-      app.append(h("h2", null, "Cost"), h("pre", null, JSON.stringify(s.cost, null, 2)));
-    }
-    if (s.promptBlobId) {
-      app.append(h("h2", null, "Prompt"),
-        h("a", { href: `#run=${runId}&view=blob&blob=${s.promptBlobId}`,
-          onClick: e => { e.preventDefault(); navigate(`run=${runId}&view=blob&blob=${s.promptBlobId}`); }
-        }, "View prompt blob")
-      );
-    }
-    if (s.responseBlobId) {
-      app.append(h("h2", null, "Response"),
-        h("a", { href: `#run=${runId}&view=blob&blob=${s.responseBlobId}`,
-          onClick: e => { e.preventDefault(); navigate(`run=${runId}&view=blob&blob=${s.responseBlobId}`); }
-        }, "View response blob")
-      );
-    }
-  } catch (e) { app.append(h("p", { className: "empty" }, `Error: ${e.message}`)); }
+  const needle = q.trim().toLowerCase();
+  const filtering = needle !== "" || layers.size > 0;
+  const matches = s => (!layers.size || layers.has(s.layer)) &&
+    (!needle || JSON.stringify([s.operation, s.actor, s.inputs, s.decision, s.error]).toLowerCase().includes(needle));
+  const toggle = n => setOpen(o => { const x = new Set(o); if (x.has(n)) x.delete(n); else x.add(n); return x; });
+  const toggleLayer = l => setLayers(o => { const x = new Set(o); if (x.has(l)) x.delete(l); else x.add(l); return x; });
+
+  const rows = [];
+  const visible = s => matches(s) || (kids.get(s.stepId) || []).some(visible);
+  const walk = (s, depth) => {
+    if (!visible(s)) return;
+    const children = kids.get(s.stepId) || [];
+    rows.push([s, depth, children]);
+    if (open.has(s.seq) || filtering) children.forEach(c => walk(c, depth + 1));
+  };
+  steps.filter(s => !s.parentStepId || !byId.has(s.parentStepId)).forEach(s => walk(s, 0));
+
+  const costOf = (s, children) => {
+    const total = [s, ...children].reduce((a, x) => a + ((x.cost && x.cost.usd) || 0), 0);
+    return total || null;
+  };
+
+  return html`<div className="trace">
+    <div className="card">
+      <div className="toolbar">
+        <input className="search" placeholder="Filter steps…" value=${q} onInput=${e => setQ(e.target.value)} />
+        ${Object.entries(LAYERS).map(([k, [label, color]]) => html`<button key=${k} className=${`chip ${layers.has(k) ? "on" : ""}`} onClick=${() => toggleLayer(k)}>
+          <span className="dot" style=${{ background: color }}></span>${label}</button>`)}
+      </div>
+      <div className="trows">
+        ${!steps.length ? html`<${Empty} title="No steps yet" hint="Steps appear here as the run records them." />` : null}
+        ${steps.length && !rows.length ? html`<${Empty} title="No steps match the filter" />` : null}
+        ${rows.map(([s, depth, children]) => html`<div key=${s.seq}
+            className=${`trow ${selected && selected.seq === s.seq ? "sel" : ""} ${depth ? "child" : ""}`}
+            onClick=${() => { location.hash = href(runId, "trace", s.seq); }}>
+          <span className="caret" onClick=${e => { if (children.length) { e.stopPropagation(); toggle(s.seq); } }}>${children.length ? (open.has(s.seq) || filtering ? "▾" : "▸") : ""}</span>
+          <span className="tseq">${s.seq}</span>
+          <${StatusDot} status=${s.status} />
+          <span className="tmain"><span className="top">${fmt.op(s.operation)}</span><span className="tsub">${stepSummary(s)}</span></span>
+          <${LayerTag} layer=${s.layer} text=${s.actor} />
+          <span className="tnum">${children.length ? `${children.length} sub` : ""}</span>
+          <span className="tnum">${fmt.ms(s.latencyMs)}</span>
+          <span className="tnum">${fmt.usd(costOf(s, children))}</span>
+        </div>`)}
+      </div>
+    </div>
+    <div className="card detail">
+      <${StepDetail} runId=${runId} step=${selected} parent=${selected ? byId.get(selected.parentStepId) : null} children=${selected ? kids.get(selected.stepId) || [] : []} />
+    </div>
+  </div>`;
 }
 
-async function renderBlob(runId, blobId) {
-  app.innerHTML = "";
-  app.append(
-    h("div", { className: "breadcrumb" },
-      h("a", { href: "#", onClick: e => { e.preventDefault(); navigate(""); } }, "Runs"), " / ",
-      h("a", { href: `#run=${runId}`, onClick: e => { e.preventDefault(); navigate(`run=${runId}`); } }, runId), " / ",
-      `Blob ${blobId}`
-    )
-  );
-  try {
-    const b = await api(`/api/blobs/${blobId}`);
-    if (!b) { app.append(h("p", { className: "empty" }, "Blob not found.")); return; }
-    const dl = h("dl", { className: "meta" });
-    dl.append(h("dt", null, "Kind"), h("dd", null, b.kind));
-    dl.append(h("dt", null, "Bytes"), h("dd", null, String(b.bytes || 0)));
-    dl.append(h("dt", null, "Truncated"), h("dd", null, String(!!b.truncated)));
-    app.append(h("h2", null, `Blob: ${b.kind}`), dl, h("pre", null, b.content || "(empty)"));
-  } catch (e) { app.append(h("p", { className: "empty" }, `Error: ${e.message}`)); }
+function isEmpty(v) { return v == null || (typeof v === "object" && !Object.keys(v).length); }
+
+function StepDetail({ runId, step, parent, children }) {
+  if (!step) return html`<${Empty} title="Select a step" hint="Click any row to see its inputs, outputs, checks and model call." />`;
+  const c = step.cost || {};
+  return html`<div>
+    <div className="dhead">
+      <div><div className="eyebrow">Step ${step.seq}</div><h2>${fmt.op(step.operation)}</h2></div>
+      <${Pill} value=${step.status} />
+    </div>
+    <div className="dsec"><dl className="kv">
+      <dt>Layer</dt><dd><${LayerTag} layer=${step.layer} /></dd>
+      <dt>Actor</dt><dd>${step.actor}</dd>
+      <dt>Right</dt><dd><code>${step.right || "—"}</code></dd>
+      <dt>Started</dt><dd>${fmt.time(step.startedAt)}</dd>
+      <dt>Latency</dt><dd>${fmt.ms(step.latencyMs)}</dd>
+      ${c.usd != null || c.inputTokens != null ? html`<dt>Cost</dt><dd>${fmt.usd(c.usd)} <span className="muted">· ${fmt.num(c.inputTokens)} in / ${fmt.num(c.outputTokens)} out</span></dd>` : null}
+      ${parent ? html`<dt>Parent</dt><dd><a href=${href(runId, "trace", parent.seq)}>#${parent.seq} ${fmt.op(parent.operation)}</a></dd>` : null}
+    </dl></div>
+    ${step.error ? html`<div className="dsec"><div className="alert fail">${step.error}</div></div>` : null}
+    ${step.decision || step.rationale ? html`<div className="dsec"><h3>Decision</h3>
+      <div><b>${step.decision || "—"}</b></div>${step.rationale ? html`<div className="muted" style=${{ marginTop: 4 }}>${step.rationale}</div>` : null}</div>` : null}
+    ${step.checks && step.checks.length ? html`<div className="dsec"><h3>Checks</h3><ul className="checks">
+      ${step.checks.map((k, i) => html`<li key=${i}><span className=${k.status === "pass" ? "ico-ok" : "ico-fail"}>${k.status === "pass" ? "✓" : "✕"}</span>
+        <span><b>${k.name}</b> <span className="muted">${k.reason}</span></span></li>`)}</ul></div>` : null}
+    ${step.model ? html`<div className="dsec"><h3>Model call</h3>
+      <dl className="kv" style=${{ marginBottom: 10 }}>
+        <dt>Model</dt><dd>${step.model.name || "—"}</dd>
+        <dt>Prompt version</dt><dd><code>${step.model.promptVersion}</code></dd>
+        <dt>Schema</dt><dd><code>${step.model.schema}</code></dd>
+      </dl>
+      <${BlobTabs} promptId=${step.promptBlobId} responseId=${step.responseBlobId} /></div>` : null}
+    ${!isEmpty(step.inputs) ? html`<div className="dsec"><h3>Inputs</h3><${Json} value=${step.inputs} /></div>` : null}
+    ${!isEmpty(step.outputs) ? html`<div className="dsec"><h3>Outputs</h3><${Json} value=${step.outputs} /></div>` : null}
+    ${step.toolCalls && step.toolCalls.length ? html`<div className="dsec"><h3>Tool calls</h3>
+      ${step.toolCalls.map((t, i) => html`<div key=${i}><${Pill} value=${t.status}>${t.kind}<//> ${t.target} <span className="muted">${t.detail || ""}</span></div>`)}</div>` : null}
+    ${children.length ? html`<div className="dsec"><h3>Sub-steps (${children.length})</h3>
+      ${children.map(k => html`<div key=${k.seq}><a href=${href(runId, "trace", k.seq)}>#${k.seq} ${fmt.op(k.operation)}</a> <span className="muted">${stepSummary(k)} · ${fmt.ms(k.latencyMs)}</span></div>`)}</div>` : null}
+  </div>`;
 }
 
-function route() {
-  const { run, view, step, blob } = parseHash();
-  if (!run) return renderRuns();
-  if (view === "blob" && blob) return renderBlob(run, blob);
-  if (view === "step" && step) return renderStep(run, parseInt(step, 10));
-  return renderTimeline(run);
+function parseMaybeJson(s) {
+  if (typeof s !== "string") return s;
+  try { return JSON.parse(s); } catch (e) { return s; }
 }
 
-window.addEventListener("hashchange", route);
-route();
+function BlobTabs({ promptId, responseId }) {
+  const [which, setWhich] = useState("response");
+  const id = which === "prompt" ? promptId : responseId;
+  const blob = usePoll(id ? `/api/blobs/${enc(id)}` : null, null);
+  let body;
+  if (!id) body = html`<div className="muted">Not recorded.</div>`;
+  else if (blob.error) body = html`<div className="alert fail">${blob.error}</div>`;
+  else if (!blob.data) body = html`<div className="muted">Loading…</div>`;
+  else {
+    const value = parseMaybeJson(blob.data.content);
+    body = Array.isArray(value) && value.length && value.every(m => m && m.role)
+      ? value.map((m, i) => html`<div className="msg" key=${i}><div className="msg-role">${m.role}</div><${Json} value=${parseMaybeJson(m.content)} limit=${m.role === "system" ? 12 : 40} /></div>`)
+      : html`<${Json} value=${value} limit=${40} />`;
+  }
+  return html`<div>
+    <div className="seg" style=${{ marginBottom: 8 }}>
+      <button className=${which === "prompt" ? "on" : ""} onClick=${() => setWhich("prompt")}>Prompt</button>
+      <button className=${which === "response" ? "on" : ""} onClick=${() => setWhich("response")}>Response</button>
+    </div>
+    ${blob.data && blob.data.truncated ? html`<div className="alert warn" style=${{ marginBottom: 8 }}>Truncated: the original was ${fmt.num(blob.data.bytes)} bytes.</div>` : null}
+    ${body}
+  </div>`;
+}
+
+/* ---------- artifact views ---------- */
+
+function Overview({ run }) {
+  const obj = run.objective || {};
+  const unresolved = run.unresolved || [];
+  const sf = run.finalPathShortfall;
+  return html`<div className="stack">
+    ${sf ? html`<div className="alert warn"><b>Path shortfall:</b> wanted ${sf.wanted}, found ${sf.found}. ${sf.reason}</div>` : null}
+    ${run.marketStatus ? html`<div className=${`alert ${tone(run.marketStatus.state) || "info"}`}><b>Market status: ${run.marketStatus.state}.</b> ${run.marketStatus.reason}</div>` : null}
+    <${Documents} runId=${run.marketRunId} />
+    <${Card} title="Objective"><p>${obj.text || "—"}</p>
+      ${(obj.experimentContexts || []).length ? html`<div className="chain" style=${{ marginTop: 10 }}>${obj.experimentContexts.map((c, i) => html`<span key=${i} className="node">${c.label || c.id || String(c)}</span>`)}</div>` : null}
+    <//>
+    <${Card} title="Constraints in force"><dl className="kv">
+      ${Object.entries(run.constraintsInForce || {}).map(([k, v]) => html`<${React.Fragment} key=${k}><dt>${k}</dt><dd>${Array.isArray(v) ? v.join(", ") || "—" : String(v)}</dd><//>`)}
+    </dl><//>
+    <${Card} title="Unresolved items" hint=${`${unresolved.length} item(s) the pipeline could not settle`} flush=${true}>
+      ${unresolved.length ? html`<table><thead><tr><th>Kind</th><th>Reference</th><th>Reason</th></tr></thead><tbody>
+        ${unresolved.map((u, i) => html`<tr key=${i}><td><${Pill} value="unresolved">${u.kind}<//></td><td className="mono">${u.ref}</td><td className="wrap">${u.reason}</td></tr>`)}
+      </tbody></table>` : html`<${Empty} title="Nothing unresolved" />`}
+    <//>
+  </div>`;
+}
+
+function Documents({ runId }) {
+  const st = usePoll(`/api/runs/${enc(runId)}/documents`, null);
+  const docs = st.data || [];
+  if (!docs.length) return null;
+  return html`<${Card} title="Objective documents" hint="Uploaded with the mandate; part of the objective every stage reads">
+    <div className="tight">${docs.map(d => html`<div key=${d.documentId}>
+      <div style=${{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <b>${d.fileName}</b><span className="muted">${d.pageCount} pages · ${fmt.num(d.chars)} characters</span>
+        ${d.truncated ? html`<${Pill} value="partial">cut to ${fmt.num(d.keptChars)} characters<//>` : null}
+      </div>
+      <div className="quote">${d.excerpt}${d.excerpt && d.excerpt.length >= 1500 ? "…" : ""}</div>
+    </div>`)}</div>
+  <//>`;
+}
+
+function Deliberations({ runId, live }) {
+  const st = usePoll(`/api/runs/${enc(runId)}/deliberations`, 4000, live);
+  return html`<${Loading} state=${st}>${list => html`<div className="grid">${list.map(d => {
+    const items = d.items || [];
+    const answered = items.filter(i => i.status === "answered").length;
+    const proposed = items.filter(i => i.status === "proposed").length;
+    const badge = d.repairExhausted ? html`<${Pill} value="repair exhausted" />` : null;
+    return html`<${Card} key=${d.dimensionKey} title=${d.dimensionKey} hint=${`${answered} grounded in the objective${proposed ? ` · ${proposed} model-proposed` : ""}`} right=${badge}>
+      <div className="tight">${items.map((it, i) => html`<div key=${i}>
+        <div style=${{ display: "flex", gap: 8, alignItems: "flex-start", justifyContent: "space-between" }}><b>${it.question}</b>
+          <${Pill} value=${it.status}>${it.status === "proposed" ? "model-proposed hypothesis" : it.status}<//></div>
+        <div style=${{ marginTop: 4 }}>${it.answer || html`<span className="muted">${it.reason}</span>`}</div>
+        ${it.status === "proposed" ? html`<div className="muted" style=${{ fontSize: 12, marginTop: 2 }}>${it.rationale}${it.confidence != null ? ` (model confidence ${Math.round(it.confidence * 100)}%)` : ""}</div>` : null}
+        ${(it.basis || []).map((b, j) => html`<div key=${j} className="quote">“${b}”</div>`)}
+      </div>`)}</div>
+    <//>`;
+  })}</div>`}<//>`;
+}
+
+function GraphView({ runId, live }) {
+  const st = usePoll(`/api/runs/${enc(runId)}/graph`, 4000, live);
+  return html`<${Loading} state=${st}>${g => {
+    const nodes = g.nodes || [];
+    const excluded = g.excluded || [];
+    return html`<div className="stack">
+      <div className="cols">${GRAPH_LEVELS.map(level => {
+        const at = nodes.filter(n => n.level === level);
+        return html`<div key=${level}>
+          <div className="col-head"><span>${level}</span><span>${at.length}</span></div>
+          ${at.length ? at.map(n => html`<div key=${n.nodeId} className="gnode">
+            <div className="nid mono">${n.nodeId}</div>
+            <div><b>${n.label}</b>${n.sizeBand ? html` <${Pill}>${n.sizeBand}<//>` : null}</div>
+            <div className="desc">${n.description}</div>
+            ${(n.parentLabels || []).length ? html`<div className="par">↑ ${n.parentLabels.join(", ")}</div>` : null}
+            ${(n.metroIds || []).length ? html`<div className="par">◎ ${n.metroIds.join(", ")}</div>` : null}
+          </div>`) : html`<div className="gnode muted">No nodes</div>`}
+        </div>`;
+      })}</div>
+      <${Card} title="Excluded nodes" hint=${`${excluded.length} removed by filters, caps or missing parents`} flush=${true}>
+        ${excluded.length ? html`<table><thead><tr><th>Level</th><th>Label</th><th>Filter</th><th>Reason</th></tr></thead><tbody>
+          ${excluded.map((e, i) => html`<tr key=${i}><td>${e.level}</td><td>${e.label}</td><td><${Pill} value="pruned">${e.filterId}<//></td><td className="wrap muted">${e.reason}</td></tr>`)}
+        </tbody></table>` : html`<${Empty} title="Nothing excluded" />`}
+      <//>
+    </div>`;
+  }}<//>`;
+}
+
+function LinksView({ runId, live }) {
+  const st = usePoll(`/api/runs/${enc(runId)}/links`, 4000, live);
+  return html`<${Loading} state=${st}>${links => {
+    const sorted = [...links].sort((a, b) => (b.flagged - a.flagged) || (a.linkConfidence - b.linkConfidence));
+    const flagged = links.filter(l => l.flagged).length;
+    const threshold = links[0] && links[0].threshold != null ? `${Math.round(links[0].threshold * 100)}%` : "the";
+    return html`<${Card} title="Link verification" hint=${`${links.length} links · ${flagged} below ${threshold} threshold`} flush=${true}>
+      <table><thead><tr><th>From</th><th>To</th><th>Link confidence</th><th>Rationale</th></tr></thead><tbody>
+        ${sorted.map((l, i) => html`<tr key=${i}>
+          <td>${l.fromLabel || l.fromNodeId}<div className="muted mono">${l.fromNodeId}</div></td>
+          <td>${l.toLabel || l.toNodeId}<div className="muted mono">${l.toNodeId}</div></td>
+          <td><${Bar} value=${l.linkConfidence} kind="link" />${l.flagged ? html`<div style=${{ marginTop: 4 }}><${Pill} value="flagged" /></div>` : null}</td>
+          <td className="wrap muted">${l.rationale}</td>
+        </tr>`)}
+      </tbody></table>
+    <//>`;
+  }}<//>`;
+}
+
+function BeamView({ runId, live }) {
+  const st = usePoll(`/api/runs/${enc(runId)}/beam`, 4000, live);
+  return html`<${Loading} state=${st}>${levels => html`<div className="stack">${[...levels].sort((a, b) => a.levelNo - b.levelNo).map(lv => {
+    const scored = [...(lv.scored || [])].sort((a, b) => (a.rank || 999) - (b.rank || 999) || b.searchScore - a.searchScore);
+    const kept = scored.filter(c => c.outcome === "kept").length;
+    return html`<${Card} key=${lv.levelNo} title=${`Level ${lv.levelNo} · ${lv.levelName}`} hint=${`${kept} kept of ${scored.length} scored`} flush=${true}>
+      <table><thead><tr><th className="num">Rank</th><th>Path</th><th>Search score</th><th>Mean link confidence</th><th className="num">Paths below</th><th>Outcome</th></tr></thead><tbody>
+        ${scored.map(c => html`<tr key=${c.pathId}>
+          <td className="num">${c.rank || "—"}</td>
+          <td className="wrap">${c.label}<div className="muted mono">${c.pathId}</div></td>
+          <td><${Bar} value=${c.searchScore} /></td>
+          <td><${Bar} value=${c.meanLinkConfidence} kind="link" /></td>
+          <td className="num">${fmt.num(c.pathsBelow)}</td>
+          <td><${Pill} value=${c.outcome} />${c.reason ? html`<div className="muted" style=${{ fontSize: 12, marginTop: 2 }}>${c.reason}</div>` : null}</td>
+        </tr>`)}
+      </tbody></table>
+    <//>`;
+  })}</div>`}<//>`;
+}
+
+function PathsView({ runId, live }) {
+  const st = usePoll(`/api/runs/${enc(runId)}/paths`, 4000, live);
+  return html`<${Loading} state=${st}>${paths => {
+    const finals = paths.filter(p => p.isFinal);
+    const rest = paths.filter(p => !p.isFinal);
+    return html`<div className="stack">
+      ${finals.map((p, i) => html`<${Card} key=${p.pathId} title=${`Final path ${i + 1}`} hint=${p.pathId} right=${html`<${Pill} value=${p.status} />`}>
+        <div className="tight">
+          <${Chain} labels=${p.nodeLabels} />
+          <dl className="kv">
+            <dt>Search score</dt><dd><${Bar} value=${p.searchScore} /></dd>
+            ${Object.entries(p.factors || {}).map(([k, f]) => html`<${React.Fragment} key=${k}><dt className="muted">· ${k}</dt><dd title=${f.rationale || ""}><${Bar} value=${f.value} /></dd><//>`)}
+            <dt>Link confidence</dt><dd><${Bar} value=${p.meanLinkConfidence} kind="link" /></dd>
+            ${p.evidenceStates ? html`<dt>Evidence</dt><dd style=${{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              <${Pill} value=${p.evidenceStates.sufficiency}>sufficiency: ${p.evidenceStates.sufficiency}<//>
+              <${Pill} value=${p.evidenceStates.quality}>quality: ${p.evidenceStates.quality}<//>
+              <${Pill} value=${p.evidenceStates.criticalUnknowns}>unknowns: ${p.evidenceStates.criticalUnknowns}<//></dd>` : null}
+          </dl>
+          ${p.researchPacket ? html`<${Packet} packet=${p.researchPacket} />` : null}
+          ${(p.assessment || []).length ? html`<table><thead><tr><th>Dimension</th><th>State (hypothesis)</th><th>Rationale</th></tr></thead><tbody>
+            ${p.assessment.map(a => html`<tr key=${a.dimensionKey}><td>${a.dimensionKey}</td><td><${Pill}>${a.state}<//></td><td className="wrap muted">${a.rationale}</td></tr>`)}
+          </tbody></table>` : null}
+        </div>
+      <//>`)}
+      ${rest.length ? html`<${Card} title="Other paths" flush=${true}><table><thead><tr><th>Path</th><th>Search score</th><th>Status</th></tr></thead><tbody>
+        ${rest.map(p => html`<tr key=${p.pathId}><td className="wrap"><${Chain} labels=${p.nodeLabels} /></td><td><${Bar} value=${p.searchScore} /></td><td><${Pill} value=${p.status} /></td></tr>`)}
+      </tbody></table><//>` : null}
+    </div>`;
+  }}<//>`;
+}
+
+function Packet({ packet }) {
+  return html`<div className="alert" style=${{ background: "var(--subtle)" }}>
+    <div style=${{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+      <b>Research evidence packet</b><span className="muted mono">${packet.childRunId}</span>
+      <${Pill} value=${packet.completionReason} />
+    </div>
+    <div style=${{ marginTop: 6 }}>${packet.found} companies found · <b>${packet.included} included</b> · ${packet.needsVerification} need verification · ${packet.excluded} excluded</div>
+    ${packet.error ? html`<div className="muted" style=${{ marginTop: 4 }}>Research failed: ${packet.error}</div>` : null}
+    ${(packet.gaps || []).length ? html`<div className="muted" style=${{ marginTop: 4 }}>Open gaps: ${packet.gaps.map(g => `${g.field} (${g.companies})`).join(", ")}</div>` : null}
+    ${(packet.contradictions || []).length ? html`<div className="muted" style=${{ marginTop: 4 }}>Contradictions: ${packet.contradictions.join(", ")}</div>` : null}
+  </div>`;
+}
+
+function CompaniesView({ runId, live }) {
+  const st = usePoll(`/api/runs/${enc(runId)}/companies`, 4000, live);
+  const paths = usePoll(`/api/runs/${enc(runId)}/paths`, 4000, live);
+  const finals = (paths.data || []).filter(p => p.isFinal);
+  const order = { include: 0, needs_verification: 1, exclude: 2 };
+  return html`<${Loading} state=${st}>${list => html`<div className="stack">
+    ${(finals.length ? finals : [{ pathId: null }]).map((p, i) => {
+      const rows = list.flatMap(c => (c.links || []).filter(l => p.pathId == null || l.pathId === p.pathId).map(l => ({ c, l })))
+        .sort((a, b) => (order[a.l.disposition] ?? 3) - (order[b.l.disposition] ?? 3));
+      const included = rows.filter(r => r.l.disposition === "include").length;
+      return html`<${Card} key=${p.pathId || "all"} title=${p.pathId ? `Final path ${i + 1}` : "Companies"}
+          hint=${p.nodeLabels ? p.nodeLabels.join(" › ") : ""} right=${html`<${Pill} value=${included ? "include" : "no_evidence_found"}>${included} included of ${rows.length}<//>`} flush=${true}>
+        ${rows.length ? html`<table><thead><tr><th>Company</th><th>Review</th><th>Evidence confidence</th><th>Buyer roles</th></tr></thead><tbody>
+          ${rows.map(({ c, l }) => {
+            const roles = (c.buyerRoles || []).filter(r => r.pathId === l.pathId);
+            const unknown = (c.buyerRoleUnknowns || []).find(u => u.pathId === l.pathId);
+            const hq = c.hq && (c.hq.city || c.hq.state) ? [c.hq.city, c.hq.state].filter(Boolean).join(", ") : null;
+            return html`<tr key=${l.companyRecordId}>
+              <td className="wrap"><b>${c.name}</b>
+                <div className="muted">${safeUrl(c.url) ? html`<a href=${safeUrl(c.url)} target="_blank" rel="noopener noreferrer">${c.domain || c.domainKey}</a>` : (c.domain || c.domainKey)}${hq ? ` · ${hq}` : ""}</div>
+                ${c.conflict ? html`<div style=${{ marginTop: 4 }}><${Pill} value="flagged">different review on another path<//></div>` : null}</td>
+              <td className="wrap"><${Pill} value=${l.disposition} /><div className="muted" style=${{ fontSize: 12, marginTop: 4 }}>${l.reason || ""}</div></td>
+              <td><${Bar} value=${c.evidenceConfidence} kind="evidence" /></td>
+              <td className="wrap">${roles.length ? roles.map((r, j) => html`<div key=${j} title=${r.rationale || ""}>${r.role} <${Pill}>${r.authority}<//></div>`)
+                : html`<span className="muted">${unknown ? `unknown: ${unknown.reason}` : "—"}</span>`}</td>
+            </tr>`;
+          })}
+        </tbody></table>` : html`<${Empty} title="No companies found for this path" hint=${p.researchPacket && p.researchPacket.error ? p.researchPacket.error : "Company research found no candidate with a website and a cited source."} />`}
+      <//>`;
+    })}
+  </div>`}<//>`;
+}
+
+function DecisionsView({ runId, live }) {
+  const st = usePoll(`/api/runs/${enc(runId)}/decisions`, 4000, live);
+  const paths = usePoll(`/api/runs/${enc(runId)}/paths`, 4000, live);
+  const labels = new Map((paths.data || []).map(p => [p.pathId, p.nodeLabels]));
+  return html`<${Loading} state=${st} empty=${d => !(d.decisions || []).length && !d.marketStatus}>${d => html`<div className="stack">
+    ${d.marketStatus ? html`<div className=${`alert ${tone(d.marketStatus.state) || "info"}`}><b>Market status: ${d.marketStatus.state}.</b> ${d.marketStatus.reason}</div>` : null}
+    <${Card} title="Path decisions" hint="Made by the Market Manager from final paths and their evaluations only" flush=${true}>
+      <table><thead><tr><th>Path</th><th>Decision</th><th>Rule</th><th>Reason</th></tr></thead><tbody>
+        ${(d.decisions || []).map(x => html`<tr key=${x.pathId}>
+          <td className="wrap">${labels.get(x.pathId) ? html`<${Chain} labels=${labels.get(x.pathId)} />` : x.pathId}</td>
+          <td><${Pill} value=${x.decision} /></td><td className="mono muted">${x.ruleFired}</td><td className="wrap muted">${x.reason}</td></tr>`)}
+      </tbody></table>
+    <//>
+    ${(d.unassessed || []).length ? html`<${Card} title="Not assessed in this run" flush=${true}><table><tbody>
+      ${d.unassessed.map(u => html`<tr key=${u.dimensionKey}><td>${u.dimensionKey}</td><td className="muted">${u.reason}</td></tr>`)}</tbody></table><//>` : null}
+  </div>`}<//>`;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);
 </script>
 </body>
 </html>
