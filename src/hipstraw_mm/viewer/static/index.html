@@ -465,13 +465,7 @@ function RunView({ runId, tab, seq }) {
   if (runState.error && !run) return html`<div className="content"><div className="alert fail">${runState.error}</div></div>`;
   if (!run) return html`<${Empty} title="Loading run…" />`;
 
-  const sum = f => steps.reduce((a, s) => a + ((s.cost && s.cost[f]) || 0), 0);
-  const cost = sum("usd");
-  const tokens = sum("inputTokens") + sum("outputTokens");
   const started = run.createdAt || (steps[0] && steps[0].startedAt);
-  const ends = steps.map(s => s.endedAt).filter(Boolean).sort();
-  const duration = started && ends.length ? new Date(ends[ends.length - 1]) - new Date(started) : null;
-  const counts = run.counts || {};
   const isLive = !TERMINAL.has(run.status);
 
   const views = {
@@ -497,14 +491,6 @@ function RunView({ runId, tab, seq }) {
         ${run.marketStatus ? html`<${Pill} value=${run.marketStatus.state}>Market: ${run.marketStatus.state}<//>` : null}
       </div>
       <div className="sub">${run.programId} · model ${run.model || "—"} · started ${started ? fmt.ago(started) : "—"}</div>
-      <div className="stats">
-        <${Stat} label="Steps" value=${fmt.num(steps.length)} />
-        <${Stat} label="Model calls" value=${fmt.num(counts.modelCalls)} />
-        <${Stat} label="Searches" value=${fmt.num(counts.searches)} />
-        <${Stat} label="Tokens" value=${tokens ? fmt.num(tokens) : "—"} />
-        <${Stat} label="Cost" value=${cost ? fmt.usd(cost) : "—"} />
-        <${Stat} label="Duration" value=${fmt.ms(duration)} />
-      </div>
       <${Stepper} run=${run} />
       <nav className="tabs">${TABS.filter(t => tech || !t.tech).map(t => html`<a key=${t.k} href=${href(runId, t.k)} className=${`tab ${tab === t.k ? "active" : ""}`}>${t.label}</a>`)}</nav>
     </div>
@@ -513,10 +499,6 @@ function RunView({ runId, tab, seq }) {
       ${view()}
     </div>
   </div>`;
-}
-
-function Stat({ label, value }) {
-  return html`<div className="stat"><div className="label">${label}</div><div className="value">${value}</div></div>`;
 }
 
 function Stepper({ run }) {
