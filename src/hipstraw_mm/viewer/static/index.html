@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hipstraw-mm trace viewer</title>
+<style>
+:root {
+  --bg: #fff; --fg: #1a1a1a; --muted: #666; --border: #ddd;
+  --accent: #2563eb; --accent-light: #eff6ff;
+  --ok: #16a34a; --fail: #dc2626; --running: #d97706;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111; --fg: #e5e5e5; --muted: #999; --border: #333;
+    --accent: #60a5fa; --accent-light: #1e293b;
+    --ok: #4ade80; --fail: #f87171; --running: #fbbf24;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111; --fg: #e5e5e5; --muted: #999; --border: #333;
+  --accent: #60a5fa; --accent-light: #1e293b;
+  --ok: #4ade80; --fail: #f87171; --running: #fbbf24;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--fg); padding: 16px; max-width: 960px; margin: 0 auto; }
+h1 { font-size: 1.3rem; margin-bottom: 12px; }
+h2 { font-size: 1.1rem; margin: 16px 0 8px; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+th { font-weight: 600; font-size: 0.85rem; color: var(--muted); }
+.status { font-weight: 600; font-size: 0.85rem; }
+.status-ok, .status-opened, .status-deliberated, .status-defined,
+.status-graphed, .status-validated, .status-linked, .status-searched,
+.status-assessed, .status-verified, .status-roled, .status-decided,
+.status-reported { color: var(--ok); }
+.status-failed { color: var(--fail); }
+.status-running { color: var(--running); }
+.empty { color: var(--muted); font-style: italic; padding: 24px 0; text-align: center; }
+.breadcrumb { font-size: 0.85rem; margin-bottom: 12px; color: var(--muted); }
+.breadcrumb a { margin: 0 4px; }
+pre { background: var(--accent-light); padding: 12px; border-radius: 4px; overflow-x: auto;
+      font-size: 0.85rem; line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
+.meta { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 8px 0; }
+.meta dt { font-weight: 600; color: var(--muted); font-size: 0.85rem; }
+.meta dd { font-size: 0.85rem; }
+nav { margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+</style>
+</head>
+<body>
+<nav>
+  <h1>hipstraw-mm <span style="color:var(--muted);font-weight:400">trace viewer</span></h1>
+</nav>
+<div id="app"><p class="empty">Loading...</p></div>
+
+<script>
+"use strict";
+const $ = (s, p) => (p || document).querySelector(s);
+const $$ = (s, p) => [...(p || document).querySelectorAll(s)];
+const h = (tag, attrs, ...children) => {
+  const el = document.createElement(tag);
+  if (attrs) Object.entries(attrs).forEach(([k, v]) => {
+    if (k === "className") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2).toLowerCase(), v);
+    else el.setAttribute(k, v);
+  });
+  children.flat().forEach(c => {
+    if (c == null) return;
+    el.append(typeof c === "string" ? document.createTextNode(c) : c);
+  });
+  return el;
+};
+
+const app = $("#app");
+const api = async (path) => {
+  const r = await fetch(path);
+  if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+  return r.json();
+};
+
+function statusBadge(s) {
+  return h("span", { className: `status status-${s || "unknown"}` }, s || "?");
+}
+
+function timeAgo(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const diff = (Date.now() - d.getTime()) / 1000;
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return d.toLocaleDateString();
+}
+
+function navigate(hash) {
+  location.hash = hash;
+  route();
+}
+
+function parseHash() {
+  const p = new URLSearchParams(location.hash.slice(1));
+  return { run: p.get("run"), view: p.get("view") || "timeline", step: p.get("step"), blob: p.get("blob") };
+}
+
+async function renderRuns() {
+  app.innerHTML = "";
+  try {
+    const runs = await api("/api/runs");
+    if (!runs.length) { app.append(h("p", { className: "empty" }, "No runs yet.")); return; }
+    const table = h("table", null,
+      h("thead", null, h("tr", null,
+        h("th", null, "Run"), h("th", null, "Status"), h("th", null, "Program"),
+        h("th", null, "Model"), h("th", null, "Steps"), h("th", null, "Created")
+      )),
+      h("tbody", null, ...runs.map(r =>
+        h("tr", null,
+          h("td", null, h("a", { href: `#run=${r.marketRunId}`, onClick: e => { e.preventDefault(); navigate(`run=${r.marketRunId}`); } }, r.marketRunId)),
+          h("td", null, statusBadge(r.status)),
+          h("td", null, r.programId || ""),
+          h("td", null, r.model || ""),
+          h("td", null, String((r.counts && r.counts.traceSteps) || 0)),
+          h("td", { title: r.createdAt || "" }, timeAgo(r.createdAt))
+        )
+      ))
+    );
+    app.append(h("h2", null, "Market Runs"), table);
+  } catch (e) { app.append(h("p", { className: "empty" }, `Error: ${e.message}`)); }
+}
+
+async function renderTimeline(runId) {
+  app.innerHTML = "";
+  app.append(
+    h("div", { className: "breadcrumb" }, h("a", { href: "#", onClick: e => { e.preventDefault(); navigate(""); } }, "Runs"), " / ", runId)
+  );
+  try {
+    const steps = await api(`/api/runs/${runId}/steps?after=0`);
+    if (!steps.length) { app.append(h("p", { className: "empty" }, "No steps yet.")); return; }
+    const table = h("table", null,
+      h("thead", null, h("tr", null,
+        h("th", null, "#"), h("th", null, "Layer"), h("th", null, "Operation"),
+        h("th", null, "Status"), h("th", null, "Latency"), h("th", null, "Decision")
+      )),
+      h("tbody", null, ...steps.map(s =>
+        h("tr", null,
+          h("td", null, h("a", { href: `#run=${runId}&view=step&step=${s.seq}`,
+            onClick: e => { e.preventDefault(); navigate(`run=${runId}&view=step&step=${s.seq}`); }
+          }, String(s.seq))),
+          h("td", null, s.layer || ""),
+          h("td", null, s.operation || ""),
+          h("td", null, statusBadge(s.status)),
+          h("td", null, s.latencyMs != null ? `${s.latencyMs}ms` : ""),
+          h("td", null, s.decision || "")
+        )
+      ))
+    );
+    app.append(h("h2", null, "Timeline"), table);
+  } catch (e) { app.append(h("p", { className: "empty" }, `Error: ${e.message}`)); }
+}
+
+async function renderStep(runId, seq) {
+  app.innerHTML = "";
+  app.append(
+    h("div", { className: "breadcrumb" },
+      h("a", { href: "#", onClick: e => { e.preventDefault(); navigate(""); } }, "Runs"), " / ",
+      h("a", { href: `#run=${runId}`, onClick: e => { e.preventDefault(); navigate(`run=${runId}`); } }, runId), " / ",
+      `Step ${seq}`
+    )
+  );
+  try {
+    const s = await api(`/api/runs/${runId}/steps/${seq}`);
+    if (!s) { app.append(h("p", { className: "empty" }, "Step not found.")); return; }
+    const dl = h("dl", { className: "meta" });
+    const fields = [
+      ["Layer", s.layer], ["Actor", s.actor], ["Operation", s.operation],
+      ["Right", s.right], ["Status", null], ["Decision", s.decision || "none"],
+      ["Rationale", s.rationale || ""], ["Started", s.startedAt], ["Ended", s.endedAt],
+      ["Latency", s.latencyMs != null ? `${s.latencyMs}ms` : ""],
+      ["Error", s.error || ""],
+    ];
+    fields.forEach(([label, val]) => {
+      dl.append(h("dt", null, label));
+      if (label === "Status") dl.append(h("dd", null, statusBadge(s.status)));
+      else dl.append(h("dd", null, val || ""));
+    });
+    app.append(h("h2", null, `Step ${seq}: ${s.operation}`), dl);
+
+    if (s.inputs && Object.keys(s.inputs).length) {
+      app.append(h("h2", null, "Inputs"), h("pre", null, JSON.stringify(s.inputs, null, 2)));
+    }
+    if (s.outputs && Object.keys(s.outputs).length) {
+      app.append(h("h2", null, "Outputs"), h("pre", null, JSON.stringify(s.outputs, null, 2)));
+    }
+    if (s.checks && s.checks.length) {
+      app.append(h("h2", null, "Checks"), h("pre", null, JSON.stringify(s.checks, null, 2)));
+    }
+    if (s.toolCalls && s.toolCalls.length) {
+      app.append(h("h2", null, "Tool Calls"), h("pre", null, JSON.stringify(s.toolCalls, null, 2)));
+    }
+    if (s.cost) {
+      app.append(h("h2", null, "Cost"), h("pre", null, JSON.stringify(s.cost, null, 2)));
+    }
+    if (s.promptBlobId) {
+      app.append(h("h2", null, "Prompt"),
+        h("a", { href: `#run=${runId}&view=blob&blob=${s.promptBlobId}`,
+          onClick: e => { e.preventDefault(); navigate(`run=${runId}&view=blob&blob=${s.promptBlobId}`); }
+        }, "View prompt blob")
+      );
+    }
+    if (s.responseBlobId) {
+      app.append(h("h2", null, "Response"),
+        h("a", { href: `#run=${runId}&view=blob&blob=${s.responseBlobId}`,
+          onClick: e => { e.preventDefault(); navigate(`run=${runId}&view=blob&blob=${s.responseBlobId}`); }
+        }, "View response blob")
+      );
+    }
+  } catch (e) { app.append(h("p", { className: "empty" }, `Error: ${e.message}`)); }
+}
+
+async function renderBlob(runId, blobId) {
+  app.innerHTML = "";
+  app.append(
+    h("div", { className: "breadcrumb" },
+      h("a", { href: "#", onClick: e => { e.preventDefault(); navigate(""); } }, "Runs"), " / ",
+      h("a", { href: `#run=${runId}`, onClick: e => { e.preventDefault(); navigate(`run=${runId}`); } }, runId), " / ",
+      `Blob ${blobId}`
+    )
+  );
+  try {
+    const b = await api(`/api/blobs/${blobId}`);
+    if (!b) { app.append(h("p", { className: "empty" }, "Blob not found.")); return; }
+    const dl = h("dl", { className: "meta" });
+    dl.append(h("dt", null, "Kind"), h("dd", null, b.kind));
+    dl.append(h("dt", null, "Bytes"), h("dd", null, String(b.bytes || 0)));
+    dl.append(h("dt", null, "Truncated"), h("dd", null, String(!!b.truncated)));
+    app.append(h("h2", null, `Blob: ${b.kind}`), dl, h("pre", null, b.content || "(empty)"));
+  } catch (e) { app.append(h("p", { className: "empty" }, `Error: ${e.message}`)); }
+}
+
+function route() {
+  const { run, view, step, blob } = parseHash();
+  if (!run) return renderRuns();
+  if (view === "blob" && blob) return renderBlob(run, blob);
+  if (view === "step" && step) return renderStep(run, parseInt(step, 10));
+  return renderTimeline(run);
+}
+
+window.addEventListener("hashchange", route);
+route();
+</script>
+</body>
+</html>

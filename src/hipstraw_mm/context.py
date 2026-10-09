@@ -15,6 +15,10 @@ from hipstraw_mm.config import LoadedConfig
 from hipstraw_mm.logging_setup import EventLog
 from hipstraw_mm.store.base import Store
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from hipstraw_mm.market.trace import Tracer
+
 
 def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
@@ -32,6 +36,7 @@ class Context:
     new_fetcher: Callable[[], Fetcher]
     reports_dir: Path = Path("reports")
     now: Callable[[], datetime] = _utc_now
+    tracer: Tracer | None = None
 
     def now_iso(self) -> str:
         return self.now().isoformat()

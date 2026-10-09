@@ -32,6 +32,10 @@ from hipstraw_mm.steps.verify import verify
 from hipstraw_mm.store.base import InvalidTransitionError, NotFoundError
 
 COMMANDS = ("intake", "candidates", "position", "discover", "verify", "review", "report", "run", "show")
+MARKET_COMMANDS = (
+    "start", "vichara", "meaning", "graph", "validate", "links",
+    "beam", "assess", "companies", "buyers", "decide", "report", "run", "show",
+)
 
 
 def build_context(config: LoadedConfig) -> Context:
@@ -108,11 +112,52 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("run", parents=[common], help="position, discover, verify, review, report")
     p.add_argument("--candidate", required=True)
     p.add_argument("--file", required=True)
+
+    # --- feature 003: market command group ---
+    market = sub.add_parser("market", parents=[common], help="traced market discovery pipeline")
+    msub = market.add_subparsers(dest="market_command", required=True, parser_class=_Parser)
+
+    p = msub.add_parser("start", help="open a market run from a program")
+    p.add_argument("--program", required=True, help="program ID")
+
+    for name, help_text in [
+        ("vichara", "deliberate dimensions"),
+        ("meaning", "record graph meaning"),
+        ("graph", "generate seed graph"),
+        ("validate", "validate seed graph"),
+        ("links", "verify links"),
+        ("beam", "beam search"),
+        ("assess", "assess paths"),
+        ("companies", "discover companies per path"),
+        ("buyers", "identify buyer roles"),
+        ("decide", "market manager decisions"),
+    ]:
+        p = msub.add_parser(name, help=help_text)
+        p.add_argument("--run", required=True)
+
+    p = msub.add_parser("report", help="render market report")
+    p.add_argument("--run", required=True)
+    p.add_argument("--out", default=None)
+
+    p = msub.add_parser("run", help="start through report")
+    p.add_argument("--program", required=True)
+
+    p = msub.add_parser("show", help="print run status and counts")
+    p.add_argument("--run", required=True)
+
+    # --- feature 003: view command ---
+    p = sub.add_parser("view", parents=[common], help="start the read-only trace viewer")
+    p.add_argument("--port", type=int, default=8765)
+
     return parser
 
 
 def _not_implemented(ctx: Context, args: argparse.Namespace) -> CommandResult:
     raise UsageError(f"'{args.command}' is not implemented yet")
+
+
+def _market_not_implemented(ctx: Context, args: argparse.Namespace) -> CommandResult:
+    raise UsageError(f"'market {args.market_command}' is not implemented yet")
 
 
 def _run(ctx: Context, args: argparse.Namespace) -> CommandResult:
@@ -132,6 +177,59 @@ def _run(ctx: Context, args: argparse.Namespace) -> CommandResult:
     )
 
 
+def _market_start(ctx: Context, args: argparse.Namespace) -> CommandResult:
+    from hipstraw_mm.market.start import market_start
+
+    run_id = market_start(ctx, args.program)
+    run = ctx.store.get_market_run(run_id)
+    return CommandResult(
+        "market start",
+        message=f"opened {run_id}",
+        runId=run_id,
+        status=run["status"] if run else "opened",
+        counts=run.get("counts") if run else None,
+    )
+
+
+def _market_show(ctx: Context, args: argparse.Namespace) -> CommandResult:
+    run = ctx.store.get_market_run(args.run)
+    if run is None:
+        raise PreconditionError(f"market run {args.run!r} not found")
+    return CommandResult(
+        "market show",
+        message=f"{run['marketRunId']}  status={run['status']}  steps={run.get('lastSeq', 0)}",
+        runId=run["marketRunId"],
+        status=run["status"],
+        counts=run.get("counts"),
+    )
+
+
+def _market_dispatch(ctx: Context, args: argparse.Namespace) -> CommandResult:
+    handler = MARKET_HANDLERS.get(args.market_command, _market_not_implemented)
+    return handler(ctx, args)
+
+
+def _view(ctx: Context, args: argparse.Namespace) -> CommandResult:
+    from hipstraw_mm.viewer.server import ViewerServer, as_read_store
+
+    store = as_read_store(ctx.store)
+    server = ViewerServer(store, port=args.port)
+    host, port = str(server.server_address[0]), server.server_address[1]
+    print(f"viewer: http://{host}:{port}/", file=sys.stderr)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.shutdown()
+    return CommandResult("view", message="viewer stopped")
+
+
+MARKET_HANDLERS: dict[str, Callable[[Context, argparse.Namespace], CommandResult]] = {
+    "start": _market_start,
+    "show": _market_show,
+}
+
 HANDLERS: dict[str, Callable[[Context, argparse.Namespace], CommandResult]] = {
     "intake": lambda ctx, a: intake(ctx, a.program),
     "candidates": lambda ctx, a: candidates(ctx, a.program),
@@ -142,6 +240,8 @@ HANDLERS: dict[str, Callable[[Context, argparse.Namespace], CommandResult]] = {
     "report": lambda ctx, a: report(ctx, a.run, Path(a.out) if a.out else None),
     "run": _run,
     "show": _not_implemented,  # T071, after the demo
+    "market": _market_dispatch,
+    "view": _view,
 }
 
 

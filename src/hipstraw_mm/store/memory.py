@@ -10,13 +10,18 @@ from hipstraw_mm.store.base import (
     COMPANY_RECORDS,
     DEMO_REPORTS,
     EVIDENCE,
+    MARKET_RUNS,
     POSITION_BASELINES,
     PROGRAMS,
     REVIEW_DECISIONS,
     RUNS,
+    TRACE_BLOBS,
+    TRACE_STEPS,
     AlreadyExistsError,
     Doc,
+    InvalidTransitionError,
     NotFoundError,
+    check_market_transition,
     check_run_upsert,
     check_transition,
 )
@@ -39,6 +44,9 @@ class MemoryStore:
                 REVIEW_DECISIONS,
                 POSITION_BASELINES,
                 DEMO_REPORTS,
+                MARKET_RUNS,
+                TRACE_STEPS,
+                TRACE_BLOBS,
             )
         }
 
@@ -146,3 +154,73 @@ class MemoryStore:
 
     def get_demo_report(self, run_id: str) -> Doc | None:
         return self._get(DEMO_REPORTS, run_id)
+
+    # -- market runs (feature 003) -------------------------------------------
+
+    def upsert_market_run(self, data: Doc) -> None:
+        run_id = data["marketRunId"]
+        self._upsert(MARKET_RUNS, run_id, data)
+
+    def get_market_run(self, run_id: str) -> Doc | None:
+        return self._get(MARKET_RUNS, run_id)
+
+    def list_market_runs(self) -> list[Doc]:
+        runs = [copy.deepcopy(doc) for doc in self._data[MARKET_RUNS].values()]
+        runs.sort(key=lambda r: r.get("marketRunId", ""), reverse=True)
+        return runs
+
+    def transition_market_run(
+        self, run_id: str, from_status: str, to_status: str, extra: Doc | None = None
+    ) -> None:
+        run = self._data[MARKET_RUNS].get(run_id)
+        if run is None:
+            raise NotFoundError(f"marketRuns/{run_id} not found")
+        check_market_transition(run.get("status", ""), from_status, to_status)
+        run.update(copy.deepcopy(extra or {}))
+        run["status"] = to_status
+
+    # -- trace steps (seal-once) ---------------------------------------------
+
+    def create_trace_step(self, data: Doc) -> None:
+        step_id = data["stepId"]
+        if step_id in self._data[TRACE_STEPS]:
+            raise AlreadyExistsError(f"traceSteps/{step_id} already exists")
+        self._data[TRACE_STEPS][step_id] = {**copy.deepcopy(data), "createdAt": _now()}
+
+    def get_trace_step(self, step_id: str) -> Doc | None:
+        return self._get(TRACE_STEPS, step_id)
+
+    def list_trace_steps_after(self, run_id: str, after_seq: int) -> list[Doc]:
+        results = [
+            copy.deepcopy(doc)
+            for doc in self._data[TRACE_STEPS].values()
+            if doc.get("marketRunId") == run_id and doc.get("seq", 0) > after_seq
+        ]
+        results.sort(key=lambda d: d.get("seq", 0))
+        return results
+
+    def get_trace_steps(self, run_id: str, seqs: list[int]) -> list[Doc]:
+        seq_set = set(seqs)
+        return [
+            copy.deepcopy(doc)
+            for doc in self._data[TRACE_STEPS].values()
+            if doc.get("marketRunId") == run_id and doc.get("seq", 0) in seq_set
+        ]
+
+    def finish_trace_step(self, step_id: str, fields: Doc) -> None:
+        doc = self._data[TRACE_STEPS].get(step_id)
+        if doc is None:
+            raise NotFoundError(f"traceSteps/{step_id} not found")
+        if doc.get("status") != "running":
+            raise InvalidTransitionError(
+                f"traceSteps/{step_id} is '{doc.get('status')}', cannot seal again"
+            )
+        doc.update(copy.deepcopy(fields))
+
+    # -- trace blobs (create-only) -------------------------------------------
+
+    def create_trace_blob(self, data: Doc) -> None:
+        self._create(TRACE_BLOBS, data["blobId"], data)
+
+    def get_trace_blob(self, blob_id: str) -> Doc | None:
+        return self._get(TRACE_BLOBS, blob_id)

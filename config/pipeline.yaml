@@ -1,0 +1,16 @@
+beam: {width: 5, finalPaths: 3, companiesPerPath: 5}
+defaultInterestIds: [invoice_accuracy_entitlement, continuous_obligation_intelligence]
+factorWeights: {objectiveFit: 1, informationValue: 1, evidenceGap: 1, cost: 1}
+repair: {maxAttempts: 3}
+vichara: {maxItemsPerDimension: 3}
+links: {lowConfidenceThreshold: 0.5, linksPerCall: 12}
+evidenceStates:
+  sufficiencyHalf: 0.5
+  decisionReadyMinCompanies: 3
+  qualityMixedFloor: 0.5
+  qualityStrongFloor: 0.8
+budgets: {modelCallsPerRun: 150}
+trace: {maxBlobBytes: 900000}
+modelPricing:
+  gpt-4o: {input: 2.50, output: 10.00}
+viewer: {host: 127.0.0.1, port: 8765, pollSeconds: 2}
