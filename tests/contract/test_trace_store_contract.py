@@ -9,7 +9,7 @@ from hipstraw_mm.store.memory import MemoryStore
 
 MARKET_RUN_STAGES = [
     "opened", "deliberated", "defined", "graphed", "validated", "linked",
-    "searched", "assessed", "verified", "roled", "decided", "reported",
+    "searched", "assessed", "verified", "roled", "evaluated", "decided", "reported",
 ]
 
 

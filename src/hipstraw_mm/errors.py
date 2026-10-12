@@ -23,5 +23,9 @@ class ExternalServiceError(HipstrawError):
     exit_code = 3
 
 
+class TransientServiceError(ExternalServiceError):
+    """Retryable: timeout, rate-limit, or transient connection failure."""
+
+
 class BudgetExhaustedError(HipstrawError):
     exit_code = 4

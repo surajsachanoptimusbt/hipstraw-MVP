@@ -54,8 +54,39 @@ def build_market_report(store: Any, run_id: str) -> str:
             lines.append(f"- **{d.get('pathId', '?')}**: {d.get('decision', '?')} — {d.get('reason', '')}")
         lines.append("")
 
+    lines.extend(_market_map_section(store, run_id))
     lines.extend(_companies_section(store, run_id, {d.get("pathId"): d for d in decisions}))
     return "\n".join(lines) + "\n"
+
+
+def _money(v: Any) -> str:
+    if v is None:
+        return "-"
+    v = float(v)
+    return f"${v / 1e9:.1f}B" if v >= 1e9 else f"${v / 1e6:.1f}M" if v >= 1e6 else f"${v / 1e3:.0f}K"
+
+
+def _market_map_section(store: Any, run_id: str) -> list[str]:
+    market_map = store.get_market_map(run_id) if hasattr(store, "get_market_map") else None
+    if not market_map or not market_map.get("tiles"):
+        return []
+    tiles = sorted(market_map["tiles"], key=lambda t: -(t.get("valueMid") or 0))
+    lines = [
+        "\n## Market Map\n",
+        f"{len(tiles)} micro markets at the {market_map.get('level')} level. Size: {market_map.get('sizeBasis')}.\n",
+        "| Micro market | Segment | Value pool (hypothesis) | Position | Change |",
+        "|---|---|---|---|---|",
+    ]
+    for t in tiles[:15]:
+        pos = t.get("position") or {}
+        change = t.get("change") or {}
+        lines.append(
+            f"| {' > '.join(t['labels'][1:])} | {t['group']} | {_money(t.get('valuePoolUsdLow'))}-"
+            f"{_money(t.get('valuePoolUsdHigh'))} | {pos.get('status', 'screened')} | "
+            f"{change.get('direction', 'new')} |"
+        )
+    lines.append("")
+    return lines
 
 
 def _companies_section(store: Any, run_id: str, decisions: dict[str, Any]) -> list[str]:
@@ -70,6 +101,20 @@ def _companies_section(store: Any, run_id: str, decisions: dict[str, Any]) -> li
         decision = decisions.get(pid, {}).get("decision", "not decided")
         lines.append(f"### Path {n}: {' > '.join(path.get('nodeLabels', []))}\n")
         packet = path.get("researchPacket") or {}
+        position = path.get("marketPosition") or {}
+        estimate = position.get("economicEstimate") or {}
+        if position.get("recommendation"):
+            lines.append(
+                f"Position & Evaluation: **{position['recommendation']}** at {position.get('confidence')} confidence"
+                + (f"; value pool {_money(estimate.get('valuePoolUsdLow'))}-{_money(estimate.get('valuePoolUsdHigh'))}"
+                   f" ({estimate.get('unit')}, hypothesis)" if estimate else "")
+                + (f". Canonical position v{position.get('version')}, trajectory {position.get('trajectory')}."
+                   if position.get("version") else ".") + "\n"
+            )
+        for req in position.get("researchRequirements", [])[:3]:
+            lines.append(f"- Research needed ({req['priority']}): {req['evidenceGap']}")
+        if position.get("researchRequirements"):
+            lines.append("")
         lines.append(
             f"Decision: **{decision}**. Child run `{path.get('childRunId', '-')}`: "
             f"{packet.get('found', 0)} found, {packet.get('included', 0)} included, "

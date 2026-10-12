@@ -81,6 +81,35 @@ class VicharaProposals(_Strict):
     dimensions: list[ProposedDimension]
 
 
+class Sensitivity(_Strict):
+    factor: str
+    impact: Literal["high", "medium", "low"]
+
+
+class EconomicEstimate(_Strict):
+    """A sizing hypothesis for one micro market (P&E spec 5.2): range, basis, assumptions, sensitivities."""
+
+    pathId: str
+    valuePoolUsdLow: float = Field(ge=0.0)
+    valuePoolUsdHigh: float = Field(ge=0.0)
+    unit: str
+    targetCompanyEstimate: int = Field(ge=0)
+    assumptions: list[str]
+    sensitivities: list[Sensitivity]
+    timeToValueMonths: int = Field(ge=0)
+    rationale: str
+
+    @model_validator(mode="after")
+    def _range(self) -> EconomicEstimate:
+        if self.valuePoolUsdHigh < self.valuePoolUsdLow:
+            raise ValueError("valuePoolUsdHigh must be >= valuePoolUsdLow")
+        return self
+
+
+class EconomicScreening(_Strict):
+    estimates: list[EconomicEstimate]
+
+
 class GraphNode(_Strict):
     label: str
     description: str

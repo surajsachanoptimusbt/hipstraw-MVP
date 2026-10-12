@@ -1,0 +1,239 @@
+# Agent registry: each agent's innate capabilities, skills, and tools (design-pattern view).
+#
+# Source specs: Market Manager Agent v0.2 (5.3-5.5), Market Development Controller v0.2 (6.1-6.3),
+# Search & Research Sub-controller v0.2 (5.4, 6.1-6.2, Appendix D), Position & Evaluation
+# Sub-controller v0.4 (6.3-6.5, Appendix C).
+#
+# - innate capability: what the agent class does natively (state, queues, rights, lifecycle).
+# - skill: reusable competence. kind "model" = a versioned prompt + schema; kind "rule" = a versioned
+#   deterministic rule table. Each skill lists the trace operations that exercise it.
+# - tool: a mechanism the agent calls (store, search, fetch, model gateway).
+# Every traced operation must belong to exactly one skill or capability (tests check this).
+version: 1
+agents:
+  - id: market_manager
+    name: "Market Manager Agent"
+    layer: market_manager
+    centralQuestion: "Where should Hipstraw direct market-development attention and resources?"
+    innateCapabilities:
+      - id: run_lifecycle
+        name: "Run lifecycle"
+        behavior: "Opens a market run and accepts the mandate's objective documents."
+        operations: [open_run, ingest_objective]
+      - id: market_review
+        name: "Market Review"
+        behavior: "Reviews Position & Evaluation recommendations and commits the versioned canonical Market Position; the only canonical writer."
+        operations: [commit_position]
+      - id: governance
+        name: "Governance and ledger"
+        behavior: "Records decisions with the rule fired, the right used, and lineage; writes the report."
+        operations: [write_report]
+    skills:
+      - id: path_decision
+        name: "Path decision"
+        kind: rule
+        version: "decide.v1"
+        purpose: "Pursue, needs more evidence, or drop, from included companies and evidence sufficiency."
+        operations: [decide_path]
+      - id: market_status
+        name: "Market status"
+        kind: rule
+        version: "decide.v1"
+        purpose: "Progressing, awaiting-evidence, or blocked across all final paths."
+        operations: [set_market_status]
+      - id: company_review
+        name: "Company Review"
+        kind: rule
+        version: "review.v1"
+        purpose: "Feature 002 rule gate and judgement into include, exclude, or needs_verification."
+        operations: [review_companies]
+    tools:
+      - id: market_position_store
+        name: "Market Position store"
+        purpose: "Versioned canonical Market Position (marketPositions)."
+      - id: ledger
+        name: "Decision ledger and trace"
+        purpose: "Path decisions and trace steps."
+
+  - id: market_development_controller
+    name: "Market Development Controller"
+    layer: market_development_controller
+    centralQuestion: "Where should we play?"
+    innateCapabilities:
+      - id: graph_semantics
+        name: "Graph semantic governance"
+        behavior: "Defines what the seed graph means: levels, filters, caps."
+        operations: [define_graph_meaning]
+      - id: synthesis
+        name: "Synthesis"
+        behavior: "Synthesizes positions, economics, and search results into the market map."
+        operations: [synthesize_market_map]
+    skills: []
+    tools:
+      - id: graph_store
+        name: "Graph and frontier service"
+        purpose: "Graph meaning and seed graph versions."
+
+  - id: search_research
+    name: "Search & Research Sub-controller"
+    layer: search_research
+    centralQuestion: "What should we investigate next, and is the evidence sufficient?"
+    innateCapabilities:
+      - id: frontier_management
+        name: "Graph and frontier management"
+        behavior: "Validates the seed graph and bounds the active frontier (beam width, diversity, search-score threshold)."
+        operations: [validate_graph, prune_level, select_final_paths]
+      - id: worker_orchestration
+        name: "Worker orchestration"
+        behavior: "Runs feature 002 company research as a bounded child run per final path."
+        operations: [discover_companies, verify_companies]
+    skills:
+      - id: vichara
+        name: "Research-question decomposition (vichara)"
+        kind: model
+        version: "vichara.v1"
+        purpose: "Answers each grammar dimension from the objective, grounded word for word."
+        operations: [deliberate_dimension]
+        promptVersions: [vichara.v1]
+      - id: grounding_repair
+        name: "Grounding repair"
+        kind: model
+        version: "vichara_repair.v1"
+        purpose: "Repairs answers whose basis is not in the objective (bounded, 3 attempts)."
+        operations: [repair_deliberation]
+        promptVersions: [vichara_repair.v1]
+      - id: coverage_judgement
+        name: "Coverage judgement"
+        kind: model
+        version: "vichara_coverage.v1"
+        purpose: "Checks every dimension is addressed."
+        operations: [judge_coverage]
+        promptVersions: [vichara_coverage.v1]
+      - id: hypothesis_proposal
+        name: "Hypothesis proposal"
+        kind: model
+        version: "vichara_propose.v1"
+        purpose: "Proposes labelled hypotheses where the objective is silent."
+        operations: [propose_hypotheses]
+        promptVersions: [vichara_propose.v1]
+      - id: seed_graph_design
+        name: "Search-space construction"
+        kind: model
+        version: "graph_level.v2"
+        purpose: "Builds the seed graph one level at a time."
+        operations: [build_level]
+        promptVersions: [graph_level.v1, graph_level.v2]
+      - id: link_verification
+        name: "Link verification"
+        kind: model
+        version: "link_verification.v1"
+        purpose: "Rationale and link confidence for each edge."
+        operations: [verify_links]
+        promptVersions: [link_verification.v1]
+      - id: beam_scoring
+        name: "Frontier scoring"
+        kind: model
+        version: "beam_scoring.v1"
+        purpose: "Search score per candidate path: a hypothesis about where to look, not evidence."
+        operations: [score_candidates]
+        promptVersions: [beam_scoring.v1]
+      - id: company_discovery
+        name: "Company discovery and verification"
+        kind: model
+        version: "feature-002"
+        purpose: "Query planning, listing extraction, homepage identity, and cited evidence (feature 002)."
+        promptVersions: [query_plan.v2, listing_extraction.v2, homepage_identity.v2, company_evidence.v2, review_judgement.v1]
+    tools:
+      - id: web_search
+        name: "Web search (Brave)"
+        purpose: "Search results for company discovery."
+        toolCallKinds: [search]
+      - id: web_fetch
+        name: "Page fetcher"
+        purpose: "Reads listing and company pages (robots-aware, denylisted)."
+        toolCallKinds: [fetch]
+      - id: evidence_store
+        name: "Evidence store"
+        purpose: "Cited evidence with excerpt checks."
+
+  - id: position_evaluation
+    name: "Position & Evaluation Sub-controller"
+    layer: position_evaluation
+    centralQuestion: "What should Hipstraw conclude about a candidate, how confident should it be, what remains unknown, and what should happen next?"
+    innateCapabilities:
+      - id: evaluation_process
+        name: "Evaluation process management"
+        behavior: "Opens an Evaluation Case per final path and moves it through RECEIVED, QUEUED, EVALUATING, NEEDS_RESEARCH or DECIDING, and READY."
+        operations: [evaluate_candidate]
+      - id: comparison_management
+        name: "Comparison set management"
+        behavior: "Holds one common basis across candidates; preserves trade-offs and near-ties."
+        operations: [compare_candidates]
+    skills:
+      - id: hypothesis_analysis
+        name: "Hypothesis and candidate assessment"
+        kind: model
+        version: "path_assessment.v1"
+        purpose: "Seven per-path dimensions, each a hypothesis."
+        operations: [assess_path]
+        promptVersions: [path_assessment.v1]
+      - id: evidence_states
+        name: "Evidence assessment"
+        kind: rule
+        version: "evidence_states.v1"
+        purpose: "Sufficiency, quality, and critical unknowns from verified records."
+        operations: [evaluate_evidence]
+      - id: economic_evaluation
+        name: "Economic evaluation"
+        kind: model
+        version: "economic_assessment.v1"
+        purpose: "Value-pool range, assumptions, sensitivities, and time to value."
+        operations: [screen_economics]
+        promptVersions: [economic_assessment.v1]
+      - id: buyer_roles
+        name: "Buyer-role identification"
+        kind: model
+        version: "buyer_roles.v2"
+        purpose: "Buying functions cited from verified evidence."
+        operations: [identify_buyer_roles]
+        promptVersions: [buyer_roles.v1, buyer_roles.v2]
+      - id: confidence_assessment
+        name: "Confidence assessment"
+        kind: rule
+        version: "confidence.v1"
+        purpose: "Confidence from evidence quality, coverage, contradictions, and economic sensitivity; never a model self-rating."
+      - id: position_assessment
+        name: "Position transition rubric"
+        kind: rule
+        version: "position_transition.v1"
+        purpose: "Recommend transition, strengthen, validate, investigate, or retire, and issue research requirements."
+    tools:
+      - id: evidence_store
+        name: "Shared evidence store"
+        purpose: "Research evidence packets, company records, and evidence documents."
+      - id: position_read
+        name: "Market Position read interface"
+        purpose: "Prior canonical positions (read only)."
+      - id: rubric_service
+        name: "Rubric service"
+        purpose: "Versioned rubrics in code (confidence.v1, position_transition.v1)."
+
+  - id: workers
+    name: "Worker swarm"
+    layer: workers
+    centralQuestion: "Do one bounded task with explicit inputs and a typed output."
+    innateCapabilities:
+      - id: bounded_execution
+        name: "Bounded execution"
+        behavior: "One model call, one search, or one fetch per step; typed output; traced with prompt and response."
+        operations: [call_model, web_search]
+    skills: []
+    tools:
+      - id: model_gateway
+        name: "Model gateway (OpenAI structured outputs)"
+        purpose: "Strict-schema model calls with one retry."
+        toolCallKinds: [model]
+      - id: web_search
+        name: "Web search (Brave)"
+        purpose: "Bounded search requests."
+        toolCallKinds: [search]

@@ -14,15 +14,19 @@ from typing import Any
 from urllib.parse import parse_qs, urlparse
 
 from hipstraw_mm.viewer.api import (
+    shape_agents,
     shape_beam,
     shape_blob,
     shape_companies,
     shape_decisions,
     shape_deliberations,
     shape_documents,
+    shape_evaluation,
     shape_graph,
     shape_links,
+    shape_market_map,
     shape_paths,
+    shape_positions,
     shape_run_detail,
     shape_runs,
     shape_step,
@@ -174,6 +178,10 @@ class _Handler(BaseHTTPRequestHandler):
             ("companies", shape_companies),
             ("decisions", shape_decisions),
             ("documents", shape_documents),
+            ("evaluation", shape_evaluation),
+            ("map", shape_market_map),
+            ("positions", shape_positions),
+            ("agents", shape_agents),
         ):
             m = re.match(rf"^/api/runs/([^/]+)/{suffix}$", path)
             if m:

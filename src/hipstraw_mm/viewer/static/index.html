@@ -7,6 +7,9 @@
 <title>hipstraw trace</title>
 <style>
 :root {
+  --map-good: #0ca30c; --map-warn: #fab219; --map-crit: #d03b3b; --map-neutral: #d9d8d2;
+  --map-up-1: #86b6ef; --map-up-2: #256abf; --map-down-1: #ee8a89; --map-down-2: #c43a39; --map-flat: #f0efec;
+  --map-ink-dark: #0b0b0b; --map-ink-light: #ffffff;
   --bg: #f6f7f9; --panel: #ffffff; --fg: #0f172a; --muted: #64748b; --faint: #94a3b8;
   --border: #e2e8f0; --subtle: #f1f5f9; --hover: #f8fafc; --sel: #eef4ff;
   --accent: #2563eb; --ok: #15803d; --ok-bg: #dcfce7; --warn: #b45309; --warn-bg: #fef3c7;
@@ -21,6 +24,8 @@
     --accent: #60a5fa; --ok: #4ade80; --ok-bg: #052e1a; --warn: #fbbf24; --warn-bg: #3a2a06;
     --fail: #f87171; --fail-bg: #3b0d0d; --info: #93c5fd; --info-bg: #102445; --neutral-bg: #1b2230;
     --code: #0d1118; --shadow: none;
+    --map-neutral: #44443f; --map-up-1: #1c5cab; --map-up-2: #6da7ec; --map-down-1: #9e2f2e;
+    --map-down-2: #e66767; --map-flat: #383835;
     color-scheme: dark;
   }
 }
@@ -186,6 +191,21 @@ pre.json { background: var(--code); border: 1px solid var(--border); border-radi
 .empty h3 { color: var(--fg); font-size: 14px; margin-bottom: 4px; }
 .empty code { background: var(--subtle); padding: 2px 6px; border-radius: 4px; }
 
+.map-wrap { position: relative; height: 560px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.map-group { position: absolute; border-radius: 4px; }
+.map-group-head { position: absolute; left: 4px; right: 4px; top: 2px; height: 16px; font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.map-tile { position: absolute; border-radius: 3px; padding: 5px 7px; overflow: hidden; cursor: pointer; line-height: 1.25; }
+.map-tile:hover, .map-tile.sel { outline: 2px solid var(--fg); outline-offset: -2px; z-index: 2; }
+.map-tile .t1 { font-weight: 650; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.map-tile .t2 { font-size: 11px; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.map-tile.ink-dark { color: var(--map-ink-dark); } .map-tile.ink-light { color: var(--map-ink-light); }
+.map-tile.new { outline: 1px dashed var(--muted); outline-offset: -3px; }
+.map-tip { position: fixed; z-index: 10; pointer-events: none; max-width: 320px; background: var(--panel); color: var(--fg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--muted); }
+.legend .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; vertical-align: -2px; margin-right: 5px; }
+.lifecycle { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 11px; }
+.lifecycle span { background: var(--subtle); border-radius: 4px; padding: 1px 6px; }
+.lifecycle .arrow { background: none; color: var(--faint); padding: 0; }
 @media (max-width: 1180px) { .trace { grid-template-columns: 1fr; } .detail { position: static; max-height: none; } }
 @media (max-width: 760px) {
   .app { grid-template-columns: 1fr; grid-template-rows: 48px auto 1fr; }
@@ -211,13 +231,13 @@ const enc = encodeURIComponent;
 
 const TERMINAL = new Set(["reported", "failed"]);
 const STAGES = ["opened", "deliberated", "defined", "graphed", "validated", "linked",
-  "searched", "assessed", "verified", "roled", "decided", "reported"];
+  "searched", "assessed", "verified", "roled", "evaluated", "decided", "reported"];
 const STAGE_LABEL = { opened: "Start", deliberated: "Vichara", defined: "Meaning", graphed: "Graph",
   validated: "Validate", linked: "Links", searched: "Beam", assessed: "Assess", verified: "Companies",
-  roled: "Buyers", decided: "Decide", reported: "Report" };
+  roled: "Buyers", evaluated: "Evaluate", decided: "Review", reported: "Report" };
 const COMMAND_STATUS = { vichara: "deliberated", meaning: "defined", graph: "graphed", validate: "validated",
   links: "linked", beam: "searched", assess: "assessed", companies: "verified", buyers: "roled",
-  decide: "decided", report: "reported" };
+  evaluate: "evaluated", decide: "decided", report: "reported" };
 const LAYERS = {
   market_manager: ["Market Manager", "#7c3aed"],
   market_development_controller: ["Market Dev Controller", "#0d9488"],
@@ -227,13 +247,16 @@ const LAYERS = {
 };
 const TABS = [
   { k: "overview", label: "Overview" },
+  { k: "map", label: "Market Map" },
   { k: "decisions", label: "Market Position" },
+  { k: "evaluation", label: "Evaluation" },
   { k: "companies", label: "Companies" },
   { k: "paths", label: "Paths" },
   { k: "graph", label: "Graph" },
   { k: "beam", label: "Beam" },
   { k: "links", label: "Links" },
   { k: "deliberations", label: "Vichara", tech: true },
+  { k: "agents", label: "Agents" },
   { k: "trace", label: "Trace", tech: true },
 ];
 const TECH_KEY = "hipstraw.tech";
@@ -263,17 +286,20 @@ const fmt = {
     if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
     return new Date(iso).toLocaleDateString();
   },
+  money: v => v == null ? "—" : v >= 1e9 ? `$${(v / 1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v / 1e6).toFixed(1)}M`
+    : v >= 1e3 ? `$${Math.round(v / 1e3)}K` : `$${Math.round(v)}`,
   op: s => s ? s.replace(/_/g, " ").replace(/^\w/, c => c.toUpperCase()) : "",
 };
 
 const OK = new Set(["ok", "pass", "reported", "kept", "final", "pursue", "answered", "has_evidence", "unique",
   "progressing", "decision-ready", "sufficient", "high-confidence", "strong", "resolved", "valid", "grounded",
-  "include", "pursue"]);
+  "include", "pursue", "recommend transition", "strengthen", "maintain", "up"]);
 const FAIL = new Set(["failed", "fail", "drop", "pruned", "blocked", "insufficient", "contradictory", "weak",
-  "no_evidence_found", "repair exhausted", "exclude", "research failed"]);
+  "no_evidence_found", "repair exhausted", "exclude", "research failed", "recommend retirement", "weaken", "down"]);
 const WARN = new Set(["deferred", "unresolved", "needs more evidence", "partial", "mixed", "open", "reduced",
   "at-risk", "awaiting-evidence", "needs-attention", "flagged", "duplicate", "unreviewed", "needs_verification",
-  "evidence ceiling", "partial"]);
+  "evidence ceiling", "partial", "validate", "investigate further", "defer", "challenge", "needs_research",
+  "needs more evidence"]);
 function tone(v) {
   const s = String(v || "").toLowerCase();
   if (OK.has(s)) return "ok";
@@ -478,6 +504,9 @@ function RunView({ runId, tab, seq }) {
     paths: () => html`<${PathsView} runId=${runId} live=${isLive} />`,
     companies: () => html`<${CompaniesView} runId=${runId} live=${isLive} />`,
     decisions: () => html`<${DecisionsView} runId=${runId} live=${isLive} />`,
+    map: () => html`<${MarketMapView} runId=${runId} live=${isLive} />`,
+    evaluation: () => html`<${EvaluationView} runId=${runId} live=${isLive} />`,
+    agents: () => html`<${AgentsView} runId=${runId} live=${isLive} />`,
   };
   const view = views[tab] || (() => html`<${Empty} title="Unknown view" />`);
 
@@ -893,6 +922,9 @@ function PositionCard({ position }) {
       <span className="muted">confidence: ${p.confidence}</span>
     </div>
     <p style=${{ marginTop: 6 }}>${p.headline}</p>
+    ${p.version ? html`<div className="muted" style=${{ fontSize: 12, marginTop: 2 }}>Canonical position v${p.version} · trajectory ${p.trajectory}
+      ${p.recommendation ? html` · P&E recommended <b>${p.recommendation}</b>${p.recommendationAccepted === false ? " (not accepted)" : ""}` : null}</div>` : null}
+    ${p.reviewNote ? html`<div className="alert warn" style=${{ marginTop: 8 }}>${p.reviewNote}</div>` : null}
     <div style=${{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
       <${Pill} value=${p.evidence.sufficiency}>evidence: ${p.evidence.sufficiency}<//>
       <${Pill} value=${p.evidence.quality}>quality: ${p.evidence.quality}<//>
@@ -902,6 +934,8 @@ function PositionCard({ position }) {
       ${p.valueProposition ? html`<dt>Value proposition</dt><dd>${p.valueProposition}</dd>` : null}
       ${p.economics ? html`<dt>Economics</dt><dd>${p.economics}</dd>` : null}
       ${p.risks ? html`<dt>Risks</dt><dd>${p.risks}</dd>` : null}
+      ${p.economicEstimate ? html`<dt>Value pool (hypothesis)</dt><dd>${fmt.money(p.economicEstimate.valuePoolUsdLow)}–${fmt.money(p.economicEstimate.valuePoolUsdHigh)} <span className="muted">${p.economicEstimate.unit}</span></dd>` : null}
+      ${(p.limitingFactors || []).length ? html`<dt>Confidence limited by</dt><dd className="muted">${p.limitingFactors.join("; ")}</dd>` : null}
       <dt>Recommended action</dt><dd>${p.recommendedAction} <span className="muted mono">(${p.ruleFired})</span></dd>
     </dl>
     ${(p.openGaps || []).length ? html`<div className="muted" style=${{ marginTop: 8 }}>Open gaps: ${p.openGaps.map(g => `${g.field} (${g.companies})`).join(", ")}</div>` : null}
@@ -927,6 +961,228 @@ function DecisionsView({ runId, live }) {
       : html`<${Card} key=${x.pathId}><b>${x.pathId}</b> — <${Pill} value=${x.decision} /> <span className="muted">${x.reason}</span><//>`)}
     ${(d.unassessed || []).length ? html`<${Card} title="Not assessed in this run" flush=${true}><table><tbody>
       ${d.unassessed.map(u => html`<tr key=${u.dimensionKey}><td>${u.dimensionKey}</td><td className="muted">${u.reason}</td></tr>`)}</tbody></table><//>` : null}
+  </div>`}<//>`;
+}
+
+
+const STATUS_GLYPH = { "Pursue": "▲", "Needs more evidence": "●", "Drop": "▼" };
+
+function squarify(items, x, y, w, h) {
+  const out = [];
+  const total = items.reduce((a, b) => a + b.value, 0);
+  if (!items.length || total <= 0 || w <= 0 || h <= 0) return out;
+  const scale = (w * h) / total;
+  let rest = items.map(it => ({ it, a: it.value * scale }));
+  let rx = x, ry = y, rw = w, rh = h;
+  while (rest.length) {
+    const short = Math.max(1, Math.min(rw, rh));
+    const worst = r => {
+      const sum = r.reduce((a, b) => a + b.a, 0);
+      const mx = Math.max(...r.map(e => e.a)), mn = Math.min(...r.map(e => e.a));
+      return Math.max(short * short * mx / (sum * sum), (sum * sum) / (short * short * mn));
+    };
+    const row = [rest[0]];
+    let i = 1;
+    while (i < rest.length && worst([...row, rest[i]]) <= worst(row)) { row.push(rest[i]); i++; }
+    const sum = row.reduce((a, b) => a + b.a, 0);
+    if (rw >= rh) {
+      const cw = sum / rh;
+      let cy = ry;
+      row.forEach(e => { const eh = e.a / cw; out.push({ item: e.it, x: rx, y: cy, w: cw, h: eh }); cy += eh; });
+      rx += cw; rw -= cw;
+    } else {
+      const ch = sum / rw;
+      let cx = rx;
+      row.forEach(e => { const ew = e.a / ch; out.push({ item: e.it, x: cx, y: ry, w: ew, h: ch }); cx += ew; });
+      ry += ch; rh -= ch;
+    }
+    rest = rest.slice(i);
+  }
+  return out;
+}
+
+function tileStyle(t, mode) {
+  if (mode === "change") {
+    const c = t.change || {};
+    if (c.direction === "new" || !c.direction) return { bg: "var(--map-neutral)", ink: "ink-dark", key: "new" };
+    if (c.direction === "flat") return { bg: "var(--map-flat)", ink: "ink-dark", key: "flat" };
+    const strong = Math.abs(c.searchScorePp || 0) >= 5 || (c.previousStatus && t.position && c.previousStatus !== t.position.status);
+    if (c.direction === "up") return { bg: strong ? "var(--map-up-2)" : "var(--map-up-1)", ink: strong ? "ink-light" : "ink-dark", key: "up" };
+    return { bg: strong ? "var(--map-down-2)" : "var(--map-down-1)", ink: strong ? "ink-light" : "ink-dark", key: "down" };
+  }
+  if (!t.position) return { bg: "var(--map-neutral)", ink: "ink-dark", key: "screened" };
+  const st = t.position.status;
+  if (st === "Pursue") return { bg: "var(--map-good)", ink: "ink-light", key: st };
+  if (st === "Drop") return { bg: "var(--map-crit)", ink: "ink-light", key: st };
+  return { bg: "var(--map-warn)", ink: "ink-dark", key: st };
+}
+
+function changeText(c) {
+  if (!c || c.direction === "new") return "new";
+  const pp = c.searchScorePp || 0;
+  return `${pp > 0 ? "+" : ""}${pp.toFixed(1)} pp`;
+}
+
+function MarketMapView({ runId, live }) {
+  const st = usePoll(`/api/runs/${enc(runId)}/map`, 5000, live);
+  const [mode, setMode] = useState("position");
+  const [sel, setSel] = useState(null);
+  const [tip, setTip] = useState(null);
+  const [table, setTable] = useState(false);
+  const [width, setWidth] = useState(900);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current) return undefined;
+    const ro = new ResizeObserver(entries => setWidth(Math.floor(entries[0].contentRect.width)));
+    ro.observe(ref.current);
+    return () => ro.disconnect();
+  }, [st.data]);
+
+  if (st.error && !st.data) return html`<${Empty} title="No market map yet" hint="The map is built when the Market Manager commits positions." />`;
+  if (!st.data) return html`<${Empty} title="Loading…" />`;
+  const map = st.data;
+  const tiles = map.tiles || [];
+  if (!tiles.length) return html`<${Empty} title="No micro markets on the map" hint="The beam produced no complete path." />`;
+  const maxVal = Math.max(1, ...tiles.map(t => t.valueMid || 0));
+  const val = t => Math.max(t.valueMid || 0, maxVal * 0.04);
+  const groups = Object.values(tiles.reduce((acc, t) => {
+    (acc[t.group] = acc[t.group] || { group: t.group, tiles: [], value: 0 }).tiles.push(t);
+    acc[t.group].value += val(t);
+    return acc;
+  }, {})).sort((a, b) => b.value - a.value);
+  const H = 560;
+  const groupRects = squarify(groups.map(g => ({ ...g, value: g.value })), 0, 0, width, H);
+  const selected = tiles.find(t => t.tileId === sel);
+  const legend = mode === "position"
+    ? [["var(--map-good)", "▲ Pursue"], ["var(--map-warn)", "● Needs more evidence"], ["var(--map-crit)", "▼ Drop"], ["var(--map-neutral)", "Screened, not researched"]]
+    : [["var(--map-down-2)", "Down a lot"], ["var(--map-down-1)", "Down"], ["var(--map-flat)", "Flat"], ["var(--map-up-1)", "Up"], ["var(--map-up-2)", "Up a lot"], ["var(--map-neutral)", "New (no earlier match)"]];
+
+  return html`<div className="stack">
+    <div style=${{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+      <div className="seg">
+        <button className=${mode === "position" ? "on" : ""} onClick=${() => setMode("position")}>Position</button>
+        <button className=${mode === "change" ? "on" : ""} onClick=${() => setMode("change")}>Change vs previous run</button>
+      </div>
+      <div className="legend">${legend.map(([c, l]) => html`<span key=${l}><span className="sw" style=${{ background: c }}></span>${l}</span>`)}</div>
+      <div style=${{ flex: 1 }}></div>
+      <button className=${`chip ${table ? "on" : ""}`} onClick=${() => setTable(!table)}>${table ? "Map view" : "Table view"}</button>
+    </div>
+    <div className="muted" style=${{ fontSize: 12 }}>
+      ${tiles.length} micro markets at the ${map.level} level, grouped by segment. Size: ${map.sizeBasis}.
+      ${mode === "change" ? (map.previousRunId ? ` Compared with ${map.previousRunId}.` : " No earlier run of this program to compare with yet.") : ""}
+    </div>
+    ${table ? html`<${Card} flush=${true}><table><thead><tr><th>Micro market</th><th>Segment</th><th className="num">Value pool (mid)</th><th>Position</th><th className="num">Search score</th><th>Change</th></tr></thead><tbody>
+      ${[...tiles].sort((a, b) => (b.valueMid || 0) - (a.valueMid || 0)).map(t => html`<tr key=${t.tileId} style=${{ cursor: "pointer" }} onClick=${() => setSel(t.tileId)}>
+        <td className="wrap">${t.labels.slice(1).join(" › ")}</td><td>${t.group}</td><td className="num">${fmt.money(t.valueMid)}</td>
+        <td>${t.position ? html`<${Pill} value=${t.position.status}>${STATUS_GLYPH[t.position.status] || ""} ${t.position.status}<//>` : html`<span className="muted">screened</span>`}</td>
+        <td className="num">${Math.round(t.searchScore * 100)}%</td><td>${changeText(t.change)}</td></tr>`)}
+    </tbody></table><//>` : html`<div className="map-wrap" ref=${ref} onMouseLeave=${() => setTip(null)}>
+      ${groupRects.map(g => {
+        const inner = squarify([...g.item.tiles].sort((a, b) => val(b) - val(a)).map(t => ({ ...t, value: val(t) })),
+          g.x + 2, g.y + 20, Math.max(0, g.w - 4), Math.max(0, g.h - 22));
+        return html`<${React.Fragment} key=${g.item.group}>
+          <div className="map-group" style=${{ left: g.x, top: g.y, width: g.w, height: g.h }}><div className="map-group-head" title=${g.item.group}>${g.item.group}</div></div>
+          ${inner.map(r => {
+            const t = r.item, sty = tileStyle(t, mode);
+            const big = r.w > 80 && r.h > 38;
+            return html`<div key=${t.tileId} className=${`map-tile ${sty.ink} ${sel === t.tileId ? "sel" : ""} ${mode === "change" && sty.key === "new" ? "new" : ""}`}
+                style=${{ left: r.x + 1, top: r.y + 1, width: Math.max(0, r.w - 2), height: Math.max(0, r.h - 2), background: sty.bg }}
+                onClick=${() => setSel(t.tileId)}
+                onMouseMove=${e => setTip({ t, x: e.clientX, y: e.clientY })}>
+              ${big ? html`<div className="t1">${t.position ? (STATUS_GLYPH[t.position.status] || "") + " " : ""}${t.title}</div>
+                <div className="t2">${fmt.money(t.valueMid)} · ${mode === "change" ? changeText(t.change) : t.position ? t.position.status : "screened"}</div>` : null}
+            </div>`;
+          })}
+        <//>`;
+      })}
+    </div>`}
+    ${tip ? html`<div className="map-tip" style=${{ left: Math.min(tip.x + 14, window.innerWidth - 340), top: tip.y + 14 }}>
+      <div><b>${tip.t.labels.join(" › ")}</b></div>
+      <div style=${{ marginTop: 4 }}>Value pool ${fmt.money(tip.t.valuePoolUsdLow)}–${fmt.money(tip.t.valuePoolUsdHigh)} <span className="muted">(hypothesis)</span></div>
+      <div>${tip.t.position ? `${tip.t.position.status} · confidence ${tip.t.position.confidence}` : "Screened by search score only"}</div>
+      <div className="muted">Search score ${Math.round(tip.t.searchScore * 100)}% · change ${changeText(tip.t.change)}</div>
+    </div>` : null}
+    ${selected ? html`<${TileDetail} tile=${selected} runId=${runId} />` : html`<div className="muted">Click a micro market to see its detail.</div>`}
+  </div>`;
+}
+
+function TileDetail({ tile, runId }) {
+  const t = tile;
+  return html`<${Card} title=${t.labels.join(" › ")} hint=${t.researched ? "Researched final path" : "Screened by search score and economics only; not researched"}
+      right=${t.position ? html`<${Pill} value=${t.position.status}>${STATUS_GLYPH[t.position.status] || ""} ${t.position.status}<//>` : html`<${Pill}>screened<//>`}>
+    <dl className="kv">
+      <dt>Value pool</dt><dd>${fmt.money(t.valuePoolUsdLow)} – ${fmt.money(t.valuePoolUsdHigh)} <span className="muted">${t.economicsBasis || ""} (hypothesis)</span></dd>
+      ${t.targetCompanyEstimate != null ? html`<dt>Target companies (est.)</dt><dd>${fmt.num(t.targetCompanyEstimate)}</dd>` : null}
+      <dt>Search score</dt><dd><${Bar} value=${t.searchScore} /></dd>
+      ${t.position ? html`<dt>Position</dt><dd>${t.position.status} · confidence ${t.position.confidence} · v${t.position.version} · trajectory ${t.position.trajectory}</dd>
+        <dt>P&E recommendation</dt><dd>${t.position.recommendation || "—"}</dd>
+        <dt>Verified companies</dt><dd>${t.includedCompanies}</dd>` : null}
+      <dt>Change</dt><dd>${t.change && t.change.direction !== "new" ? `${t.change.direction} (${changeText(t.change)} search score${t.change.previousStatus ? `, was ${t.change.previousStatus}` : ""})` : "new micro market (no match in the previous run)"}</dd>
+    </dl>
+    ${(t.assumptions || []).length ? html`<div style=${{ marginTop: 10 }}><div className="eyebrow">Assumptions</div>
+      <ul style=${{ marginLeft: 18 }}>${t.assumptions.map((a, i) => html`<li key=${i}>${a}</li>`)}</ul></div>` : null}
+    ${(t.sensitivities || []).length ? html`<div style=${{ marginTop: 8 }}><div className="eyebrow">Sensitive to</div>
+      ${t.sensitivities.map((x, i) => html`<span key=${i} style=${{ marginRight: 6 }}><${Pill} value=${x.impact === "high" ? "flagged" : ""}>${x.factor} · ${x.impact}<//></span>`)}</div>` : null}
+    ${t.researched ? html`<div style=${{ marginTop: 10 }}><a href=${href(runId, "decisions")}>Market Position</a> · <a href=${href(runId, "evaluation")}>Evaluation case</a> · <a href=${href(runId, "companies")}>Companies</a></div>` : null}
+  <//>`;
+}
+
+function EvaluationView({ runId, live }) {
+  const st = usePoll(`/api/runs/${enc(runId)}/evaluation`, 4000, live);
+  return html`<${Loading} state=${st} empty=${d => !(d.cases || []).length}>${d => html`<div className="stack">
+    ${d.comparison ? html`<${Card} title="Candidate comparison" hint="Common basis; trade-offs and near ties are kept, never collapsed into one score" flush=${true}>
+      <table><thead><tr><th>Micro market</th><th className="num">Value pool (mid)</th><th>Evidence</th><th>Confidence</th><th className="num">Verified</th><th className="num">Search score</th><th>Recommendation</th></tr></thead><tbody>
+        ${d.comparison.rows.map(r => html`<tr key=${r.pathId}><td className="wrap">${r.labels.join(" › ")}</td>
+          <td className="num">${fmt.money(r.valueMid)}${d.comparison.leaders.economics === r.pathId ? " ★" : ""}</td>
+          <td>${r.sufficiency}${d.comparison.leaders.evidence === r.pathId ? " ★" : ""}</td>
+          <td>${r.confidence}${d.comparison.leaders.confidence === r.pathId ? " ★" : ""}</td>
+          <td className="num">${r.included}</td><td className="num">${r.searchScore != null ? Math.round(r.searchScore * 100) + "%" : "—"}</td>
+          <td><${Pill} value=${r.recommendation} /></td></tr>`)}
+      </tbody></table>
+      <div className="card-body tight">
+        <div className="muted" style=${{ fontSize: 12 }}>★ leads that dimension. ${d.comparison.dominant ? "One candidate leads every dimension." : "No candidate dominates every dimension."}</div>
+        ${d.comparison.tradeOffs.map((t, i) => html`<div key=${i} className="alert warn">Trade-off: ${t.note}</div>`)}
+        ${d.comparison.nearTies.map((t, i) => html`<div key=${i} className="alert info">Near tie: ${t.note}</div>`)}
+      </div>
+    <//>` : null}
+    ${d.cases.map(c => html`<${Card} key=${c.caseId} title=${c.labels.join(" › ")} hint=${`Evaluation case · ${c.state}`}
+        right=${html`<${Pill} value=${c.recommendation.recommendation} />`}>
+      <div className="lifecycle">${c.history.map((h, i) => html`<${React.Fragment} key=${i}>${i ? html`<span className="arrow">→</span>` : null}<span title=${h.reason}>${h.state}</span><//>`)}</div>
+      <dl className="kv" style=${{ marginTop: 10 }}>
+        <dt>Recommendation</dt><dd><b>${c.recommendation.recommendation}</b> — ${c.recommendation.rationale} <span className="muted mono">(${c.recommendation.ruleFired}, ${c.recommendation.rubric})</span></dd>
+        <dt>Confidence</dt><dd>${c.confidence.band}${c.confidence.limitingFactors.length ? html`<span className="muted"> · limited by ${c.confidence.limitingFactors.join("; ")}</span>` : null}</dd>
+        ${c.economics ? html`<dt>Economics</dt><dd>${fmt.money(c.economics.valuePoolUsdLow)}–${fmt.money(c.economics.valuePoolUsdHigh)} ${c.economics.unit} · ~${fmt.num(c.economics.targetCompanyEstimate)} companies · value in ${c.economics.timeToValueMonths} months <span className="muted">(hypothesis)</span></dd>` : null}
+        <dt>Assurance</dt><dd>${c.assurance.level}${c.assurance.note ? html`<span className="muted"> · ${c.assurance.note}</span>` : null}</dd>
+        ${c.priorPosition ? html`<dt>Earlier position</dt><dd>${c.priorPosition.status} (v${c.priorPosition.version}, ${c.priorPosition.confidence}, match ${Math.round(c.priorPosition.similarity * 100)}%)</dd>` : null}
+      </dl>
+      ${c.researchRequirements.length ? html`<table style=${{ marginTop: 10 }}><thead><tr><th>Research / validation requirement</th><th>Why it matters</th><th>Priority</th></tr></thead><tbody>
+        ${c.researchRequirements.map((r, i) => html`<tr key=${i}><td className="wrap">${r.evidenceGap}<div className="muted" style=${{ fontSize: 12 }}>Needs: ${r.requiredEvidence}</div></td><td className="wrap muted">${r.whyMaterial}</td><td><${Pill} value=${r.priority === "High" ? "flagged" : ""}>${r.priority}<//></td></tr>`)}
+      </tbody></table>` : null}
+    <//>`)}
+  </div>`}<//>`;
+}
+
+function AgentsView({ runId, live }) {
+  const st = usePoll(`/api/runs/${enc(runId)}/agents`, 5000, live);
+  return html`<${Loading} state=${st}>${d => html`<div className="stack">
+    <div className="muted">Design pattern per agent: innate capabilities (what the class does natively), skills (versioned prompts or rule tables), and tools (mechanisms). Usage is counted from this run's trace.</div>
+    ${(d.unclaimedOperations || []).length ? html`<div className="alert warn">Operations not claimed by any capability or skill: ${d.unclaimedOperations.join(", ")}</div>` : null}
+    ${d.agents.map(a => html`<${Card} key=${a.id} title=${a.name} hint=${a.centralQuestion} flush=${true}>
+      <div className="card-body tight">
+        <div className="eyebrow">Innate capabilities</div>
+        ${a.innateCapabilities.map(c => html`<div key=${c.id}><b>${c.name}</b> <span className="muted">${c.behavior}</span>
+          <span className="muted mono" style=${{ marginLeft: 6 }}>${c.usage.steps ? `${c.usage.steps} step${c.usage.steps === 1 ? "" : "s"}` : "not used"}</span></div>`)}
+      </div>
+      ${a.skills.length ? html`<table><thead><tr><th>Skill</th><th>Kind</th><th>Version</th><th className="num">Steps</th><th className="num">Model calls</th><th className="num">Cost</th></tr></thead><tbody>
+        ${a.skills.map(sk => html`<tr key=${sk.id}><td className="wrap"><b>${sk.name}</b><div className="muted" style=${{ fontSize: 12 }}>${sk.purpose}</div></td>
+          <td><${Pill}>${sk.kind}<//></td><td className="mono">${sk.version}</td>
+          <td className="num">${sk.usage.steps || "—"}</td><td className="num">${sk.usage.modelCalls || "—"}</td><td className="num">${sk.usage.usd ? fmt.usd(sk.usage.usd) : "—"}</td></tr>`)}
+      </tbody></table>` : null}
+      <div className="card-body">
+        <div className="eyebrow">Tools</div>
+        ${a.tools.map(t => html`<div key=${t.id}><b>${t.name}</b> <span className="muted">${t.purpose}</span>${t.usage ? html` <span className="muted mono">${t.usage} call${t.usage === 1 ? "" : "s"}</span>` : null}</div>`)}
+      </div>
+    <//>`)}
   </div>`}<//>`;
 }
 

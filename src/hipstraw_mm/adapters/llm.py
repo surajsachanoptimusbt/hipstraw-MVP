@@ -92,6 +92,10 @@ class LLMClient:
         except (ValidationError, openai.LengthFinishReasonError, openai.ContentFilterFinishReasonError) as exc:
             # Recorded as a failed response, so replay reproduces the same retry path.
             return {"content": None, "refusal": None, "error": f"{type(exc).__name__}", "model": self.model}
+        except (openai.APITimeoutError, openai.RateLimitError, openai.APIConnectionError) as exc:
+            from hipstraw_mm.errors import TransientServiceError
+
+            raise TransientServiceError(f"model call failed: {type(exc).__name__}: {exc}") from exc
         except openai.OpenAIError as exc:
             raise ExternalServiceError(f"model call failed: {type(exc).__name__}: {exc}") from exc
         choice = completion.choices[0]

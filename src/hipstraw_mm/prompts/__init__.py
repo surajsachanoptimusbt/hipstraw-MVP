@@ -28,6 +28,7 @@ LINK_VERIFICATION = "link_verification.v1"
 PATH_ASSESSMENT = "path_assessment.v1"
 BEAM_SCORING = "beam_scoring.v1"
 BUYER_ROLES = "buyer_roles.v2"
+ECONOMIC_ASSESSMENT = "economic_assessment.v1"
 
 
 @cache

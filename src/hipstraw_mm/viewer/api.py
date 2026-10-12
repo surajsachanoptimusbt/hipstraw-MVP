@@ -157,3 +157,92 @@ def shape_links(store: Any, run_id: str) -> list[Doc]:
 def shape_paths(store: Any, run_id: str) -> list[Doc]:
     paths: list[Doc] = store.list_paths(run_id)
     return paths
+
+
+def shape_evaluation(store: Any, run_id: str) -> Doc:
+    """Position & Evaluation output: evaluation cases, the comparison, and the economic screening."""
+    docs: list[Doc] = store.list_evaluation_cases(run_id)
+    for d in docs:
+        d.pop("createdAt", None)
+    return {
+        "cases": [d for d in docs if d.get("kind") == "evaluation_case"],
+        "comparison": next((d for d in docs if d.get("kind") == "comparison"), None),
+        "economics": next((d for d in docs if d.get("kind") == "economic_screening"), None),
+    }
+
+
+def shape_market_map(store: Any, run_id: str) -> Doc | None:
+    doc: Doc | None = store.get_market_map(run_id)
+    if doc is not None:
+        doc.pop("createdAt", None)
+    return doc
+
+
+def shape_positions(store: Any, run_id: str) -> list[Doc]:
+    """Canonical positions committed in this run, each with its earlier versions (newest first)."""
+    run = store.get_market_run(run_id)
+    if run is None:
+        return []
+    all_versions: list[Doc] = store.list_market_positions(run.get("programId"))
+    keys = {p["positionKey"] for p in all_versions if p.get("marketRunId") == run_id}
+    out = []
+    for key in sorted(keys):
+        versions = sorted((p for p in all_versions if p["positionKey"] == key), key=lambda p: -int(p["version"]))
+        for v in versions:
+            v.pop("createdAt", None)
+        out.append({"positionKey": key, "current": versions[0], "history": versions[1:]})
+    return out
+
+
+def shape_agents(store: Any, run_id: str) -> Doc | None:
+    """The run's agent registry with what each capability, skill, and tool actually did in the trace."""
+    run = store.get_market_run(run_id)
+    if run is None or not run.get("agentRegistry"):
+        return None
+    steps: list[Doc] = store.list_trace_steps_after(run_id, 0)
+    by_id = {s["stepId"]: s for s in steps}
+    usage: dict[str, Doc] = {}
+    for s in steps:
+        op = str(s.get("operation"))
+        if op == "call_model" and s.get("parentStepId") in by_id:
+            parent_op = str(by_id[s["parentStepId"]].get("operation"))
+            u = usage.setdefault(parent_op, {"steps": 0, "modelCalls": 0, "failed": 0, "usd": 0.0})
+            u["modelCalls"] += 1
+            u["usd"] += float((s.get("cost") or {}).get("usd") or 0.0)
+        u = usage.setdefault(op, {"steps": 0, "modelCalls": 0, "failed": 0, "usd": 0.0})
+        u["steps"] += 1
+        u["failed"] += 1 if s.get("status") == "failed" else 0
+    tool_kinds: dict[str, int] = {}
+    for s in steps:
+        for t in s.get("toolCalls", []):
+            tool_kinds[t.get("kind", "")] = tool_kinds.get(t.get("kind", ""), 0) + 1
+    counts = run.get("counts") or {}
+    tool_kinds["model"] = int(counts.get("modelCalls") or 0)
+    tool_kinds["search"] = max(tool_kinds.get("search", 0), int(counts.get("searches") or 0))
+    tool_kinds["fetch"] = max(tool_kinds.get("fetch", 0), int(counts.get("fetches") or 0))
+    registry = run["agentRegistry"]
+    claimed: set[str] = set()
+    agents = []
+    for agent in registry.get("agents", []):
+        def with_usage(items: list[Doc]) -> list[Doc]:
+            out = []
+            for item in items:
+                ops = item.get("operations", [])
+                claimed.update(ops)
+                totals = {"steps": 0, "modelCalls": 0, "failed": 0, "usd": 0.0}
+                for op in ops:
+                    for k in totals:
+                        totals[k] += usage.get(op, {}).get(k, 0)
+                out.append({**item, "usage": totals})
+            return out
+        agents.append({
+            **agent,
+            "innateCapabilities": with_usage(agent.get("innateCapabilities", [])),
+            "skills": with_usage(agent.get("skills", [])),
+            "tools": [
+                {**t, "usage": sum(tool_kinds.get(k, 0) for k in t.get("toolCallKinds", []))}
+                for t in agent.get("tools", [])
+            ],
+        })
+    unclaimed = sorted(op for op in usage if op not in claimed)
+    return {"version": registry.get("version"), "agents": agents, "unclaimedOperations": unclaimed}

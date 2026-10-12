@@ -37,7 +37,7 @@ from hipstraw_mm.store.base import InvalidTransitionError, NotFoundError
 COMMANDS = ("intake", "candidates", "position", "discover", "verify", "review", "report", "run", "show")
 MARKET_COMMANDS = (
     "start", "vichara", "meaning", "graph", "validate", "links",
-    "beam", "assess", "companies", "buyers", "decide", "report", "run", "show",
+    "beam", "assess", "companies", "buyers", "evaluate", "decide", "report", "run", "show",
 )
 
 
@@ -178,6 +178,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("assess", "assess paths"),
         ("companies", "discover companies per path"),
         ("buyers", "identify buyer roles"),
+        ("evaluate", "Position & Evaluation: economics, confidence, recommendations"),
         ("decide", "market manager decisions"),
     ]:
         p = msub.add_parser(name, parents=[common_after], help=help_text)
@@ -343,11 +344,15 @@ def _stage_handler(
 
 
 def _market_decide(ctx: Context, args: argparse.Namespace) -> CommandResult:
+    """Market Manager Review: rule decision per final path, then the canonical Market Position commit
+    (versioned, with lineage to the Position & Evaluation case), Market Status, and the market map."""
     from datetime import datetime, timezone
 
     from hipstraw_mm.market.decide import compute_market_status, decide_path, unassessed_dimensions
+    from hipstraw_mm.market.evaluation import latest_positions, match_prior
     from hipstraw_mm.market.layers import load_layers
-    from hipstraw_mm.market.position import build_market_position, companies_for_path
+    from hipstraw_mm.market.market_map import build_market_map
+    from hipstraw_mm.market.position import build_market_position, commit_record, companies_for_path
     from hipstraw_mm.market.settings import load_pipeline_settings
     from hipstraw_mm.market.trace import Tracer
 
@@ -355,8 +360,8 @@ def _market_decide(ctx: Context, args: argparse.Namespace) -> CommandResult:
     run = ctx.store.get_market_run(run_id)
     if run is None:
         raise PreconditionError(f"market run {run_id!r} not found")
-    if run.get("status") != "roled":
-        raise PreconditionError(f"market run {run_id!r} is '{run.get('status')}', expected 'roled'")
+    if run.get("status") != "evaluated":
+        raise PreconditionError(f"market run {run_id!r} is '{run.get('status')}', expected 'evaluated'")
     config_dir = Path(args.config_dir)
     tracer = Tracer(
         store=ctx.store, layers=load_layers(config_dir), settings=load_pipeline_settings(config_dir), run_id=run_id
@@ -364,7 +369,15 @@ def _market_decide(ctx: Context, args: argparse.Namespace) -> CommandResult:
     # The manager sees only final paths, their evaluations, and the run summary (FR-002).
     finals = [p for p in ctx.store.list_paths(run_id) if p.get("isFinal")]
     companies = ctx.store.list_market_companies(run_id)
+    all_cases = ctx.store.list_evaluation_cases(run_id)
+    cases = {c["pathId"]: c for c in all_cases if c.get("kind") == "evaluation_case"}
+    priors = [
+        p for p in latest_positions(ctx.store.list_market_positions(run["programId"]))
+        if p.get("marketRunId") != run_id
+    ]
+    now = datetime.now(timezone.utc).isoformat()
     decided: list[dict[str, Any]] = []
+    committed: dict[str, dict[str, Any]] = {}
     for path in finals:
         pid = path["pathId"]
         linked = [
@@ -376,32 +389,69 @@ def _market_decide(ctx: Context, args: argparse.Namespace) -> CommandResult:
             "sufficiency": path.get("evidenceStates", {}).get("sufficiency", "insufficient"),
             "canStillFill": bool(path.get("canStillFill")),
         }
+        case = cases.get(pid)
         with tracer.step("market_manager", "market_manager", "decide_path", right="decide_path") as step_ctx:
-            step_ctx.set_inputs({"pathId": pid, **view})
+            step_ctx.set_inputs({"pathId": pid, **view,
+                                 "recommendation": (case or {}).get("recommendation", {}).get("recommendation")})
             result = decide_path(view)
-            position = build_market_position(path, companies_for_path(pid, companies), result)
-            step_ctx.set_outputs({**result, "marketPosition": position["disposition"]})
+            step_ctx.set_outputs(result)
             step_ctx.set_decision(result["decision"])
+        with tracer.step("market_manager", "market_manager", "commit_position", right="commit_position") as step_ctx:
+            prior = match_prior(path.get("nodeLabels", []), priors)
+            record = commit_record(run, path, case, result, prior, now)
+            ctx.store.create_market_position(record)
+            position = build_market_position(path, companies_for_path(pid, companies), result, case, record)
+            step_ctx.set_inputs({"pathId": pid, "evaluationCaseId": (case or {}).get("caseId"),
+                                 "priorVersion": record["evidenceLineage"]["priorVersion"]})
+            step_ctx.set_outputs({"positionKey": record["positionKey"], "version": record["version"],
+                                  "status": record["status"], "trajectory": record["trajectory"],
+                                  "recommendationAccepted": record["recommendationAccepted"]})
+            step_ctx.set_decision(record["status"], record["reviewNote"])
             ctx.store.create_path_decision({
                 "marketRunId": run_id, "pathId": pid, **result, "marketPosition": position,
-                "inputs": view, "decidedAt": datetime.now(timezone.utc).isoformat(),
+                "inputs": view, "decidedAt": now,
             })
             stored = ctx.store.get_path(pid) or {}
             ctx.store.upsert_path({"pathId": pid, "marketRunId": run_id, "marketPosition": position,
                                    "statusHistory": stored.get("statusHistory", [])})
+        committed[pid] = record
         decided.append({"pathId": pid, "decision": result["decision"]})
     with tracer.step("market_manager", "market_manager", "set_market_status", right="set_market_status") as step_ctx:
         status = compute_market_status(decided)
         step_ctx.set_inputs({"decisions": decided})
         step_ctx.set_outputs(status)
         step_ctx.set_decision(status["state"])
-    market_status = {**status, "decidedAt": datetime.now(timezone.utc).isoformat()}
+
+    with tracer.step(
+        "market_development_controller", "market_synthesizer", "synthesize_market_map", right="synthesize_market_map"
+    ) as step_ctx:
+        levels = ctx.store.list_beam_levels(run_id)
+        deepest = max(levels, key=lambda lv: int(lv.get("levelNo", 0))) if levels else None
+        screening = next((c for c in all_cases if c.get("kind") == "economic_screening"), {})
+        economics = {e["pathId"]: e for e in screening.get("estimates", [])}
+        earlier = [
+            r for r in ctx.store.list_market_runs()
+            if r.get("programId") == run["programId"] and r["marketRunId"] < run_id
+        ]
+        previous = None
+        for r in sorted(earlier, key=lambda r: r["marketRunId"], reverse=True):
+            previous = ctx.store.get_market_map(r["marketRunId"])
+            if previous:
+                break
+        market_map = build_market_map(run, deepest, economics, committed, cases, previous, now)
+        ctx.store.create_market_map(market_map)
+        step_ctx.set_inputs({
+            "tilesFrom": (deepest or {}).get("levelName"), "previousRunId": market_map["previousRunId"],
+        })
+        step_ctx.set_outputs({"tiles": len(market_map["tiles"]), "groups": len(market_map["groups"])})
+
+    market_status = {**status, "decidedAt": now}
     ctx.store.transition_market_run(
-        run_id, "roled", "decided", {"marketStatus": market_status, "unassessed": unassessed_dimensions()}
+        run_id, "evaluated", "decided", {"marketStatus": market_status, "unassessed": unassessed_dimensions()}
     )
     return CommandResult(
         "market decide",
-        message=f"{len(decided)} decision(s); market status {status['state']}",
+        message=f"{len(decided)} position(s) committed; market status {status['state']}",
         runId=run_id,
         status="decided",
     )
@@ -434,7 +484,8 @@ def _beam_summary(r: dict[str, Any]) -> str:
 
 
 PIPELINE_STAGES = (
-    "vichara", "meaning", "graph", "validate", "links", "beam", "assess", "companies", "buyers", "decide", "report",
+    "vichara", "meaning", "graph", "validate", "links", "beam", "assess", "companies", "buyers", "evaluate",
+    "decide", "report",
 )
 
 
@@ -507,6 +558,10 @@ MARKET_HANDLERS: dict[str, Callable[[Context, argparse.Namespace], CommandResult
         lambda r: f"{r['companies']} companies ({r['included']} included) across {r['paths']} paths",
     ),
     "buyers": _stage_handler("buyers", "roled", lambda r: f"{r['roles']} buyer roles across {r['paths']} paths"),
+    "evaluate": _stage_handler(
+        "evaluate", "evaluated",
+        lambda r: f"{r['cases']} evaluation case(s), {r['screened']} micro markets sized; {r['recommendations']}",
+    ),
     "decide": _market_decide,
     "report": _market_report,
     "run": _market_run_pipeline,

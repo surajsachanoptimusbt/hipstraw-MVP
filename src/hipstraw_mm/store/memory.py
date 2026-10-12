@@ -12,10 +12,13 @@ from hipstraw_mm.store.base import (
     COMPANY_RECORDS,
     DELIBERATIONS,
     DEMO_REPORTS,
+    EVALUATION_CASES,
     EVIDENCE,
     GRAPH_MEANINGS,
     LINK_CHECKS,
     MARKET_COMPANIES,
+    MARKET_MAPS,
+    MARKET_POSITIONS,
     MARKET_RUNS,
     OBJECTIVE_DOCUMENTS,
     PATH_DECISIONS,
@@ -67,6 +70,9 @@ class MemoryStore:
                 LINK_CHECKS,
                 PATHS,
                 OBJECTIVE_DOCUMENTS,
+                EVALUATION_CASES,
+                MARKET_POSITIONS,
+                MARKET_MAPS,
             )
         }
 
@@ -331,3 +337,23 @@ class MemoryStore:
 
     def list_objective_documents(self, run_id: str) -> list[Doc]:
         return self._list(OBJECTIVE_DOCUMENTS, "marketRunId", run_id)
+
+    # -- Position & Evaluation and Market Manager Review (create-only) -------------
+
+    def create_evaluation_case(self, data: Doc) -> None:
+        self._create(EVALUATION_CASES, data["caseId"], data)
+
+    def list_evaluation_cases(self, run_id: str) -> list[Doc]:
+        return self._list(EVALUATION_CASES, "marketRunId", run_id)
+
+    def create_market_position(self, data: Doc) -> None:
+        self._create(MARKET_POSITIONS, f"{data['positionKey']}__v{data['version']}", data)
+
+    def list_market_positions(self, program_id: str) -> list[Doc]:
+        return self._list(MARKET_POSITIONS, "programId", program_id)
+
+    def create_market_map(self, data: Doc) -> None:
+        self._create(MARKET_MAPS, data["marketRunId"], data)
+
+    def get_market_map(self, run_id: str) -> Doc | None:
+        return self._get(MARKET_MAPS, run_id)

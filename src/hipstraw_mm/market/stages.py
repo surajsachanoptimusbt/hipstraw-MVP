@@ -8,6 +8,7 @@ response stored as blobs.
 from __future__ import annotations
 
 import json
+import time
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, TypeVar
@@ -16,7 +17,7 @@ from pydantic import BaseModel
 
 from hipstraw_mm import prompts
 from hipstraw_mm.context import Context
-from hipstraw_mm.errors import ExternalServiceError, PreconditionError
+from hipstraw_mm.errors import ExternalServiceError, PreconditionError, TransientServiceError
 from hipstraw_mm.market.assess import LAYER as ASSESS_LAYER
 from hipstraw_mm.market.assess import PER_PATH_KEYS, assess_records
 from hipstraw_mm.market.assess import RIGHT as ASSESS_RIGHT
@@ -42,6 +43,7 @@ from hipstraw_mm.market.schemas import (
     CoverageJudgement,
     DimensionDeliberation,
     DimensionRepair,
+    EconomicScreening,
     GraphLevelProposal,
     LinkVerification,
     PathAssessment,
@@ -98,6 +100,10 @@ def objective_text(ctx: Context, run: Doc) -> str:
     return "\n".join(lines)
 
 
+MAX_MODEL_RETRIES = 3
+RETRY_BACKOFF = (4, 12, 30)
+
+
 def model_call(
     ctx: Context,
     tracer: Tracer,
@@ -108,24 +114,40 @@ def model_call(
     prompt_version: str,
     run_id: str,
 ) -> T:
-    """One traced model call (a `workers` child step holding the prompt and response blobs)."""
-    with tracer.step("workers", "llm_worker", "call_model", right="call_model") as worker:
-        worker.set_inputs({"schema": schema.__name__, "promptVersion": prompt_version, "matchKey": match_key})
-        tracer.observe_model_call()
-        result = ctx.llm.parse(
-            schema, messages, match_key=match_key, prompt_version=prompt_version, run_id=run_id, step=match_key
-        )
-        worker.record_model_call(
-            name=ctx.llm.model or "",
-            prompt_version=prompt_version,
-            schema=schema.__name__,
-            attempt=1,
-            prompt_content=json.dumps(messages, ensure_ascii=False),
-            response_content=result.model_dump_json(),
-            usage=getattr(ctx.llm, "last_usage", None),
-        )
-        worker.set_outputs({"ok": True})
-    return result
+    """One traced model call with retry on transient failures (timeout, rate-limit, connection)."""
+    last_exc: Exception | None = None
+    for attempt in range(1, MAX_MODEL_RETRIES + 1):
+        try:
+            with tracer.step("workers", "llm_worker", "call_model", right="call_model") as worker:
+                worker.set_inputs({
+                    "schema": schema.__name__, "promptVersion": prompt_version,
+                    "matchKey": match_key, "attempt": attempt,
+                })
+                tracer.observe_model_call()
+                result = ctx.llm.parse(
+                    schema, messages, match_key=match_key, prompt_version=prompt_version,
+                    run_id=run_id, step=match_key,
+                )
+                worker.record_model_call(
+                    name=ctx.llm.model or "",
+                    prompt_version=prompt_version,
+                    schema=schema.__name__,
+                    attempt=attempt,
+                    prompt_content=json.dumps(messages, ensure_ascii=False),
+                    response_content=result.model_dump_json(),
+                    usage=getattr(ctx.llm, "last_usage", None),
+                )
+                worker.set_outputs({"ok": True, "attempt": attempt})
+            return result
+        except TransientServiceError as exc:
+            last_exc = exc
+            if attempt < MAX_MODEL_RETRIES:
+                wait = RETRY_BACKOFF[attempt - 1] if attempt - 1 < len(RETRY_BACKOFF) else RETRY_BACKOFF[-1]
+                import sys
+
+                print(f"  retry {attempt}/{MAX_MODEL_RETRIES}: {exc} — waiting {wait}s", file=sys.stderr)
+                time.sleep(wait)
+    raise last_exc  # type: ignore[misc]
 
 
 def _digest(deliberations: list[Doc], keys: set[str] | None = None) -> list[Doc]:
@@ -626,6 +648,7 @@ def stage_beam(ctx: Context, run_id: str, config_dir: Path) -> Doc:
                 {
                     "pathId": c["pathId"],
                     "label": " > ".join(c["nodeLabels"]),
+                    "nodeLabels": c["nodeLabels"],
                     "searchScore": c.get("searchScore", 0.0),
                     "factors": c.get("factors", {}),
                     "meanLinkConfidence": c.get("meanLinkConfidence"),
@@ -920,3 +943,153 @@ def stage_buyers(ctx: Context, run_id: str, config_dir: Path) -> Doc:
 
     ctx.store.transition_market_run(run_id, "verified", "roled")
     return {"paths": len(finals), "roles": kept_total}
+
+
+# --------------------------------------------------------------------------------------------------
+# evaluate: Position & Evaluation Sub-controller (P&E spec v0.4)
+# --------------------------------------------------------------------------------------------------
+
+ECONOMICS_CHUNK = 10
+
+
+def _deepest_level(ctx: Context, run_id: str) -> Doc | None:
+    levels = ctx.store.list_beam_levels(run_id)
+    return max(levels, key=lambda lv: int(lv.get("levelNo", 0))) if levels else None
+
+
+def stage_evaluate(ctx: Context, run_id: str, config_dir: Path) -> Doc:
+    """Evaluation cases per final path: economics, confidence, recommendation, research requirements,
+    and a common-basis comparison. Recommends only; the Market Manager commits the Market Position."""
+    from hipstraw_mm.market import evaluation as ev
+    from hipstraw_mm.market.position import companies_for_path
+
+    run = load_run(ctx, run_id, "roled")
+    tracer = make_tracer(ctx, run_id, config_dir)
+    text = objective_text(ctx, run)
+    digest = _digest(ctx.store.list_deliberations(run_id))
+    finals = [p for p in ctx.store.list_paths(run_id) if p.get("isFinal")]
+    deepest = _deepest_level(ctx, run_id)
+    screened = [c for c in (deepest or {}).get("scored", []) if c.get("nodeLabels")]
+    final_ids = {p["pathId"] for p in finals}
+    screened_ids = {c["pathId"] for c in screened}
+    for p in finals:  # final paths always get an estimate, even if the deepest record lacks them
+        if p["pathId"] not in screened_ids:
+            screened.append({"pathId": p["pathId"], "nodeLabels": p.get("nodeLabels", [])})
+
+    economics: dict[str, Doc] = {}
+    for start in range(0, len(screened), ECONOMICS_CHUNK):
+        chunk = screened[start:start + ECONOMICS_CHUNK]
+        payload = {
+            "objectiveText": text,
+            "constraints": run.get("constraintsInForce") or {},
+            "deliberations": digest,
+            "candidates": [{"pathId": c["pathId"], "labels": c["nodeLabels"]} for c in chunk],
+        }
+        with tracer.step(
+            "position_evaluation", "position_evaluator", "screen_economics", right="assess_economics"
+        ) as step:
+            step.set_inputs({"candidates": len(chunk), "finals": sum(1 for c in chunk if c["pathId"] in final_ids)})
+            result = model_call(
+                ctx, tracer, EconomicScreening, prompts.messages(prompts.ECONOMIC_ASSESSMENT, payload),
+                match_key=f"economics:{start}", prompt_version=prompts.ECONOMIC_ASSESSMENT, run_id=run_id,
+            )
+            wanted = {c["pathId"] for c in chunk}
+            for est in result.estimates:
+                if est.pathId in wanted:
+                    economics[est.pathId] = {**est.model_dump(), "label": "hypothesis"}
+            missing = sorted(wanted - set(economics))
+            if missing:
+                step.add_check("economics_coverage", "fail", f"no estimate for {len(missing)} candidate(s)")
+            step.set_outputs({"estimated": len(wanted) - len(missing)})
+    ctx.store.create_evaluation_case({
+        "caseId": f"{run_id}__economics", "marketRunId": run_id, "kind": "economic_screening",
+        "estimates": list(economics.values()), "label": "hypothesis",
+    })
+
+    companies = ctx.store.list_market_companies(run_id)
+    priors = [
+        p for p in ev.latest_positions(ctx.store.list_market_positions(run["programId"]))
+        if p.get("marketRunId") != run_id
+    ]
+    cases: list[Doc] = []
+    for path in finals:
+        pid = path["pathId"]
+        with tracer.step(
+            "position_evaluation", "position_evaluator", "evaluate_candidate", right="evaluate_candidate"
+        ) as step:
+            labels = path.get("nodeLabels", [])
+            history = [{"state": "RECEIVED", "reason": "final path handed over by Search & Research"}]
+            packet = path.get("researchPacket") or {}
+            evidence = path.get("evidenceStates") or {}
+            estimate = economics.get(pid)
+            prior = ev.match_prior(labels, priors)
+            prior_ref = f"{prior['positionKey']}__v{prior['version']}" if prior else None
+            step.set_inputs({"pathId": pid, "childRunId": path.get("childRunId"), "priorPosition": prior_ref})
+            eligible = bool(path.get("assessment")) and "researchPacket" in path
+            history.append({"state": "QUEUED", "reason": "eligible" if eligible else "missing assessment or packet"})
+            history.append({"state": "EVALUATING", "reason": "evidence cut fixed to this run"})
+            step.add_check("evaluation_eligibility", "pass" if eligible else "fail",
+                           "assessment and research packet present" if eligible else "inputs missing")
+            confidence = ev.assess_confidence(evidence, packet, estimate)
+            requirements = ev.research_requirements(path, packet, confidence, estimate)
+            recommendation = ev.recommend(path, packet, evidence, confidence, prior)
+            needs_research = recommendation["recommendation"] in ("Investigate Further", "Validate")
+            if needs_research:
+                history.append({"state": "NEEDS_RESEARCH",
+                                 "reason": f"{len(requirements)} research/validation requirement(s) issued"})
+            history.append({"state": "DECIDING", "reason": recommendation["ruleFired"]})
+            history.append({"state": "READY", "reason": "recommendation prepared for Market Manager Review"})
+            sufficient = evidence.get("sufficiency") in ("sufficient", "decision-ready")
+            step.add_check("evidence_sufficiency", "pass" if sufficient else "fail",
+                           f"sufficiency {evidence.get('sufficiency')}")
+            step.add_check("confidence", "pass" if confidence["band"] != "Low" else "fail",
+                           f"{confidence['band']}: " + "; ".join(confidence["limitingFactors"]))
+            case = {
+                "caseId": f"{run_id}__{pid}",
+                "marketRunId": run_id,
+                "kind": "evaluation_case",
+                "pathId": pid,
+                "labels": labels,
+                "state": "NEEDS_RESEARCH" if needs_research else "READY",
+                "history": history,
+                "searchScore": path.get("searchScore"),
+                "evidence": evidence,
+                "packet": packet,
+                "economics": estimate,
+                "confidence": confidence,
+                "recommendation": recommendation,
+                "assurance": ev.assurance_level(recommendation["recommendation"], confidence["band"]),
+                "researchRequirements": requirements,
+                "companies": [
+                    {"name": c["name"], "domain": c.get("domain"), "disposition": c["disposition"]}
+                    for c in companies_for_path(pid, companies)
+                ],
+                "priorPosition": {
+                    k: prior.get(k) for k in ("positionKey", "version", "status", "confidence", "similarity")
+                } if prior else None,
+                "rubrics": {"confidence": ev.CONFIDENCE_RUBRIC, "transition": ev.TRANSITION_RUBRIC},
+                "evidenceCut": {"childRunId": path.get("childRunId"), "marketRunId": run_id},
+            }
+            ctx.store.create_evaluation_case(case)
+            step.set_outputs({"recommendation": recommendation["recommendation"], "confidence": confidence["band"],
+                              "researchRequirements": len(requirements)})
+            step.set_decision(recommendation["recommendation"], recommendation["rationale"])
+            cases.append(case)
+
+    with tracer.step(
+        "position_evaluation", "position_evaluator", "compare_candidates", right="compare_candidates"
+    ) as step:
+        comparison = ev.compare_candidates(cases)
+        step.set_inputs({"candidates": len(cases)})
+        step.set_outputs({"leaders": comparison["leaders"], "tradeOffs": len(comparison["tradeOffs"]),
+                          "nearTies": len(comparison["nearTies"])})
+        ctx.store.create_evaluation_case({
+            "caseId": f"{run_id}__comparison", "marketRunId": run_id, "kind": "comparison", **comparison,
+        })
+
+    ctx.store.transition_market_run(run_id, "roled", "evaluated")
+    counts: dict[str, int] = {}
+    for c in cases:
+        name = c["recommendation"]["recommendation"]
+        counts[name] = counts.get(name, 0) + 1
+    return {"cases": len(cases), "screened": len(economics), "recommendations": counts}

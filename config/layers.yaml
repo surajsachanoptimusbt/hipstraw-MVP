@@ -1,20 +1,20 @@
 layers:
   - id: market_manager
-    responsibility: Decides. Owns path decisions, Market Status, and Review dispositions. Never traverses the graph.
+    responsibility: Decides. Owns the canonical Market Position, path decisions, Market Status, and Review dispositions. Never traverses the graph.
     actors: [market_manager, review]
-    rights: [open_run, ingest_objective, decide_path, set_market_status, record_disposition]
+    rights: [open_run, ingest_objective, decide_path, commit_position, set_market_status, record_disposition]
   - id: market_development_controller
     responsibility: Defines what the graph means - levels, relationships, mandatory filters, what a promising path is.
-    actors: [graph_meaning]
-    rights: [define_graph_meaning]
+    actors: [graph_meaning, market_synthesizer]
+    rights: [define_graph_meaning, synthesize_market_map]
   - id: search_research
     responsibility: Breaks the objective into questions; builds, validates, verifies, and searches the graph; gathers evidence.
     actors: [vichara, graph_builder, graph_validator, link_verifier, beam_search, company_search]
     rights: [ask_dimension, build_graph, repair_graph, verify_link, prune_path, keep_path, defer_path, discover_companies]
   - id: position_evaluation
-    responsibility: Assesses paths, evidence, and buyer roles.
-    actors: [path_assessor, evidence_evaluator, buyer_role_finder]
-    rights: [assess_path, evaluate_evidence, identify_buyer_roles]
+    responsibility: Assesses paths, evidence, economics, and buyer roles; compares candidates; recommends Position transitions. Never writes the canonical Market Position.
+    actors: [path_assessor, evidence_evaluator, buyer_role_finder, position_evaluator]
+    rights: [assess_path, evaluate_evidence, identify_buyer_roles, assess_economics, evaluate_candidate, compare_candidates, request_research, recommend_position]
   - id: workers
     responsibility: Bounded tasks with explicit inputs and structured outputs - one model call, one search, one fetch.
     actors: [llm_worker, search_worker, fetch_worker]

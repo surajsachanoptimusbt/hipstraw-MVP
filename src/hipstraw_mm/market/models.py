@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 MarketRunStatus = Literal[
     "opened", "deliberated", "defined", "graphed", "validated", "linked",
-    "searched", "assessed", "verified", "roled", "decided", "reported", "failed",
+    "searched", "assessed", "verified", "roled", "evaluated", "decided", "reported", "failed",
 ]
 
 TraceStepStatus = Literal["running", "ok", "failed"]

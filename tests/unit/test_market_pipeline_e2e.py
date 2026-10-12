@@ -153,6 +153,18 @@ class ScriptedLLM:
             for k, states in p["allowedStates"].items()
         ])
 
+    def _economic_screening(self, p: dict[str, Any]) -> Any:
+        return schemas.EconomicScreening(estimates=[
+            schemas.EconomicEstimate(
+                pathId=c["pathId"], valuePoolUsdLow=1_000_000.0 * (i + 1), valuePoolUsdHigh=3_000_000.0 * (i + 1),
+                unit="annual recoverable invoice leakage", targetCompanyEstimate=40 + i,
+                assumptions=["40 target companies", "1% leakage"],
+                sensitivities=[schemas.Sensitivity(factor="leakage rate", impact="medium")],
+                timeToValueMonths=3, rationale="sizing hypothesis",
+            )
+            for i, c in enumerate(p["candidates"])
+        ])
+
     def _buyer_roles(self, p: dict[str, Any]) -> Any:
         roles = []
         for c in p["companies"]:
@@ -396,6 +408,75 @@ def test_viewer_shapes_read_the_run(pipeline: tuple[Context, str]) -> None:
     assert api.shape_documents(ctx.store, run_id)[0]["excerpt"].startswith(PDF_PHRASE)
     assert any(c["buyerRoles"] for c in api.shape_companies(ctx.store, run_id))
     assert api.shape_decisions(ctx.store, run_id)["marketStatus"]["state"] == "progressing"
+
+
+def test_position_and_evaluation_opens_a_case_per_final_path(pipeline: tuple[Context, str]) -> None:
+    ctx, run_id = pipeline
+    docs = ctx.store.list_evaluation_cases(run_id)
+    cases = [d for d in docs if d["kind"] == "evaluation_case"]
+    finals = [p for p in ctx.store.list_paths(run_id) if p["isFinal"]]
+    assert len(cases) == len(finals)
+    for c in cases:
+        assert [h["state"] for h in c["history"]][:3] == ["RECEIVED", "QUEUED", "EVALUATING"]
+        assert c["recommendation"]["recommendation"] == "Recommend Transition"
+        assert c["recommendation"]["rubric"] == "position_transition.v1"
+        assert c["confidence"]["band"] == "Medium" and c["confidence"]["limitingFactors"]
+        assert c["economics"]["label"] == "hypothesis"
+        assert c["researchRequirements"], "open interest-signal gaps must become research requirements"
+    assert any(d["kind"] == "comparison" for d in docs)
+    screening = next(d for d in docs if d["kind"] == "economic_screening")
+    assert len(screening["estimates"]) >= len(finals)
+
+
+def test_market_manager_commits_versioned_canonical_positions(pipeline: tuple[Context, str]) -> None:
+    ctx, run_id = pipeline
+    positions = ctx.store.list_market_positions("invoice_alpha_genesis")
+    assert positions and all(p["version"] == 1 and p["trajectory"] == "new" for p in positions)
+    assert all(p["recommendationAccepted"] is True for p in positions)
+    assert all(p["evidenceLineage"]["evaluationCaseId"].startswith(run_id) for p in positions)
+    view = api.shape_positions(ctx.store, run_id)
+    assert len(view) == len(positions) and all(v["history"] == [] for v in view)
+
+
+def test_market_map_has_a_tile_per_screened_micro_market(pipeline: tuple[Context, str]) -> None:
+    ctx, run_id = pipeline
+    market_map = api.shape_market_map(ctx.store, run_id)
+    assert market_map is not None and market_map["tiles"]
+    researched = [t for t in market_map["tiles"] if t["researched"]]
+    assert len(researched) == len([p for p in ctx.store.list_paths(run_id) if p["isFinal"]])
+    assert all(t["position"]["status"] == "Pursue" and t["valueMid"] for t in researched)
+    assert all(t["change"]["direction"] == "new" for t in market_map["tiles"])
+    assert {g["group"] for g in market_map["groups"]} == {t["group"] for t in market_map["tiles"]}
+
+
+def test_every_traced_operation_belongs_to_a_capability_or_skill(pipeline: tuple[Context, str]) -> None:
+    ctx, run_id = pipeline
+    agents = api.shape_agents(ctx.store, run_id)
+    assert agents is not None
+    assert agents["unclaimedOperations"] == []
+    pe = next(a for a in agents["agents"] if a["id"] == "position_evaluation")
+    econ = next(sk for sk in pe["skills"] if sk["id"] == "economic_evaluation")
+    assert econ["usage"]["modelCalls"] >= 1
+
+
+def test_a_second_run_versions_positions_and_shows_change(pipeline: tuple[Context, str], tmp_path: Path) -> None:
+    from datetime import timedelta
+
+    ctx, first = pipeline
+    first_time = ctx.now()
+    ctx.now = lambda: first_time + timedelta(minutes=5)  # type: ignore[method-assign]
+    second = _run(ctx, [])
+    Path("reports", f"{second}.md").unlink(missing_ok=True)
+    assert second != first
+    cases = [d for d in ctx.store.list_evaluation_cases(second) if d["kind"] == "evaluation_case"]
+    assert cases and all(c["priorPosition"] and c["recommendation"]["recommendation"] == "Maintain" for c in cases)
+    positions = [p for p in ctx.store.list_market_positions("invoice_alpha_genesis") if p["marketRunId"] == second]
+    assert positions and all(p["version"] == 2 and p["trajectory"] == "flat" for p in positions)
+    market_map = api.shape_market_map(ctx.store, second)
+    assert market_map["previousRunId"] == first
+    assert all(t["change"]["direction"] in ("flat", "up", "down") for t in market_map["tiles"])
+    view = api.shape_positions(ctx.store, second)
+    assert all(len(v["history"]) == 1 for v in view)
 
 
 def test_low_search_scores_are_held_below_the_threshold(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
