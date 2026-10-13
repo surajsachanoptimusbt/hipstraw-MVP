@@ -6,27 +6,41 @@
 #
 # - innate capability: what the agent class does natively (state, queues, rights, lifecycle).
 # - skill: reusable competence. kind "model" = a versioned prompt + schema; kind "rule" = a versioned
-#   deterministic rule table. Each skill lists the trace operations that exercise it.
+#   deterministic rule table; kind "mixed" = rules first, then a model judgement on what passes.
+#   Each skill lists the trace operations that exercise it.
 # - tool: a mechanism the agent calls (store, search, fetch, model gateway).
 # Every traced operation must belong to exactly one skill or capability (tests check this).
+#
+# Plain-language view (the default Agents screen):
+# - title / role: the agent as a business reader would describe it. Agents without a title are
+#   shown only under Technical details.
+# - plain: one sentence in market-manager language. Items without it are shown only under
+#   Technical details.
+# - knowledge: the playbooks and knowledge the agent draws on (none yet).
 version: 1
 agents:
   - id: market_manager
     name: "Market Manager Agent"
+    title: "Market Manager"
+    role: "Decides which micro markets to pursue and keeps the official position on each."
     layer: market_manager
     centralQuestion: "Where should Hipstraw direct market-development attention and resources?"
+    knowledge: []
     innateCapabilities:
       - id: run_lifecycle
         name: "Run lifecycle"
         behavior: "Opens a market run and accepts the mandate's objective documents."
+        plain: "Takes the client's brief and starts a market exploration."
         operations: [open_run, ingest_objective]
       - id: market_review
         name: "Market Review"
         behavior: "Reviews Position & Evaluation recommendations and commits the versioned canonical Market Position; the only canonical writer."
+        plain: "Signs off the official position on each micro market and keeps every earlier version."
         operations: [commit_position]
       - id: governance
         name: "Governance and ledger"
         behavior: "Records decisions with the rule fired, the right used, and lineage; writes the report."
+        plain: "Writes the market report, with every decision and the reason for it."
         operations: [write_report]
     skills:
       - id: path_decision
@@ -34,19 +48,23 @@ agents:
         kind: rule
         version: "decide.v1"
         purpose: "Pursue, needs more evidence, or drop, from included companies and evidence sufficiency."
+        plain: "Decides for each micro market: pursue, gather more evidence, or drop."
         operations: [decide_path]
+      - id: company_review
+        name: "Company Review"
+        kind: mixed
+        version: "review.v1"
+        purpose: "Feature 002 rule gate, then a model judgement on records that pass, into include, exclude, or needs_verification."
+        plain: "Checks each company found against the brief's limits, then keeps it, rejects it, or flags it for checking."
+        operations: [review_companies]
+        promptVersions: [review_judgement.v1]
       - id: market_status
         name: "Market status"
         kind: rule
         version: "decide.v1"
         purpose: "Progressing, awaiting-evidence, or blocked across all final paths."
+        plain: "Sums up where the whole market stands: progressing, waiting on evidence, or blocked."
         operations: [set_market_status]
-      - id: company_review
-        name: "Company Review"
-        kind: rule
-        version: "review.v1"
-        purpose: "Feature 002 rule gate and judgement into include, exclude, or needs_verification."
-        operations: [review_companies]
     tools:
       - id: market_position_store
         name: "Market Position store"
@@ -57,16 +75,21 @@ agents:
 
   - id: market_development_controller
     name: "Market Development Controller"
+    title: "Market Development"
+    role: "Decides where to play and draws the market map."
     layer: market_development_controller
     centralQuestion: "Where should we play?"
+    knowledge: []
     innateCapabilities:
       - id: graph_semantics
         name: "Graph semantic governance"
         behavior: "Defines what the seed graph means: levels, filters, caps."
+        plain: "Sets how a market is broken down: segment, company type, problem, trigger, buyer, use case."
         operations: [define_graph_meaning]
       - id: synthesis
         name: "Synthesis"
         behavior: "Synthesizes positions, economics, and search results into the market map."
+        plain: "Draws the market map: every micro market found, sized by value and coloured by position."
         operations: [synthesize_market_map]
     skills: []
     tools:
@@ -76,13 +99,16 @@ agents:
 
   - id: search_research
     name: "Search & Research Sub-controller"
+    title: "Research"
+    role: "Works out which micro markets are worth a look and finds the real companies in them."
     layer: search_research
     centralQuestion: "What should we investigate next, and is the evidence sufficient?"
+    knowledge: []
     innateCapabilities:
       - id: frontier_management
-        name: "Graph and frontier management"
-        behavior: "Validates the seed graph and bounds the active frontier (beam width, diversity, search-score threshold)."
-        operations: [validate_graph, prune_level, select_final_paths]
+        name: "Graph validation"
+        behavior: "Checks the seed graph's structure against the graph meaning before any scoring."
+        operations: [validate_graph]
       - id: worker_orchestration
         name: "Worker orchestration"
         behavior: "Runs feature 002 company research as a bounded child run per final path."
@@ -93,6 +119,7 @@ agents:
         kind: model
         version: "vichara.v1"
         purpose: "Answers each grammar dimension from the objective, grounded word for word."
+        plain: "Reads the brief and answers the key questions about the market from it, quoting the brief."
         operations: [deliberate_dimension]
         promptVersions: [vichara.v1]
       - id: grounding_repair
@@ -114,6 +141,7 @@ agents:
         kind: model
         version: "vichara_propose.v1"
         purpose: "Proposes labelled hypotheses where the objective is silent."
+        plain: "Where the brief says nothing, proposes clearly labelled guesses."
         operations: [propose_hypotheses]
         promptVersions: [vichara_propose.v1]
       - id: seed_graph_design
@@ -121,6 +149,7 @@ agents:
         kind: model
         version: "graph_level.v2"
         purpose: "Builds the seed graph one level at a time."
+        plain: "Breaks the market down into candidate micro markets."
         operations: [build_level]
         promptVersions: [graph_level.v1, graph_level.v2]
       - id: link_verification
@@ -128,6 +157,7 @@ agents:
         kind: model
         version: "link_verification.v1"
         purpose: "Rationale and link confidence for each edge."
+        plain: "Checks that each step in the breakdown makes sense."
         operations: [verify_links]
         promptVersions: [link_verification.v1]
       - id: beam_scoring
@@ -135,22 +165,33 @@ agents:
         kind: model
         version: "beam_scoring.v1"
         purpose: "Search score per candidate path: a hypothesis about where to look, not evidence."
+        plain: "Scores how promising each micro market looks before any research."
         operations: [score_candidates]
         promptVersions: [beam_scoring.v1]
+      - id: shortlisting
+        name: "Frontier pruning"
+        kind: rule
+        version: "beam.v1"
+        purpose: "Constraint filters, diversity, beam width, and the minimum search score for final paths."
+        plain: "Keeps only the strongest: a score of 75% or more, a few per level, no near-duplicates."
+        operations: [prune_level, select_final_paths]
       - id: company_discovery
         name: "Company discovery and verification"
         kind: model
         version: "feature-002"
         purpose: "Query planning, listing extraction, homepage identity, and cited evidence (feature 002)."
-        promptVersions: [query_plan.v2, listing_extraction.v2, homepage_identity.v2, company_evidence.v2, review_judgement.v1]
+        plain: "Finds real companies in each shortlisted micro market and checks their websites for evidence."
+        promptVersions: [query_plan.v2, listing_extraction.v2, homepage_identity.v2, company_evidence.v2]
     tools:
       - id: web_search
         name: "Web search (Brave)"
         purpose: "Search results for company discovery."
+        plain: "Web search"
         toolCallKinds: [search]
       - id: web_fetch
         name: "Page fetcher"
         purpose: "Reads listing and company pages (robots-aware, denylisted)."
+        plain: "Company websites"
         toolCallKinds: [fetch]
       - id: evidence_store
         name: "Evidence store"
@@ -158,8 +199,11 @@ agents:
 
   - id: position_evaluation
     name: "Position & Evaluation Sub-controller"
+    title: "Evaluation"
+    role: "Judges how good each opportunity is, how sure we are, and what should happen next."
     layer: position_evaluation
     centralQuestion: "What should Hipstraw conclude about a candidate, how confident should it be, what remains unknown, and what should happen next?"
+    knowledge: []
     innateCapabilities:
       - id: evaluation_process
         name: "Evaluation process management"
@@ -168,6 +212,7 @@ agents:
       - id: comparison_management
         name: "Comparison set management"
         behavior: "Holds one common basis across candidates; preserves trade-offs and near-ties."
+        plain: "Compares opportunities side by side and keeps the trade-offs instead of forcing a winner."
         operations: [compare_candidates]
     skills:
       - id: hypothesis_analysis
@@ -175,6 +220,7 @@ agents:
         kind: model
         version: "path_assessment.v1"
         purpose: "Seven per-path dimensions, each a hypothesis."
+        plain: "Assesses how well each opportunity fits the brief, across seven questions."
         operations: [assess_path]
         promptVersions: [path_assessment.v1]
       - id: evidence_states
@@ -182,12 +228,14 @@ agents:
         kind: rule
         version: "evidence_states.v1"
         purpose: "Sufficiency, quality, and critical unknowns from verified records."
+        plain: "Judges whether there is enough evidence and how strong it is."
         operations: [evaluate_evidence]
       - id: economic_evaluation
         name: "Economic evaluation"
         kind: model
         version: "economic_assessment.v1"
         purpose: "Value-pool range, assumptions, sensitivities, and time to value."
+        plain: "Estimates what each opportunity is worth a year, with its assumptions."
         operations: [screen_economics]
         promptVersions: [economic_assessment.v1]
       - id: buyer_roles
@@ -195,6 +243,7 @@ agents:
         kind: model
         version: "buyer_roles.v2"
         purpose: "Buying functions cited from verified evidence."
+        plain: "Identifies who buys, from what the companies' own websites say."
         operations: [identify_buyer_roles]
         promptVersions: [buyer_roles.v1, buyer_roles.v2]
       - id: confidence_assessment
@@ -202,11 +251,13 @@ agents:
         kind: rule
         version: "confidence.v1"
         purpose: "Confidence from evidence quality, coverage, contradictions, and economic sensitivity; never a model self-rating."
+        plain: "Sets how confident we are from the evidence, never from the AI's own opinion."
       - id: position_assessment
         name: "Position transition rubric"
         kind: rule
         version: "position_transition.v1"
         purpose: "Recommend transition, strengthen, validate, investigate, or retire, and issue research requirements."
+        plain: "Recommends the next step (enter, strengthen, hold, validate, investigate, weaken, or retire) and what research is still needed."
     tools:
       - id: evidence_store
         name: "Shared evidence store"
@@ -231,9 +282,45 @@ agents:
     tools:
       - id: model_gateway
         name: "Model gateway (OpenAI structured outputs)"
-        purpose: "Strict-schema model calls with one retry."
+        purpose: "Strict-schema model calls: one retry on an invalid response, up to 3 attempts on timeouts and rate limits."
         toolCallKinds: [model]
       - id: web_search
         name: "Web search (Brave)"
         purpose: "Bounded search requests."
         toolCallKinds: [search]
+
+# Proposed plain names for system terms, to confirm with Ashish before renaming them across the viewer.
+glossary:
+  - term: "Market run"
+    proposed: "Market exploration"
+    meaning: "One pass from a client's brief to a recommended position on each micro market."
+  - term: "Objective / mandate document"
+    proposed: "Brief"
+    meaning: "What the client wants, in their words, plus any documents they send with it."
+  - term: "Path"
+    proposed: "Micro market"
+    meaning: "One specific market: segment, company type, problem, trigger, buyer, and use case."
+  - term: "Seed graph"
+    proposed: "Market breakdown"
+    meaning: "Every micro market considered, before shortlisting."
+  - term: "Beam search"
+    proposed: "Shortlisting"
+    meaning: "Keeping only the most promising micro markets at each level."
+  - term: "Search score"
+    proposed: "Promise score"
+    meaning: "How promising a micro market looks before research. A guess, not evidence."
+  - term: "Vichara"
+    proposed: "Brief analysis"
+    meaning: "The key questions answered from the brief before anything else."
+  - term: "Child run"
+    proposed: "Company research"
+    meaning: "The search for real companies in one micro market."
+  - term: "Evaluation case"
+    proposed: "Assessment"
+    meaning: "The full judgement on one micro market: evidence, value, confidence, and next step."
+  - term: "Market Position"
+    proposed: "Position"
+    meaning: "Our official, versioned stance on a micro market: Pursue, Needs more evidence, or Drop."
+  - term: "Trace"
+    proposed: "Activity log"
+    meaning: "Every step the agents took, with what went in and what came out."

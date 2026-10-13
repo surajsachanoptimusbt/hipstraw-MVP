@@ -17,15 +17,17 @@ class Capability(_Strict):
     id: str
     name: str
     behavior: str
+    plain: str | None = None
     operations: list[str] = []
 
 
 class Skill(_Strict):
     id: str
     name: str
-    kind: Literal["model", "rule"]
+    kind: Literal["model", "rule", "mixed"]
     version: str
     purpose: str
+    plain: str | None = None
     operations: list[str] = []
     promptVersions: list[str] = []
 
@@ -34,17 +36,27 @@ class Tool(_Strict):
     id: str
     name: str
     purpose: str
+    plain: str | None = None
     toolCallKinds: list[str] = []
 
 
 class Agent(_Strict):
     id: str
     name: str
+    title: str | None = None
+    role: str | None = None
     layer: str
     centralQuestion: str
+    knowledge: list[str] = []
     innateCapabilities: list[Capability]
     skills: list[Skill]
     tools: list[Tool]
+
+
+class Term(_Strict):
+    term: str
+    proposed: str
+    meaning: str
 
 
 def _owners(agent: Agent) -> list[Capability | Skill]:
@@ -54,6 +66,7 @@ def _owners(agent: Agent) -> list[Capability | Skill]:
 class AgentRegistry(_Strict):
     version: int
     agents: list[Agent]
+    glossary: list[Term] = []
 
     @model_validator(mode="after")
     def _operations_unique(self) -> AgentRegistry:

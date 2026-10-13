@@ -245,4 +245,46 @@ def shape_agents(store: Any, run_id: str) -> Doc | None:
             ],
         })
     unclaimed = sorted(op for op in usage if op not in claimed)
-    return {"version": registry.get("version"), "agents": agents, "unclaimedOperations": unclaimed}
+    has_plain = any(a.get("title") for a in registry.get("agents", []))
+    return {
+        "version": registry.get("version"),
+        "agents": agents,
+        "unclaimedOperations": unclaimed,
+        "simple": plain_view(registry if has_plain else _current_registry()),
+    }
+
+
+_HOW = {"model": "ai", "rule": "rule", "mixed": "mixed"}
+
+
+def _current_registry() -> Doc:
+    """Runs opened before the plain-language fields existed borrow the wording from the current config."""
+    from pathlib import Path
+
+    from hipstraw_mm.market.agents import load_agent_registry
+
+    if not (Path("config") / "agents.yaml").exists():
+        return {}
+    return load_agent_registry().model_dump()
+
+
+def plain_view(registry: Doc) -> Doc:
+    """What each agent does, knows, and uses, in market-manager language, each item marked as decided
+    by a fixed rule, by the AI model, by rules then the model, or built into the agent."""
+    counts = {"rule": 0, "ai": 0, "mixed": 0, "built_in": 0}
+    agents = []
+    for a in registry.get("agents", []):
+        if not a.get("title"):
+            continue
+        does = [{"text": c["plain"], "how": "built_in"} for c in a.get("innateCapabilities", []) if c.get("plain")]
+        does += [{"text": s["plain"], "how": _HOW[s["kind"]]} for s in a.get("skills", []) if s.get("plain")]
+        for d in does:
+            counts[d["how"]] += 1
+        uses = [t["plain"] for t in a.get("tools", []) if t.get("plain")]
+        if any(d["how"] in ("ai", "mixed") for d in does):
+            uses.append("AI model")
+        agents.append({
+            "id": a["id"], "title": a["title"], "role": a.get("role"),
+            "does": does, "knows": a.get("knowledge", []), "uses": uses,
+        })
+    return {"agents": agents, "counts": counts, "glossary": registry.get("glossary", [])}

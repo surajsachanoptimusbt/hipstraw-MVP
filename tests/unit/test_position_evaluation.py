@@ -7,6 +7,8 @@ from typing import Any
 from hipstraw_mm.market import evaluation as ev
 from hipstraw_mm.market.agents import load_agent_registry
 from hipstraw_mm.market.position import commit_record, trajectory
+from hipstraw_mm.store.memory import MemoryStore
+from hipstraw_mm.viewer import api
 
 GOOD_EVIDENCE = {"sufficiency": "sufficient", "quality": "strong", "criticalUnknowns": "resolved"}
 ESTIMATE = {"valuePoolUsdLow": 1e6, "valuePoolUsdHigh": 3e6, "sensitivities": [{"factor": "x", "impact": "low"}]}
@@ -123,3 +125,32 @@ class TestAgentRegistry:
             "market_manager", "market_development_controller", "search_research", "position_evaluation", "workers"}
         assert reg.operation_owner("evaluate_candidate") == ("position_evaluation", "evaluation_process")
         assert reg.operation_owner("commit_position") == ("market_manager", "market_review")
+
+    def test_a_skill_with_prompts_is_never_labelled_a_rule(self) -> None:
+        for agent in load_agent_registry().agents:
+            for sk in agent.skills:
+                assert not (sk.promptVersions and sk.kind == "rule"), f"{agent.id}.{sk.id} calls the model"
+
+
+class TestPlainView:
+    def test_titled_agents_are_shown_in_plain_language(self) -> None:
+        view = api.plain_view(load_agent_registry().model_dump())
+        ids = [a["id"] for a in view["agents"]]
+        assert "workers" not in ids and "market_manager" in ids
+        assert all(a["role"] and a["does"] for a in view["agents"])
+        assert sum(view["counts"].values()) == sum(len(a["does"]) for a in view["agents"])
+        mm = next(a for a in view["agents"] if a["id"] == "market_manager")
+        assert {d["how"] for d in mm["does"]} == {"built_in", "rule", "mixed"}
+        research = next(a for a in view["agents"] if a["id"] == "search_research")
+        assert "AI model" in research["uses"] and "Web search" in research["uses"]
+        assert view["glossary"] and all(g["proposed"] for g in view["glossary"])
+
+    def test_runs_without_plain_fields_borrow_the_current_wording(self) -> None:
+        old = load_agent_registry().model_dump()
+        for a in old["agents"]:
+            a.pop("title")
+        store = MemoryStore()
+        store.upsert_market_run({"marketRunId": "mrun_old", "programId": "p", "status": "reported",
+                                 "agentRegistry": old})
+        shaped = api.shape_agents(store, "mrun_old")
+        assert shaped is not None and shaped["simple"]["agents"]

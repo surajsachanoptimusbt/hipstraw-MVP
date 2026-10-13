@@ -457,6 +457,8 @@ def test_every_traced_operation_belongs_to_a_capability_or_skill(pipeline: tuple
     pe = next(a for a in agents["agents"] if a["id"] == "position_evaluation")
     econ = next(sk for sk in pe["skills"] if sk["id"] == "economic_evaluation")
     assert econ["usage"]["modelCalls"] >= 1
+    assert [a["title"] for a in agents["simple"]["agents"]] == [
+        "Market Manager", "Market Development", "Research", "Evaluation"]
 
 
 def test_a_second_run_versions_positions_and_shows_change(pipeline: tuple[Context, str], tmp_path: Path) -> None:

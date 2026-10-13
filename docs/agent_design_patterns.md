@@ -15,13 +15,23 @@ not claimed by a capability or a skill.
 - **Tool**: a mechanism the agent calls: the store, Brave search, the page fetcher, the model gateway.
 - **Right**: what an actor may do, enforced by the tracer from `config/layers.yaml` before a step runs.
 
+## How the Agents screen shows this
+
+By default the screen is written for a business reader. Each agent shows what it does, in
+market-manager language, with every item marked **By rule**, **Uses AI**, **Rules, then AI**, or
+**Built in**. It also shows what the agent knows (no playbook yet) and what it uses. A glossary
+proposes plain names for system terms, to confirm before they are used across the viewer. Versions,
+step counts, and cost are under **Technical details**. The wording comes from the `title`, `role`,
+`plain`, `knowledge`, and `glossary` fields in `config/agents.yaml`. A skill that calls the model
+can never be labelled a rule; a test checks this.
+
 ## Agents
 
 | Agent | Central question | Innate capabilities | Skills | Tools |
 |---|---|---|---|---|
-| Market Manager | Where to direct attention and resources? | Run lifecycle; **Market Review** (only writer of the canonical Market Position, versioned); governance and ledger | Path decision (rule `decide.v1`); Market status (rule); Company Review (rule `review.v1`) | Market Position store; decision ledger |
+| Market Manager | Where to direct attention and resources? | Run lifecycle; **Market Review** (only writer of the canonical Market Position, versioned); governance and ledger | Path decision (rule `decide.v1`); Market status (rule); Company Review (rules, then a model judgement, `review.v1`) | Market Position store; decision ledger |
 | Market Development Controller | Where should we play? | Graph semantic governance; synthesis of the market map | none yet | Graph and frontier service |
-| Search & Research | What to investigate next, and is evidence sufficient? | Frontier management (beam width, diversity, 75% search-score threshold); worker orchestration (one company-research child run per final path) | Vichara, grounding repair, coverage, hypothesis proposal, seed-graph construction, link verification, frontier scoring, company discovery (all model skills, versioned prompts) | Brave search; page fetcher; evidence store |
+| Search & Research | What to investigate next, and is evidence sufficient? | Graph validation; worker orchestration (one company-research child run per final path) | Vichara, grounding repair, coverage, hypothesis proposal, seed-graph construction, link verification, frontier scoring, company discovery (model skills, versioned prompts); shortlisting (rule `beam.v1`: beam width, diversity, 75% search-score threshold) | Brave search; page fetcher; evidence store |
 | Position & Evaluation | What to conclude, how confident, what is unknown, what next? | Evaluation case lifecycle (RECEIVED → QUEUED → EVALUATING → NEEDS_RESEARCH / DECIDING → READY); comparison set management | Path assessment (model); evidence states (rule); **economic evaluation** (model `economic_assessment.v1`); buyer roles (model); **confidence** (rule `confidence.v1`); **position transition rubric** (rule `position_transition.v1`) | Evidence store; Market Position read (read only); rubric service |
 | Workers | Do one bounded task | Bounded execution: one model call, search, or fetch per step | none | Model gateway; Brave search |
 

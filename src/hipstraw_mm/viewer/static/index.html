@@ -94,7 +94,7 @@ h3 { font-size: 13px; font-weight: 600; }
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
 .card-head .hint { color: var(--muted); font-size: 12px; }
 .card-body { padding: 14px 16px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; align-items: start; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr)); gap: 16px; align-items: start; }
 
 table { width: 100%; border-collapse: collapse; }
 th { text-align: left; font-weight: 600; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding: 8px 16px; background: var(--subtle); border-bottom: 1px solid var(--border); white-space: nowrap; }
@@ -172,6 +172,11 @@ pre.json { background: var(--code); border: 1px solid var(--border); border-radi
 .alert.ok { background: var(--ok-bg); color: var(--ok); }
 .alert b { font-weight: 650; }
 .stack > * + * { margin-top: 16px; }
+.agents-summary { display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center; }
+.does { list-style: none; }
+.does li { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 10px; align-items: baseline; padding: 9px 16px; border-bottom: 1px solid var(--border); }
+.does li .pill { justify-self: start; }
+.agent-kv { padding: 12px 16px; grid-template-columns: 64px minmax(0, 1fr); }
 .tight > * + * { margin-top: 12px; }
 .muted { color: var(--muted); }
 .quote { border-left: 2px solid var(--border); padding-left: 8px; color: var(--muted); font-size: 12px; margin-top: 4px; }
@@ -447,7 +452,7 @@ function Loading({ state, empty, children }) {
 function TechToggle() {
   const [on, toggle] = useTech();
   return html`<button className=${`chip ${on ? "on" : ""}`} onClick=${toggle}
-    title="Show the technical trace and vichara tabs">${on ? "Technical: on" : "Technical details"}</button>`;
+    title="Show the technical tabs (trace, vichara) and agent details">${on ? "Technical: on" : "Technical details"}</button>`;
 }
 
 function App() {
@@ -1162,9 +1167,52 @@ function EvaluationView({ runId, live }) {
   </div>`}<//>`;
 }
 
-function AgentsView({ runId, live }) {
-  const st = usePoll(`/api/runs/${enc(runId)}/agents`, 5000, live);
-  return html`<${Loading} state=${st}>${d => html`<div className="stack">
+const HOW = {
+  rule: ["ok", "By rule", "A fixed rule: the same inputs always give the same answer."],
+  ai: ["info", "Uses AI", "Judged by the AI model from the brief and what was found."],
+  mixed: ["warn", "Rules, then AI", "Fixed rules first; the AI model judges only what passes them."],
+  built_in: ["", "Built in", "Part of how the agent works; no judgement call."],
+};
+
+function HowTag({ how }) {
+  const [cls, label, title] = HOW[how] || HOW.built_in;
+  return html`<span className=${`pill ${cls}`} title=${title}>${label}</span>`;
+}
+
+function AgentsSimple({ view, tech }) {
+  const c = view.counts || {};
+  const total = (c.rule || 0) + (c.ai || 0) + (c.mixed || 0) + (c.built_in || 0);
+  return html`<div className="stack">
+    <div className="agents-summary">
+      <div><b>${total}</b> things these agents do</div>
+      ${["rule", "ai", "mixed", "built_in"].filter(k => c[k]).map(k => html`<div key=${k}><${HowTag} how=${k} /> <b>${c[k]}</b></div>`)}
+    </div>
+    <div className="alert">
+      <b>No playbook or knowledge base yet.</b> Items marked “Uses AI” rely on the brief and the AI model's general knowledge, not on our own market knowledge.
+    </div>
+    <div className="grid">
+      ${view.agents.map(a => html`<${Card} key=${a.id} title=${a.title} hint=${a.role} flush=${true}>
+        <ul className="does">
+          ${a.does.map((d, i) => html`<li key=${i}><${HowTag} how=${d.how} /><span>${d.text}</span></li>`)}
+        </ul>
+        <dl className="kv agent-kv">
+          <dt>Knows</dt><dd>${a.knows.length ? a.knows.join(", ") : html`<span className="muted">No playbook yet</span>`}</dd>
+          <dt>Uses</dt><dd>${a.uses.length ? a.uses.join(", ") : html`<span className="muted">No outside tools</span>`}</dd>
+        </dl>
+      <//>`)}
+    </div>
+    ${(view.glossary || []).length ? html`<${Card} title="Plain terms (proposed)" hint="Suggested names for system terms, to confirm before they are used across the viewer." flush=${true}>
+      <table><thead><tr><th>System term</th><th>Proposed</th><th>Meaning</th></tr></thead><tbody>
+        ${view.glossary.map(g => html`<tr key=${g.term}><td className="muted">${g.term}</td><td><b>${g.proposed}</b></td><td className="wrap">${g.meaning}</td></tr>`)}
+      </tbody></table>
+    <//>` : null}
+    ${tech ? null : html`<div className="muted">Turn on Technical details for versions, step counts, and cost.</div>`}
+  </div>`;
+}
+
+function AgentsTechnical({ d }) {
+  return html`<div className="stack">
+    <div className="eyebrow">Technical details</div>
     <div className="muted">Design pattern per agent: innate capabilities (what the class does natively), skills (versioned prompts or rule tables), and tools (mechanisms). Usage is counted from this run's trace.</div>
     ${(d.unclaimedOperations || []).length ? html`<div className="alert warn">Operations not claimed by any capability or skill: ${d.unclaimedOperations.join(", ")}</div>` : null}
     ${d.agents.map(a => html`<${Card} key=${a.id} title=${a.name} hint=${a.centralQuestion} flush=${true}>
@@ -1183,6 +1231,15 @@ function AgentsView({ runId, live }) {
         ${a.tools.map(t => html`<div key=${t.id}><b>${t.name}</b> <span className="muted">${t.purpose}</span>${t.usage ? html` <span className="muted mono">${t.usage} call${t.usage === 1 ? "" : "s"}</span>` : null}</div>`)}
       </div>
     <//>`)}
+  </div>`;
+}
+
+function AgentsView({ runId, live }) {
+  const st = usePoll(`/api/runs/${enc(runId)}/agents`, 5000, live);
+  const [tech] = useTech();
+  return html`<${Loading} state=${st}>${d => html`<div className="stack">
+    ${d.simple && d.simple.agents.length ? html`<${AgentsSimple} view=${d.simple} tech=${tech} />` : null}
+    ${tech || !(d.simple && d.simple.agents.length) ? html`<${AgentsTechnical} d=${d} />` : null}
   </div>`}<//>`;
 }
 
