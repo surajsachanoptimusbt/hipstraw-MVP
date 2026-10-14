@@ -19,6 +19,7 @@ class Capability(_Strict):
     behavior: str
     plain: str | None = None
     operations: list[str] = []
+    playbook: list[str] = []
 
 
 class Skill(_Strict):
@@ -30,6 +31,7 @@ class Skill(_Strict):
     plain: str | None = None
     operations: list[str] = []
     promptVersions: list[str] = []
+    playbook: list[str] = []
 
 
 class Tool(_Strict):
@@ -55,8 +57,9 @@ class Agent(_Strict):
 
 class Term(_Strict):
     term: str
-    proposed: str
+    playbookTerm: str
     meaning: str
+    source: str
 
 
 def _owners(agent: Agent) -> list[Capability | Skill]:

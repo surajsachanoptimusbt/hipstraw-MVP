@@ -1,6 +1,6 @@
 beam: {width: 5, finalPaths: 3, companiesPerPath: 5, minSearchScore: 0.75}
 defaultInterestIds: [invoice_accuracy_entitlement, continuous_obligation_intelligence]
-factorWeights: {objectiveFit: 1, informationValue: 1, evidenceGap: 1, cost: 1}
+factorWeights: {relevance: 1, feasibility: 1, timing: 1, cost: 1}
 repair: {maxAttempts: 3}
 vichara: {maxItemsPerDimension: 3}
 links: {lowConfidenceThreshold: 0.5, linksPerCall: 12}

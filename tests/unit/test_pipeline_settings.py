@@ -37,6 +37,16 @@ class TestPipelineSettings:
         for name, weight in s.factorWeights.items():
             assert weight > 0, f"weight for {name} must be > 0"
 
+    def test_factor_weights_name_the_scored_factors(self) -> None:
+        from hipstraw_mm.market.settings import PipelineSettings
+
+        s = load_pipeline_settings()
+        assert set(s.factorWeights) == {"relevance", "feasibility", "timing", "cost"}
+        bad = s.model_dump()
+        bad["factorWeights"] = {**bad["factorWeights"], "objectiveFit": 1}
+        with pytest.raises(ValueError, match="scored factors"):
+            PipelineSettings.model_validate(bad)
+
     def test_factor_weights_normalize(self) -> None:
         s = load_pipeline_settings()
         total = sum(s.factorWeights.values())

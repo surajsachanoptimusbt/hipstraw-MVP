@@ -245,12 +245,12 @@ def shape_agents(store: Any, run_id: str) -> Doc | None:
             ],
         })
     unclaimed = sorted(op for op in usage if op not in claimed)
-    has_plain = any(a.get("title") for a in registry.get("agents", []))
+    current = any("playbook" in c for a in registry.get("agents", []) for c in a.get("innateCapabilities", []))
     return {
         "version": registry.get("version"),
         "agents": agents,
         "unclaimedOperations": unclaimed,
-        "simple": plain_view(registry if has_plain else _current_registry()),
+        "simple": plain_view(registry if current else _current_registry()),
     }
 
 
@@ -258,7 +258,7 @@ _HOW = {"model": "ai", "rule": "rule", "mixed": "mixed"}
 
 
 def _current_registry() -> Doc:
-    """Runs opened before the plain-language fields existed borrow the wording from the current config."""
+    """Runs opened before the plain-language and playbook fields existed borrow them from the current config."""
     from pathlib import Path
 
     from hipstraw_mm.market.agents import load_agent_registry
@@ -276,8 +276,14 @@ def plain_view(registry: Doc) -> Doc:
     for a in registry.get("agents", []):
         if not a.get("title"):
             continue
-        does = [{"text": c["plain"], "how": "built_in"} for c in a.get("innateCapabilities", []) if c.get("plain")]
-        does += [{"text": s["plain"], "how": _HOW[s["kind"]]} for s in a.get("skills", []) if s.get("plain")]
+        does = [
+            {"text": c["plain"], "how": "built_in", "playbook": c.get("playbook", [])}
+            for c in a.get("innateCapabilities", []) if c.get("plain")
+        ]
+        does += [
+            {"text": s["plain"], "how": _HOW[s["kind"]], "playbook": s.get("playbook", [])}
+            for s in a.get("skills", []) if s.get("plain")
+        ]
         for d in does:
             counts[d["how"]] += 1
         uses = [t["plain"] for t in a.get("tools", []) if t.get("plain")]
@@ -287,4 +293,5 @@ def plain_view(registry: Doc) -> Doc:
             "id": a["id"], "title": a["title"], "role": a.get("role"),
             "does": does, "knows": a.get("knowledge", []), "uses": uses,
         })
-    return {"agents": agents, "counts": counts, "glossary": registry.get("glossary", [])}
+    linked = sum(1 for a in agents for d in a["does"] if d["playbook"])
+    return {"agents": agents, "counts": counts, "playbookLinked": linked, "glossary": registry.get("glossary", [])}

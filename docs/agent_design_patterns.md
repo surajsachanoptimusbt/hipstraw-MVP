@@ -20,10 +20,17 @@ not claimed by a capability or a skill.
 By default the screen is written for a business reader. Each agent shows what it does, in
 market-manager language, with every item marked **By rule**, **Uses AI**, **Rules, then AI**, or
 **Built in**. It also shows what the agent knows (no playbook yet) and what it uses. A glossary
-proposes plain names for system terms, to confirm before they are used across the viewer. Versions,
+maps each system term to its Market Mastery Playbook term (for example path → market unit, market
+run → Market Review, trace → Activity), and the viewer's labels use the playbook terms. Versions,
 step counts, and cost are under **Technical details**. The wording comes from the `title`, `role`,
 `plain`, `knowledge`, and `glossary` fields in `config/agents.yaml`. A skill that calls the model
 can never be labelled a rule; a test checks this.
+
+Where a capability or skill already performs an item from the Market Mastery Playbook, the
+`playbook` field names it (for example "M09 Archetype Segmentation" or "A10 Create comparable
+territory economics") and the screen shows it under the item. Links are added only where the match is
+real; path decision, market status, company review and link verification have none yet. The links
+are display-only until the Phase 2 playbook registry exists, and a test checks every ID is in range.
 
 ## Agents
 

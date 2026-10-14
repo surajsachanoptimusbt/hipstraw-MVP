@@ -121,6 +121,11 @@ class PipelineSettings(BaseModel):
     @field_validator("factorWeights")
     @classmethod
     def _weights_positive(cls, v: dict[str, float]) -> dict[str, float]:
+        from hipstraw_mm.market.schemas import BeamCandidateScore
+
+        factors = set(BeamCandidateScore.model_fields) - {"pathId"}
+        if set(v) != factors:
+            raise ValueError(f"factorWeights must name exactly the scored factors {sorted(factors)}, got {sorted(v)}")
         for name, weight in v.items():
             if weight <= 0:
                 raise ValueError(f"factor weight {name} must be > 0")

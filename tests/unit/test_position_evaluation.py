@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from hipstraw_mm.market import evaluation as ev
@@ -143,14 +144,38 @@ class TestPlainView:
         assert {d["how"] for d in mm["does"]} == {"built_in", "rule", "mixed"}
         research = next(a for a in view["agents"] if a["id"] == "search_research")
         assert "AI model" in research["uses"] and "Web search" in research["uses"]
-        assert view["glossary"] and all(g["proposed"] for g in view["glossary"])
+        assert view["glossary"] and all(g["playbookTerm"] and g["source"] for g in view["glossary"])
+        assert {"Market Review", "Market unit", "Position", "Mission", "Activity"} <= {
+            g["playbookTerm"] for g in view["glossary"]}
 
     def test_runs_without_plain_fields_borrow_the_current_wording(self) -> None:
         old = load_agent_registry().model_dump()
         for a in old["agents"]:
             a.pop("title")
+            for item in [*a["innateCapabilities"], *a["skills"]]:
+                item.pop("playbook")
         store = MemoryStore()
         store.upsert_market_run({"marketRunId": "mrun_old", "programId": "p", "status": "reported",
                                  "agentRegistry": old})
         shaped = api.shape_agents(store, "mrun_old")
         assert shaped is not None and shaped["simple"]["agents"]
+        assert shaped["simple"]["playbookLinked"] > 0
+
+    def test_playbook_links_name_real_playbook_items(self) -> None:
+        limits = {"S": 16, "P": 32, "L": 20, "M": 56, "G": 12, "A": 60, "AR": 16}
+        links = [x for a in load_agent_registry().agents for item in [*a.innateCapabilities, *a.skills]
+                 for x in item.playbook]
+        assert links
+        for link in links:
+            m = re.match(r"(AR|[SPLMGA])(\d\d) \S", link)
+            if m:
+                assert 1 <= int(m.group(2)) <= limits[m.group(1)], link
+            else:
+                assert re.match(r"(Hard rule (0[1-9]|1\d|20) |Workbook §\d)", link), link
+
+    def test_skills_that_decide_by_rule_are_shown_with_their_rule(self) -> None:
+        mm = next(a for a in api.plain_view(load_agent_registry().model_dump())["agents"]
+                  if a["id"] == "market_manager")
+        status = next(d["text"] for d in mm["does"] if d["text"].startswith("Sums up"))
+        for state in ("progressing", "at risk", "awaiting evidence", "blocked", "needs attention"):
+            assert state in status

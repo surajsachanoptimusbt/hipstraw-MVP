@@ -177,6 +177,8 @@ pre.json { background: var(--code); border: 1px solid var(--border); border-radi
 .does li { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 10px; align-items: baseline; padding: 9px 16px; border-bottom: 1px solid var(--border); }
 .does li .pill { justify-self: start; }
 .agent-kv { padding: 12px 16px; grid-template-columns: 64px minmax(0, 1fr); }
+.pb-links { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.pb-link { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; color: var(--muted); background: var(--subtle); border: 1px solid var(--border); border-radius: 4px; padding: 0 6px; }
 .tight > * + * { margin-top: 12px; }
 .muted { color: var(--muted); }
 .quote { border-left: 2px solid var(--border); padding-left: 8px; color: var(--muted); font-size: 12px; margin-top: 4px; }
@@ -237,8 +239,8 @@ const enc = encodeURIComponent;
 const TERMINAL = new Set(["reported", "failed"]);
 const STAGES = ["opened", "deliberated", "defined", "graphed", "validated", "linked",
   "searched", "assessed", "verified", "roled", "evaluated", "decided", "reported"];
-const STAGE_LABEL = { opened: "Start", deliberated: "Vichara", defined: "Meaning", graphed: "Graph",
-  validated: "Validate", linked: "Links", searched: "Beam", assessed: "Assess", verified: "Companies",
+const STAGE_LABEL = { opened: "Start", deliberated: "Vichara", defined: "Meaning", graphed: "Search space",
+  validated: "Validate", linked: "Links", searched: "Ranking", assessed: "Assess", verified: "Companies",
   roled: "Buyers", evaluated: "Evaluate", decided: "Review", reported: "Report" };
 const COMMAND_STATUS = { vichara: "deliberated", meaning: "defined", graph: "graphed", validate: "validated",
   links: "linked", beam: "searched", assess: "assessed", companies: "verified", buyers: "roled",
@@ -253,16 +255,16 @@ const LAYERS = {
 const TABS = [
   { k: "overview", label: "Overview" },
   { k: "map", label: "Market Map" },
-  { k: "decisions", label: "Market Position" },
+  { k: "decisions", label: "Position" },
   { k: "evaluation", label: "Evaluation" },
   { k: "companies", label: "Companies" },
-  { k: "paths", label: "Paths" },
-  { k: "graph", label: "Graph" },
-  { k: "beam", label: "Beam" },
+  { k: "paths", label: "Market units" },
+  { k: "graph", label: "Search space" },
+  { k: "beam", label: "Ranking" },
   { k: "links", label: "Links" },
   { k: "deliberations", label: "Vichara", tech: true },
   { k: "agents", label: "Agents" },
-  { k: "trace", label: "Trace", tech: true },
+  { k: "trace", label: "Activity", tech: true },
 ];
 const TECH_KEY = "hipstraw.tech";
 const GRAPH_LEVELS = ["segment", "archetype", "problem", "trigger", "buyerRole", "useCase"];
@@ -452,7 +454,7 @@ function Loading({ state, empty, children }) {
 function TechToggle() {
   const [on, toggle] = useTech();
   return html`<button className=${`chip ${on ? "on" : ""}`} onClick=${toggle}
-    title="Show the technical tabs (trace, vichara) and agent details">${on ? "Technical: on" : "Technical details"}</button>`;
+    title="Show the technical tabs (activity, vichara) and agent details">${on ? "Technical: on" : "Technical details"}</button>`;
 }
 
 function App() {
@@ -463,13 +465,13 @@ function App() {
   return html`<div className="app">
     <header className="topbar">
       <div className="logo"></div>
-      <div className="brand">hipstraw<span>Trace</span></div>
+      <div className="brand">hipstraw<span>Market Reviews</span></div>
       <div className="spacer"></div>
       <${TechToggle} />
       <span className="readonly" title="This viewer never changes stored data">read-only</span>
     </header>
     <aside className="sidebar">
-      <div className="side-title">Market runs</div>
+      <div className="side-title">Market Reviews</div>
       ${runs.error && !runs.data ? html`<div className="alert fail" style=${{ margin: "8px 12px" }}>${runs.error}</div>` : null}
       ${list.map(r => html`<a key=${r.marketRunId} href=${href(r.marketRunId, route.runId === r.marketRunId ? route.tab : "overview")}
           className=${`run-item ${r.marketRunId === runId ? "active" : ""}`}>
@@ -480,7 +482,7 @@ function App() {
     </aside>
     <main className="main">
       ${runId ? html`<${RunView} key=${runId} runId=${runId} tab=${route.tab} seq=${route.seq} />`
-        : html`<${Empty} title="No market runs yet" hint=${html`Start one with <code>hipstraw-mm market run --program invoice_alpha_genesis --memory --serve</code>`} />`}
+        : html`<${Empty} title="No Market Reviews yet" hint=${html`Start one with <code>hipstraw-mm market run --program invoice_alpha_genesis --memory --serve</code>`} />`}
     </main>
   </div>`;
 }
@@ -712,7 +714,7 @@ function Overview({ run }) {
   const unresolved = run.unresolved || [];
   const sf = run.finalPathShortfall;
   return html`<div className="stack">
-    ${sf ? html`<div className="alert warn"><b>Path shortfall:</b> wanted ${sf.wanted}, found ${sf.found}. ${sf.reason}</div>` : null}
+    ${sf ? html`<div className="alert warn"><b>Market unit shortfall:</b> wanted ${sf.wanted}, found ${sf.found}. ${sf.reason}</div>` : null}
     ${run.marketStatus ? html`<div className=${`alert ${tone(run.marketStatus.state) || "info"}`}><b>Market status: ${run.marketStatus.state}.</b> ${run.marketStatus.reason}</div>` : null}
     <${Documents} runId=${run.marketRunId} />
     <${Card} title="Objective"><p>${obj.text || "—"}</p>
@@ -816,7 +818,7 @@ function BeamView({ runId, live }) {
     const scored = [...(lv.scored || [])].sort((a, b) => (a.rank || 999) - (b.rank || 999) || b.searchScore - a.searchScore);
     const kept = scored.filter(c => c.outcome === "kept").length;
     return html`<${Card} key=${lv.levelNo} title=${`Level ${lv.levelNo} · ${lv.levelName}`} hint=${`${kept} kept of ${scored.length} scored`} flush=${true}>
-      <table><thead><tr><th className="num">Rank</th><th>Path</th><th>Search score</th><th>Mean link confidence</th><th className="num">Paths below</th><th>Outcome</th></tr></thead><tbody>
+      <table><thead><tr><th className="num">Rank</th><th>Market unit</th><th>Search score</th><th>Mean link confidence</th><th className="num">Units below</th><th>Outcome</th></tr></thead><tbody>
         ${scored.map(c => html`<tr key=${c.pathId}>
           <td className="num">${c.rank || "—"}</td>
           <td className="wrap">${c.label}<div className="muted mono">${c.pathId}</div></td>
@@ -854,7 +856,7 @@ function PathsView({ runId, live }) {
           </tbody></table>` : null}
         </div>
       <//>`)}
-      ${rest.length ? html`<${Card} title="Other paths" flush=${true}><table><thead><tr><th>Path</th><th>Search score</th><th>Status</th></tr></thead><tbody>
+      ${rest.length ? html`<${Card} title="Other market units" flush=${true}><table><thead><tr><th>Market unit</th><th>Search score</th><th>Status</th></tr></thead><tbody>
         ${rest.map(p => html`<tr key=${p.pathId}><td className="wrap"><${Chain} labels=${p.nodeLabels} /></td><td><${Bar} value=${p.searchScore} /></td><td><${Pill} value=${p.status} /></td></tr>`)}
       </tbody></table><//>` : null}
     </div>`;
@@ -894,14 +896,14 @@ function CompaniesView({ runId, live }) {
             return html`<tr key=${l.companyRecordId}>
               <td className="wrap"><b>${c.name}</b>
                 <div className="muted">${safeUrl(c.url) ? html`<a href=${safeUrl(c.url)} target="_blank" rel="noopener noreferrer">${c.domain || c.domainKey}</a>` : (c.domain || c.domainKey)}${hq ? ` · ${hq}` : ""}</div>
-                ${c.conflict ? html`<div style=${{ marginTop: 4 }}><${Pill} value="flagged">different review on another path<//></div>` : null}</td>
+                ${c.conflict ? html`<div style=${{ marginTop: 4 }}><${Pill} value="flagged">different review in another market unit<//></div>` : null}</td>
               <td className="wrap"><${Pill} value=${l.disposition} /><div className="muted" style=${{ fontSize: 12, marginTop: 4 }}>${l.reason || ""}</div></td>
               <td><${Bar} value=${c.evidenceConfidence} kind="evidence" /></td>
               <td className="wrap">${roles.length ? roles.map((r, j) => html`<div key=${j} title=${r.rationale || ""}>${r.role} <${Pill}>${r.authority}<//></div>`)
                 : html`<span className="muted">${unknown ? `unknown: ${unknown.reason}` : "—"}</span>`}</td>
             </tr>`;
           })}
-        </tbody></table>` : html`<${Empty} title="No companies found for this path" hint=${p.researchPacket && p.researchPacket.error ? p.researchPacket.error : "Company research found no candidate with a website and a cited source."} />`}
+        </tbody></table>` : html`<${Empty} title="No companies found for this market unit" hint=${p.researchPacket && p.researchPacket.error ? p.researchPacket.error : "Company research found no candidate with a website and a cited source."} />`}
       <//>`;
     })}
   </div>`}<//>`;
@@ -951,7 +953,7 @@ function PositionCard({ position }) {
         <td><${Pill} value=${c.disposition} /></td>
         <td><${Bar} value=${c.evidenceConfidence} kind="evidence" /></td>
       </tr>`)}</tbody></table>
-    </div>` : html`<div className="muted" style=${{ marginTop: 10 }}>No verified companies found for this path yet.</div>`}
+    </div>` : html`<div className="muted" style=${{ marginTop: 10 }}>No verified companies found for this market unit yet.</div>`}
     <${Narrative} items=${p.narrative} />
   <//>`;
 }
@@ -1047,7 +1049,7 @@ function MarketMapView({ runId, live }) {
   if (!st.data) return html`<${Empty} title="Loading…" />`;
   const map = st.data;
   const tiles = map.tiles || [];
-  if (!tiles.length) return html`<${Empty} title="No micro markets on the map" hint="The beam produced no complete path." />`;
+  if (!tiles.length) return html`<${Empty} title="No market units on the map" hint="Opportunity ranking produced no complete market unit." />`;
   const maxVal = Math.max(1, ...tiles.map(t => t.valueMid || 0));
   const val = t => Math.max(t.valueMid || 0, maxVal * 0.04);
   const groups = Object.values(tiles.reduce((acc, t) => {
@@ -1076,7 +1078,7 @@ function MarketMapView({ runId, live }) {
       ${tiles.length} micro markets at the ${map.level} level, grouped by segment. Size: ${map.sizeBasis}.
       ${mode === "change" ? (map.previousRunId ? ` Compared with ${map.previousRunId}.` : " No earlier run of this program to compare with yet.") : ""}
     </div>
-    ${table ? html`<${Card} flush=${true}><table><thead><tr><th>Micro market</th><th>Segment</th><th className="num">Value pool (mid)</th><th>Position</th><th className="num">Search score</th><th>Change</th></tr></thead><tbody>
+    ${table ? html`<${Card} flush=${true}><table><thead><tr><th>Market unit</th><th>Segment</th><th className="num">Value pool (mid)</th><th>Position</th><th className="num">Search score</th><th>Change</th></tr></thead><tbody>
       ${[...tiles].sort((a, b) => (b.valueMid || 0) - (a.valueMid || 0)).map(t => html`<tr key=${t.tileId} style=${{ cursor: "pointer" }} onClick=${() => setSel(t.tileId)}>
         <td className="wrap">${t.labels.slice(1).join(" › ")}</td><td>${t.group}</td><td className="num">${fmt.money(t.valueMid)}</td>
         <td>${t.position ? html`<${Pill} value=${t.position.status}>${STATUS_GLYPH[t.position.status] || ""} ${t.position.status}<//>` : html`<span className="muted">screened</span>`}</td>
@@ -1107,7 +1109,7 @@ function MarketMapView({ runId, live }) {
       <div>${tip.t.position ? `${tip.t.position.status} · confidence ${tip.t.position.confidence}` : "Screened by search score only"}</div>
       <div className="muted">Search score ${Math.round(tip.t.searchScore * 100)}% · change ${changeText(tip.t.change)}</div>
     </div>` : null}
-    ${selected ? html`<${TileDetail} tile=${selected} runId=${runId} />` : html`<div className="muted">Click a micro market to see its detail.</div>`}
+    ${selected ? html`<${TileDetail} tile=${selected} runId=${runId} />` : html`<div className="muted">Click a market unit to see its detail.</div>`}
   </div>`;
 }
 
@@ -1128,7 +1130,7 @@ function TileDetail({ tile, runId }) {
       <ul style=${{ marginLeft: 18 }}>${t.assumptions.map((a, i) => html`<li key=${i}>${a}</li>`)}</ul></div>` : null}
     ${(t.sensitivities || []).length ? html`<div style=${{ marginTop: 8 }}><div className="eyebrow">Sensitive to</div>
       ${t.sensitivities.map((x, i) => html`<span key=${i} style=${{ marginRight: 6 }}><${Pill} value=${x.impact === "high" ? "flagged" : ""}>${x.factor} · ${x.impact}<//></span>`)}</div>` : null}
-    ${t.researched ? html`<div style=${{ marginTop: 10 }}><a href=${href(runId, "decisions")}>Market Position</a> · <a href=${href(runId, "evaluation")}>Evaluation case</a> · <a href=${href(runId, "companies")}>Companies</a></div>` : null}
+    ${t.researched ? html`<div style=${{ marginTop: 10 }}><a href=${href(runId, "decisions")}>Position</a> · <a href=${href(runId, "evaluation")}>Evaluation case</a> · <a href=${href(runId, "companies")}>Companies</a></div>` : null}
   <//>`;
 }
 
@@ -1136,7 +1138,7 @@ function EvaluationView({ runId, live }) {
   const st = usePoll(`/api/runs/${enc(runId)}/evaluation`, 4000, live);
   return html`<${Loading} state=${st} empty=${d => !(d.cases || []).length}>${d => html`<div className="stack">
     ${d.comparison ? html`<${Card} title="Candidate comparison" hint="Common basis; trade-offs and near ties are kept, never collapsed into one score" flush=${true}>
-      <table><thead><tr><th>Micro market</th><th className="num">Value pool (mid)</th><th>Evidence</th><th>Confidence</th><th className="num">Verified</th><th className="num">Search score</th><th>Recommendation</th></tr></thead><tbody>
+      <table><thead><tr><th>Market unit</th><th className="num">Value pool (mid)</th><th>Evidence</th><th>Confidence</th><th className="num">Verified</th><th className="num">Search score</th><th>Recommendation</th></tr></thead><tbody>
         ${d.comparison.rows.map(r => html`<tr key=${r.pathId}><td className="wrap">${r.labels.join(" › ")}</td>
           <td className="num">${fmt.money(r.valueMid)}${d.comparison.leaders.economics === r.pathId ? " ★" : ""}</td>
           <td>${r.sufficiency}${d.comparison.leaders.evidence === r.pathId ? " ★" : ""}</td>
@@ -1186,14 +1188,16 @@ function AgentsSimple({ view, tech }) {
     <div className="agents-summary">
       <div><b>${total}</b> things these agents do</div>
       ${["rule", "ai", "mixed", "built_in"].filter(k => c[k]).map(k => html`<div key=${k}><${HowTag} how=${k} /> <b>${c[k]}</b></div>`)}
+      ${view.playbookLinked != null ? html`<div className="muted"><b>${view.playbookLinked}</b> of ${total} match a Market Mastery Playbook item</div>` : null}
     </div>
     <div className="alert">
-      <b>No playbook or knowledge base yet.</b> Items marked “Uses AI” rely on the brief and the AI model's general knowledge, not on our own market knowledge.
+      <b>No playbook or knowledge base yet.</b> Items marked “Uses AI” rely on the mandate and the AI model's general knowledge, not on our own market knowledge.
     </div>
     <div className="grid">
       ${view.agents.map(a => html`<${Card} key=${a.id} title=${a.title} hint=${a.role} flush=${true}>
         <ul className="does">
-          ${a.does.map((d, i) => html`<li key=${i}><${HowTag} how=${d.how} /><span>${d.text}</span></li>`)}
+          ${a.does.map((d, i) => html`<li key=${i}><${HowTag} how=${d.how} /><span>${d.text}${(d.playbook || []).length
+            ? html`<span className="pb-links">${d.playbook.map(x => html`<span key=${x} className="pb-link" title="Market Mastery Playbook">${x}</span>`)}</span>` : null}</span></li>`)}
         </ul>
         <dl className="kv agent-kv">
           <dt>Knows</dt><dd>${a.knows.length ? a.knows.join(", ") : html`<span className="muted">No playbook yet</span>`}</dd>
@@ -1201,9 +1205,9 @@ function AgentsSimple({ view, tech }) {
         </dl>
       <//>`)}
     </div>
-    ${(view.glossary || []).length ? html`<${Card} title="Plain terms (proposed)" hint="Suggested names for system terms, to confirm before they are used across the viewer." flush=${true}>
-      <table><thead><tr><th>System term</th><th>Proposed</th><th>Meaning</th></tr></thead><tbody>
-        ${view.glossary.map(g => html`<tr key=${g.term}><td className="muted">${g.term}</td><td><b>${g.proposed}</b></td><td className="wrap">${g.meaning}</td></tr>`)}
+    ${(view.glossary || []).length ? html`<${Card} title="Playbook terms" hint="How our system's terms map to the Market Mastery Playbook. The viewer uses the playbook term." flush=${true}>
+      <table><thead><tr><th>System term</th><th>Playbook term</th><th>Meaning</th><th>Source</th></tr></thead><tbody>
+        ${view.glossary.map(g => html`<tr key=${g.term}><td className="muted">${g.term}</td><td><b>${g.playbookTerm || g.proposed}</b></td><td className="wrap">${g.meaning}</td><td className="muted">${g.source || "—"}</td></tr>`)}
       </tbody></table>
     <//>` : null}
     ${tech ? null : html`<div className="muted">Turn on Technical details for versions, step counts, and cost.</div>`}
