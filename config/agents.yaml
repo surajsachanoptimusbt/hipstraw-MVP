@@ -89,7 +89,7 @@ agents:
         name: "Graph semantic governance"
         behavior: "Defines what the seed graph means: levels, filters, caps."
         plain: "Sets how a market is broken down: segment, company type, problem, trigger, buyer, use case."
-        playbook: ["Workbook §3.1 Search-space geometry"]
+        playbook: ["§2 Market unit"]
         operations: [define_graph_meaning]
       - id: synthesis
         name: "Synthesis"
@@ -153,7 +153,7 @@ agents:
         operations: [propose_hypotheses]
         promptVersions: [vichara_propose.v1]
       - id: seed_graph_design
-        name: "Search-space construction"
+        name: "Territory map construction"
         kind: model
         version: "graph_level.v2"
         purpose: "Builds the seed graph one level at a time."
@@ -305,8 +305,8 @@ agents:
         purpose: "Bounded search requests."
         toolCallKinds: [search]
 
-# System terms aligned to the Market Mastery Playbook v0.1 (Appendix A glossary, screen names).
-# Where the playbook has no term, the workbook or the P&E spec is the source, and that is said.
+# System terms aligned to The Hipstraw Market Mastery Playbook v0.1 (Appendix A glossary and
+# screen names). The playbook is the only source; where it has no term, the row says so.
 glossary:
   - term: "Market run"
     playbookTerm: "Market Review"
@@ -314,24 +314,20 @@ glossary:
     source: "Playbook glossary"
   - term: "Program config"
     playbookTerm: "Program"
-    meaning: "A finite, chartered client engagement."
+    meaning: "A finite client engagement."
     source: "Playbook glossary"
   - term: "Objective / mandate document"
     playbookTerm: "Mandate"
-    meaning: "What the principal authorizes: objectives, audiences, territories, permissions and limits."
-    source: "Playbook §5.2; workbook §26.2"
+    meaning: "What the principal authorizes for the engagement, including which execution mode applies to each channel."
+    source: "Playbook §5.2"
   - term: "Path"
     playbookTerm: "Market unit"
-    meaning: "Principal × offer × buying archetype × job × territory × route × time horizon. Our units do not yet carry route or horizon."
+    meaning: "Principal × offer × buying archetype × job × territory × route × time horizon. Ours do not yet carry route or horizon."
     source: "Playbook glossary"
   - term: "Graph level \"archetype\""
     playbookTerm: "Buying archetype"
-    meaning: "The kind of buyer within a market unit. Not the same as a market type (AR01–AR16)."
+    meaning: "The kind of buyer within a market unit. Not a market type (AR01–AR16)."
     source: "Playbook §2"
-  - term: "Market archetype A01–A16"
-    playbookTerm: "Market type (AR01–AR16)"
-    meaning: "A recurring market-system pattern, not a demographic stereotype."
-    source: "Playbook glossary"
   - term: "Market Position"
     playbookTerm: "Position"
     meaning: "The evidence-backed, uncertainty-qualified state of one market unit on seven axes (MP1–MP7). Ours still has one status."
@@ -341,9 +337,9 @@ glossary:
     meaning: "How a Review ends: EXPLORE, TEST, ACTIVATE, BUILD, SCALE, REFRAME, PARK or STOP. Ours uses three simpler values for now."
     source: "Playbook §2.4"
   - term: "Seed graph"
-    playbookTerm: "Search space"
-    meaning: "The declared axes and candidate market units considered before ranking."
-    source: "Workbook §3.1 (no playbook term)"
+    playbookTerm: "Territory map"
+    meaning: "The territories, jobs and buyers considered before ranking."
+    source: "Playbook P01"
   - term: "Beam search"
     playbookTerm: "Opportunity ranking"
     meaning: "Ranking candidate market units and keeping the strongest."
@@ -353,17 +349,17 @@ glossary:
     meaning: "How promising a market unit looks before research. A hypothesis, not evidence."
     source: "No playbook term"
   - term: "Child run (company research)"
-    playbookTerm: "Mission"
-    meaning: "A scoped assignment for an agent, with conduct, evidence and completion rules."
-    source: "Playbook glossary"
+    playbookTerm: "Desk research"
+    meaning: "Agent-run research that stores sources (A03) and reconciles evidence (A05) for the Market Manager to review. Not a Mission, which is field work where digital research cannot see local reality (L17, A28)."
+    source: "Playbook §5.1"
   - term: "Evaluation case"
     playbookTerm: "Evaluation case"
-    meaning: "The full judgement on one market unit: evidence, value, confidence and recommendation."
-    source: "P&E spec v0.4 (no playbook term)"
+    meaning: "The judgement on one market unit: evidence, value, confidence and recommendation."
+    source: "No playbook term"
   - term: "Vichara"
     playbookTerm: "Vichara"
-    meaning: "Deliberate questioning of the mandate before any choice."
-    source: "Workbook §26.4"
+    meaning: "Questions answered from the mandate before anything else."
+    source: "No playbook term"
   - term: "Trace"
     playbookTerm: "Activity"
     meaning: "Every logged step with its actor, time, inputs, outputs and receipt."

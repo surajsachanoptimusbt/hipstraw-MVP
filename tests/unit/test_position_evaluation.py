@@ -145,7 +145,8 @@ class TestPlainView:
         research = next(a for a in view["agents"] if a["id"] == "search_research")
         assert "AI model" in research["uses"] and "Web search" in research["uses"]
         assert view["glossary"] and all(g["playbookTerm"] and g["source"] for g in view["glossary"])
-        assert {"Market Review", "Market unit", "Position", "Mission", "Activity"} <= {
+        assert all(g["source"].startswith(("Playbook", "No playbook term")) for g in view["glossary"])
+        assert {"Market Review", "Market unit", "Position", "Desk research", "Activity"} <= {
             g["playbookTerm"] for g in view["glossary"]}
 
     def test_runs_without_plain_fields_borrow_the_current_wording(self) -> None:
@@ -171,7 +172,7 @@ class TestPlainView:
             if m:
                 assert 1 <= int(m.group(2)) <= limits[m.group(1)], link
             else:
-                assert re.match(r"(Hard rule (0[1-9]|1\d|20) |Workbook §\d)", link), link
+                assert re.match(r"(Hard rule (0[1-9]|1\d|20) |§\d)", link), link
 
     def test_skills_that_decide_by_rule_are_shown_with_their_rule(self) -> None:
         mm = next(a for a in api.plain_view(load_agent_registry().model_dump())["agents"]

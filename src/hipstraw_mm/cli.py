@@ -42,12 +42,16 @@ MARKET_COMMANDS = (
 
 
 def build_context(config: LoadedConfig) -> Context:
-    """The real context: emulator-only Firestore, live (or recorded) adapters."""
-    from hipstraw_mm.store.firestore import FirestoreStore, check_emulator_preconditions, check_emulator_reachable
+    """The real context: Firestore (emulator, or cloud when HIPSTRAW_FIRESTORE=cloud), live (or recorded) adapters."""
+    from hipstraw_mm.store.firestore import FirestoreStore, check_emulator_reachable, firestore_mode
 
     project_id = os.environ.get("HIPSTRAW_PROJECT_ID") or config.run.projectId
-    check_emulator_preconditions(project_id)
-    check_emulator_reachable()
+    mode = firestore_mode()
+    store = FirestoreStore(project_id, mode=mode)
+    if mode == "emulator":
+        check_emulator_reachable()
+    else:
+        store.ping()
     mode = mode_from_env()
     replay_dir = os.environ.get("HIPSTRAW_REPLAY_DIR")
     if mode != "off" and not replay_dir:
@@ -69,7 +73,7 @@ def build_context(config: LoadedConfig) -> Context:
 
     return Context(
         config=config,
-        store=FirestoreStore(project_id),
+        store=store,
         log=log,
         llm=LLMClient(model=config.run.model.name, replay=replay, log=log),
         search=BraveSearch(replay, denylist_domains=policy.denylistDomains, timeout_seconds=fetch.timeoutSeconds),

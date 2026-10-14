@@ -1,4 +1,9 @@
-"""Firestore store, emulator only (research R10). Same contract as MemoryStore."""
+"""Firestore store. Same contract as MemoryStore.
+
+Two modes, chosen by HIPSTRAW_FIRESTORE: "emulator" (default; local emulator, `demo-` project IDs only)
+or "cloud" (a real Firebase project, so runs persist between sessions). Cloud mode is an explicit
+opt-in and refuses an emulator host or a `demo-` project, so data never lands somewhere unexpected.
+"""
 
 from __future__ import annotations
 
@@ -41,6 +46,33 @@ from hipstraw_mm.store.base import (
     check_transition,
 )
 
+FIRESTORE_MODES = ("emulator", "cloud")
+
+
+def firestore_mode() -> str:
+    mode = os.environ.get("HIPSTRAW_FIRESTORE", "emulator").strip().lower() or "emulator"
+    if mode not in FIRESTORE_MODES:
+        raise PreconditionError(f"HIPSTRAW_FIRESTORE must be one of {', '.join(FIRESTORE_MODES)}, got '{mode}'")
+    return mode
+
+
+def check_store_preconditions(project_id: str, mode: str | None = None) -> None:
+    if (mode or firestore_mode()) == "emulator":
+        check_emulator_preconditions(project_id)
+        return
+    if os.environ.get("FIRESTORE_EMULATOR_HOST"):
+        raise PreconditionError(
+            "HIPSTRAW_FIRESTORE=cloud but FIRESTORE_EMULATOR_HOST is set; unset it, or the client would "
+            "silently write to the emulator"
+        )
+    if not project_id or project_id.startswith("demo-"):
+        raise PreconditionError(
+            "cloud Firestore needs your Firebase project ID in HIPSTRAW_PROJECT_ID (a 'demo-' ID is emulator-only)"
+        )
+    credentials = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    if credentials and not os.path.isfile(credentials):
+        raise PreconditionError(f"GOOGLE_APPLICATION_CREDENTIALS points to a file that does not exist: {credentials}")
+
 
 def check_emulator_preconditions(project_id: str) -> None:
     if not os.environ.get("FIRESTORE_EMULATOR_HOST"):
@@ -78,16 +110,33 @@ def _plain(value: Any) -> Any:
 
 
 class FirestoreStore:
-    def __init__(self, project_id: str, client: Any | None = None) -> None:
-        check_emulator_preconditions(project_id)
+    def __init__(self, project_id: str, client: Any | None = None, mode: str | None = None) -> None:
+        check_store_preconditions(project_id, mode)
         from google.api_core import exceptions as gexc
+        from google.auth.exceptions import DefaultCredentialsError
         from google.cloud import firestore
         from google.cloud.firestore_v1.base_query import FieldFilter
 
         self._firestore = firestore
         self._conflict = gexc.Conflict
         self._field_filter = FieldFilter
-        self._db = client or firestore.Client(project=project_id)
+        database = os.environ.get("HIPSTRAW_FIRESTORE_DATABASE") or "(default)"
+        try:
+            self._db = client or firestore.Client(project=project_id, database=database)
+        except DefaultCredentialsError as exc:
+            raise PreconditionError(
+                "no Google credentials found for cloud Firestore; set GOOGLE_APPLICATION_CREDENTIALS to the "
+                "path of a service-account key file"
+            ) from exc
+
+    def ping(self) -> None:
+        """One small read, so a wrong project, key or permission fails at start with a clear message."""
+        from google.api_core import exceptions as gexc
+
+        try:
+            self._db.collection(MARKET_RUNS).limit(1).get(timeout=15)
+        except gexc.GoogleAPICallError as exc:
+            raise PreconditionError(f"cannot reach cloud Firestore: {type(exc).__name__}: {exc.message}") from exc
 
     # -- generic helpers ---------------------------------------------------
 

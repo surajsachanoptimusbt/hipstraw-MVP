@@ -245,12 +245,11 @@ def shape_agents(store: Any, run_id: str) -> Doc | None:
             ],
         })
     unclaimed = sorted(op for op in usage if op not in claimed)
-    current = any("playbook" in c for a in registry.get("agents", []) for c in a.get("innateCapabilities", []))
     return {
         "version": registry.get("version"),
         "agents": agents,
         "unclaimedOperations": unclaimed,
-        "simple": plain_view(registry if current else _current_registry()),
+        "simple": plain_view(_current_registry() or registry),
     }
 
 
@@ -258,7 +257,8 @@ _HOW = {"model": "ai", "rule": "rule", "mixed": "mixed"}
 
 
 def _current_registry() -> Doc:
-    """Runs opened before the plain-language and playbook fields existed borrow them from the current config."""
+    """The plain-language view is presentation (wording, playbook terms and links), so every run shows the
+    current config's version; versions and usage under Technical details still come from the run's snapshot."""
     from pathlib import Path
 
     from hipstraw_mm.market.agents import load_agent_registry

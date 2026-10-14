@@ -239,7 +239,7 @@ const enc = encodeURIComponent;
 const TERMINAL = new Set(["reported", "failed"]);
 const STAGES = ["opened", "deliberated", "defined", "graphed", "validated", "linked",
   "searched", "assessed", "verified", "roled", "evaluated", "decided", "reported"];
-const STAGE_LABEL = { opened: "Start", deliberated: "Vichara", defined: "Meaning", graphed: "Search space",
+const STAGE_LABEL = { opened: "Start", deliberated: "Vichara", defined: "Meaning", graphed: "Territory map",
   validated: "Validate", linked: "Links", searched: "Ranking", assessed: "Assess", verified: "Companies",
   roled: "Buyers", evaluated: "Evaluate", decided: "Review", reported: "Report" };
 const COMMAND_STATUS = { vichara: "deliberated", meaning: "defined", graph: "graphed", validate: "validated",
@@ -259,7 +259,7 @@ const TABS = [
   { k: "evaluation", label: "Evaluation" },
   { k: "companies", label: "Companies" },
   { k: "paths", label: "Market units" },
-  { k: "graph", label: "Search space" },
+  { k: "graph", label: "Territory map" },
   { k: "beam", label: "Ranking" },
   { k: "links", label: "Links" },
   { k: "deliberations", label: "Vichara", tech: true },
@@ -353,26 +353,32 @@ function parseRoute(hash) {
   return { runId: null, tab: "trace", seq: null };
 }
 
+// intervalMs may be a function of the latest data, so a poll can slow down without restarting.
 function usePoll(path, intervalMs, live = true) {
   const [st, setSt] = useState({ data: null, error: null });
   const liveRef = useRef(live);
   liveRef.current = live;
+  const intervalRef = useRef(intervalMs);
+  intervalRef.current = intervalMs;
+  const intervalKey = typeof intervalMs === "function" ? "fn" : intervalMs;
   useEffect(() => {
     if (!path) return undefined;
     let alive = true, timer;
     setSt({ data: null, error: null });
     const load = async () => {
+      let d = null;
       try {
-        const d = await api(path);
+        d = await api(path);
         if (alive) setSt({ data: d, error: null });
       } catch (e) {
         if (alive) setSt(s => ({ data: s.data, error: e.message }));
       }
-      if (alive && intervalMs && liveRef.current) timer = setTimeout(load, intervalMs);
+      const every = typeof intervalRef.current === "function" ? intervalRef.current(d) : intervalRef.current;
+      if (alive && every && liveRef.current) timer = setTimeout(load, every);
     };
     load();
     return () => { alive = false; clearTimeout(timer); };
-  }, [path, intervalMs]);
+  }, [path, intervalKey]);
   return st;
 }
 
@@ -459,7 +465,8 @@ function TechToggle() {
 
 function App() {
   const route = parseRoute(useHash());
-  const runs = usePoll("/api/runs", 3000);
+  // Each poll reads every run document; with cloud Firestore that is billed, so slow down when idle.
+  const runs = usePoll("/api/runs", d => (d || []).some(r => !TERMINAL.has(r.status)) ? 3000 : 30000);
   const list = runs.data || [];
   const runId = route.runId || (list[0] && list[0].marketRunId) || null;
   return html`<div className="app">

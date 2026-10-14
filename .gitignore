@@ -13,6 +13,12 @@ venv/
 .env.*
 !.env.example
 
+# Google / Firebase service-account keys (keep them outside the repo anyway)
+*service-account*.json
+*-firebase-adminsdk-*.json
+*credentials*.json
+keys/
+
 # HipStraw runtime
 .runs/
 reports/*.md
