@@ -227,6 +227,8 @@ pre.json { background: var(--code); border: 1px solid var(--border); border-radi
 /* routing: the task router replayed from the trace */
 .rt-top { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr); gap: 16px; align-items: start; }
 .rt-top > * { min-width: 0; }
+.rt-top > :first-child { position: sticky; top: 12px; align-self: start; }
+@media (max-width: 1180px) { .rt-top > :first-child { position: static; } }
 .rt-controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .rt-play { border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 6px; padding: 4px 14px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; min-width: 84px; }
 .rt-pos { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; min-width: 52px; text-align: right; }
@@ -285,6 +287,19 @@ pre.json { background: var(--code); border: 1px solid var(--border); border-radi
 .rt-path { display: inline-flex; align-items: center; gap: 4px; }
 @media (max-width: 1180px) { .rt-top { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 640px) { .rt-figs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.rt-vlog { display: grid; gap: 8px; }
+.rt-vcheck { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; min-width: 0; }
+.rt-vcheck.fail { border-color: color-mix(in srgb, var(--fail) 40%, var(--border)); background: color-mix(in srgb, var(--fail-bg) 40%, transparent); }
+.rt-vhead { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.rt-vhead .mono { font-size: 11px; }
+.rt-small { font-size: 12px; margin-top: 3px; overflow-wrap: anywhere; }
+.rt-method { color: var(--faint); }
+.rt-quotes { list-style: none; display: grid; gap: 8px; margin-top: 6px; }
+.rt-qtext { font-style: italic; overflow-wrap: anywhere; }
+.rt-diag { margin: 4px 0 0 18px; padding-left: 10px; border-left: 2px solid var(--border); font-size: 12px; display: grid; gap: 4px; }
+.rt-passage { background: var(--code); border: 1px solid var(--border); border-radius: 4px; padding: 5px 8px; font-size: 12px; overflow-wrap: anywhere; }
+.rt-passage mark { background: var(--warn-bg); color: var(--warn); border-radius: 2px; padding: 0 2px; font-weight: 600; }
+.rt-rubric td { vertical-align: top; }
 @media (prefers-reduced-motion: reduce) { .rt-node rect, .rt-lamp, .rt-meter span { transition: none; } }
 @media (max-width: 1180px) { .trace { grid-template-columns: 1fr; } .detail { position: static; max-height: none; } }
 @media (max-width: 760px) {
@@ -1399,12 +1414,14 @@ function AgentsView({ runId, live }) {
 
 const RT_TRACKS = {
   "in-router": "M150 190 H190", "router-rules": "M345 150 H372 V52 H410", "rules-save": "M560 52 H880 V160",
-  "router-ow": "M345 160 H410", "ow-val": "M560 160 H610", "val-save": "M760 160 H790 V176 H820",
+  "router-ow": "M345 160 H410", "ow-val": "M560 160 H610", "val-save": "M790 160 H805 V176 H820",
   "val-fr": "M685 195 V280", "ow-fr": "M485 195 V292 H610", "router-fr": "M345 228 H372 V326 H610",
   "fr-save": "M760 310 H790 V214 H820",
 };
 const RT_RULES = ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"];
-const RT_CHECKS = [["echo_key", "ECHO"], ["grounding", "GROUND"], ["abstention", "ABSTAIN"]];
+const RT_CHECKS = [["schema", "FORM"], ["echo_key", "ECHO"], ["grounding", "GROUND"], ["abstention", "ABSTAIN"]];
+const RT_VERDICT = { near_miss: ["partial", "near miss"], partial: ["partial", "partial match"], not_found: ["fail", "not found"] };
+const rtVal = (e, tier) => (e.validation && e.validation[tier]) || null;
 const RT_MS = { enter: 350, move: 650, router: 500, node: 650, checks: 750, escalate: 450, save: 700 };
 const RT_REDUCED = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const rtCheck = c => { const i = c.name.indexOf("."); return [c.name.slice(0, i), c.name.slice(i + 1)]; };
@@ -1420,7 +1437,8 @@ function rtBeats(e) {
   const route = e.router ? e.router.route : "frontier";
   if (route === "open_weight" && ow) {
     b.push({ k: "move", t: "router-ow", c: "ow" }, { k: "node", n: "ow", a: ow });
-    if (ow.status !== "ok") b.push({ k: "move", t: "ow-fr", c: "esc" }, { k: "escalate" });
+    const formFail = (rtVal(e, "open_weight") || []).some(c => c.id === "schema" && !c.passed);
+    if (ow.status !== "ok" && !formFail) b.push({ k: "move", t: "ow-fr", c: "esc" }, { k: "escalate" });
     else {
       b.push({ k: "move", t: "ow-val", c: "ow" }, { k: "checks" });
       if (e.outcome.escalated) b.push({ k: "move", t: "val-fr", c: "esc" }, { k: "escalate" });
@@ -1583,17 +1601,19 @@ function RoutingReplay({ sim, runId }) {
           </section>
         </div>
         </div>
-        <${RtNow} e=${e} idx=${idx} shown=${shown} runId=${runId} />
+        <${RtNow} e=${e} idx=${idx} shown=${shown} runId=${runId} rubric=${sim.validationRubric} />
       </div>
     <//>
 
-    <${Card} title="Tasks" hint="Click a task to see its route; the step numbers open each model call in Activity." flush>
+    <${RtRubric} rubric=${sim.validationRubric} />
+
+    <${Card} title="Tasks" hint="Click a task to see its route and validation log; the step numbers open each model call in Activity." flush>
       <div style=${{ overflowX: "auto" }}><table>
         <thead><tr><th className="num">#</th><th>Task</th><th>Prompt</th><th>Rule</th><th>Route taken</th><th>Validation</th><th>Saved</th><th className="num">Cost</th><th className="num">All frontier</th><th>Steps</th></tr></thead>
         <tbody>${entries.map((x, i) => {
           const ow = x.attempts.find(a => a.tier === "open_weight");
           const fr = x.attempts.find(a => a.tier === "frontier");
-          const failed = rtFailed(x, "open_weight");
+          const failed = rtFailSummary(x);
           const kind = rtOutcome(x);
           const items = Object.entries(x.saved.items || {}).map(([k, v]) => `${v} ${k}`).join(", ");
           return html`<tr key=${i} className=${`rt-row ${i === idx ? "cur" : ""} ${i >= pos.upto && i !== idx ? "pending" : ""}`} onClick=${() => jump(i)}>
@@ -1607,7 +1627,7 @@ function RoutingReplay({ sim, runId }) {
               ${fr ? html`<span className="rt-tier fr">frontier</span>` : null}
               ${!x.routed ? html`<span className="muted">not routed</span>` : null}
             </span></td>
-            <td>${ow && ow.status !== "ok" ? html`<${Pill} value="fail">call failed<//>`
+            <td>${ow && ow.status !== "ok" && !failed.length ? html`<${Pill} value="fail">call failed<//>`
               : failed.length ? failed.map(f => html`<${Pill} key=${f} value="fail">${f}<//>`)
               : ow ? html`<${Pill} value="pass">pass<//>` : html`<span className="muted">—</span>`}</td>
             <td className="muted">${items}</td>
@@ -1655,7 +1675,7 @@ function RtDiagram({ e, shown, sim, tokRef, animRef }) {
     ${Object.entries(RT_TRACKS).map(([k, d]) => html`<path key=${k} className="rt-track" d=${d} />`)}
     ${lit.map(b => html`<path key=${"l" + b.t} className=${`rt-lit ${b.c}`} d=${RT_TRACKS[b.t]} />`)}
     <path ref=${animRef} className="rt-lit" d="" />
-    <text className="rt-tl" x="775" y="150">PASS</text>
+    <text className="rt-tl" x="793" y="150">PASS</text>
     <text className="rt-tl" x="693" y="243">ESCALATE</text>
     <text className="rt-tl" x="493" y="245">CALL FAILED</text>
     <text className="rt-tl" x="380" y="318">COMPLEX OR NOT WIRED</text>
@@ -1672,11 +1692,11 @@ function RtDiagram({ e, shown, sim, tokRef, animRef }) {
     ${node("rules", 410, 24, 150, 56, "RULES", "no task wired yet", true)}
     ${node("ow", 410, 125, 150, 70, "OPEN-WEIGHT", (sim.openWeight && sim.openWeight.model) || "none")}
     <g className=${`rt-node ${active === "val" ? "on" : ""}`}>
-      <rect x="610" y="125" width="150" height="70" rx="7" />
+      <rect x="610" y="125" width="180" height="70" rx="7" />
       <text className="rt-nl" x="624" y="149">VALIDATION</text>
       ${RT_CHECKS.map(([k, label], i) => {
-        const x = 636 + i * 48, y = 166;
-        return html`<g key=${k}><circle className=${`rt-lamp ${checks[k] || ""}`} cx=${x} cy=${y} r="7" /><text className="rt-lt" x=${x - 14} y=${y + 20}>${label}</text></g>`;
+        const x = 634 + i * 44, y = 166;
+        return html`<g key=${k}><circle className=${`rt-lamp ${checks[k] || ""}`} cx=${x} cy=${y} r="7" /><text className="rt-lt" x=${x} y=${y + 20} textAnchor="middle">${label}</text></g>`;
       })}
     </g>
     ${node("fr", 610, 280, 150, 60, "FRONTIER", (sim.frontier && sim.frontier.model) || "")}
@@ -1712,8 +1732,100 @@ function RtChecks({ e, tier }) {
   </div>`;
 }
 
-function RtNow({ e, idx, shown, runId }) {
+function rtFailSummary(x) {
+  const v = rtVal(x, "open_weight");
+  if (!v) return rtFailed(x, "open_weight");
+  return v.filter(c => !c.passed).map(c => {
+    if (c.id !== "grounding") return c.id;
+    const verdicts = [...new Set(((c.details && c.details.quotes) || []).filter(q => !q.found && q.diagnosis)
+      .map(q => (RT_VERDICT[q.diagnosis.verdict] || ["", q.diagnosis.verdict])[1]))];
+    return verdicts.length ? `grounding · ${verdicts.join(", ")}` : "grounding";
+  });
+}
+
+function RtPassage({ d }) {
+  const odd = new Set((d.characters || []).map(c => c.char));
+  let word = 0;
+  return html`<div className="rt-passage">${(d.closest || "").split(/(\s+)/).map((part, i) => {
+    if (!part || /^\s+$/.test(part)) return part;
+    word += 1;
+    const hit = (d.differs && d.differs.passageWord === word) || [...part].some(ch => odd.has(ch));
+    return hit ? html`<mark key=${i}>${part}</mark>` : part;
+  })}</div>`;
+}
+
+function RtQuote({ q }) {
+  const d = q.diagnosis;
+  const verdict = d ? (RT_VERDICT[d.verdict] || ["fail", d.verdict]) : null;
+  return html`<li>
+    <div><span className=${q.found ? "ico-ok" : "ico-fail"}>${q.found ? "✓" : "✕"}</span> <span className="muted">item ${q.item}</span> <span className="rt-qtext">“${q.quote}”</span>
+      ${q.found ? html` <span className="muted">· found word for word</span>` : html` <${Pill} value=${verdict[0]}>${verdict[1]}<//>`}</div>
+    ${d ? html`<div className="rt-diag">
+      <div>${d.explanation}</div>
+      ${d.closest ? html`<div className="muted">Closest passage in ${d.location} · ${d.matchedWords} of ${d.quoteWords} words match</div><${RtPassage} d=${d} />` : null}
+      ${d.differs ? html`<div>First difference at quote word ${d.differs.position} (${d.differs.kind}): quote <code>${d.differs.quote || "—"}</code> · document <code>${d.differs.document || "—"}</code></div>` : null}
+      ${(d.characters || []).map(c => html`<div key=${c.code}>Character <code>${c.code}</code> (${c.kind}) in the document word <code>${c.documentWord}</code>; the quote has <code>${c.quoteWord}</code></div>`)}
+    </div>` : null}
+  </li>`;
+}
+
+function RtValidationLog({ e, tier, rubric }) {
+  const log = rtVal(e, tier);
+  if (!log) return html`<${RtChecks} e=${e} tier=${tier} />`;
+  const byId = Object.fromEntries(((rubric && rubric.checks) || []).map(c => [c.id, c]));
+  return html`<div className="rt-vlog">${log.map(c => {
+    const r = byId[c.id] || {};
+    const d = c.details || {};
+    let body = null;
+    if (c.id === "schema") body = c.passed ? null : html`<div className="rt-small">${c.reason}</div>`;
+    else if (c.id === "echo_key") body = html`<div className="rt-small">Asked <code>${d.asked}</code>, answered <code>${d.answered}</code></div>`;
+    else if (c.id === "grounding") {
+      body = html`<div>
+        <div className="rt-small muted">${d.checked ? `${d.checked} quote(s) checked in ${d.itemsKept} kept item(s); ${d.failed} not found` : `No quotes to check: none of the ${d.itemsKept || 0} kept item(s) is answered.`}</div>
+        ${(d.quotes || []).length ? html`<ul className="rt-quotes">${d.quotes.map((q, i) => html`<${RtQuote} key=${i} q=${q} />`)}</ul>` : null}
+      </div>`;
+    } else if (c.id === "abstention") {
+      body = html`<div className="rt-small">${d.unresolved} of ${d.itemsKept} kept item(s) say there is no information${(d.reasons || []).length ? html`: “${d.reasons[0]}”` : ""} · documents attached: ${d.documentsAttached ? "yes" : "no"}</div>`;
+    } else if (!c.passed) body = html`<div className="rt-small">${c.reason}</div>`;
+    return html`<div key=${c.id} className=${`rt-vcheck ${c.passed ? "pass" : "fail"}`}>
+      <div className="rt-vhead"><span className=${c.passed ? "ico-ok" : "ico-fail"}>${c.passed ? "✓" : "✕"}</span>
+        <b>${r.name || c.id}</b><span className="mono muted">${c.id}</span>
+        ${c.passed ? null : html`<${Pill} value="fail">${tier === "frontier" ? "failed · recorded only" : "failed · escalate"}<//>`}</div>
+      ${r.question ? html`<div className="rt-small muted">${r.question}${!c.passed && r.method ? html` <span className="rt-method">How: ${r.method}.</span>` : null}</div>` : null}
+      ${body}
+    </div>`;
+  })}</div>`;
+}
+
+function RtRubric({ rubric }) {
+  if (!rubric) return null;
+  return html`<${Card} title="Validation rubric" hint=${`${rubric.version} · checks on every ${rubric.task} answer · rules only (string, schema and status matching), never a model call · config/validation.yaml`} flush>
+    <div className="card-body"><div className="quote" style=${{ fontSize: 13, marginTop: 0 }}>${rubric.analogy}</div></div>
+    <div style=${{ overflowX: "auto" }}><table className="rt-rubric">
+      <thead><tr><th>Check</th><th>Question it asks</th><th>How it is tested</th><th>Passes when</th><th>If it fails</th><th>Applies to</th></tr></thead>
+      <tbody>${rubric.checks.map(c => html`<tr key=${c.id}>
+        <td style=${{ whiteSpace: "nowrap" }}><b>${c.name}</b><div className="mono muted">${c.id}</div></td>
+        <td className="wrap">${c.question}</td>
+        <td className="wrap muted">${c.method}</td>
+        <td className="wrap">${c.passWhen}</td>
+        <td className="wrap">${c.onFail}</td>
+        <td style=${{ whiteSpace: "nowrap" }}>${c.tiers.map(rtTier).join(", ")}</td>
+      </tr>`)}</tbody>
+    </table></div>
+    <div className="card-body tight">
+      <div><b>After a failure.</b> ${rubric.escalation}</div>
+      <div><b>Grounding verdicts</b> (shown for every quote that is not found):
+        ${Object.entries(rubric.groundingVerdicts).map(([k, v]) => html`<div key=${k} className="rt-small"><${Pill} value=${(RT_VERDICT[k] || ["", k])[0]}>${(RT_VERDICT[k] || ["", k])[1]}<//> ${v}</div>`)}
+      </div>
+    </div>
+  <//>`;
+}
+
+function RtNow({ e, idx, shown, runId, rubric }) {
   const sec = (key, title, dot, body) => html`<div key=${key} className="dsec"><h3><span className=${`dot ${dot || ""}`}></span>${title}</h3>${body}</div>`;
+  const names = Object.fromEntries(((rubric && rubric.checks) || []).map(c => [c.id, c.name]));
+  const ow = e.attempts.find(a => a.tier === "open_weight");
+  const fr = e.attempts.find(a => a.tier === "frontier");
   const out = [];
   for (const b of shown) {
     if (b.k === "router") {
@@ -1722,16 +1834,23 @@ function RtNow({ e, idx, shown, runId }) {
         : html`<div>Not wired to the router yet: stays on frontier, as before.</div>`));
     } else if (b.k === "node") {
       out.push(sec(`node-${b.n}`, b.n === "ow" ? "Open-weight" : "Frontier", b.n === "ow" ? "ow" : "fr", html`<${RtAttempt} a=${b.a} runId=${runId} />`));
-      if (b.n === "fr" && e.outcome && e.outcome.escalated) {
-        const fc = html`<${RtChecks} e=${e} tier="frontier" />`;
-        if (e.checks.some(c => rtCheck(c)[0] === "frontier")) out.push(sec("frcheck", "Frontier checks (recorded only)", "fr", fc));
+      if (b.n === "fr" && e.outcome && e.outcome.escalated && (rtVal(e, "frontier") || e.checks.some(c => rtCheck(c)[0] === "frontier"))) {
+        out.push(sec("frcheck", "Frontier validation (recorded only)", "fr", html`<div>
+          <div className="muted rt-small" style=${{ marginTop: 0, marginBottom: 6 }}>Frontier is the last tier, so its answer is kept; failed quotes go to the repair step.</div>
+          <${RtValidationLog} e=${e} tier="frontier" rubric=${rubric} /></div>`));
       }
     } else if (b.k === "checks") {
-      out.push(sec("val", "Validation", e.outcome.escalated ? "esc" : "ok", html`<${RtChecks} e=${e} tier="open_weight" />`));
+      out.push(sec("val", "Validation log", e.outcome.escalated ? "esc" : "ok", html`<${RtValidationLog} e=${e} tier="open_weight" rubric=${rubric} />`));
     } else if (b.k === "escalate") {
-      const validated = e.checks.some(c => rtCheck(c)[0] === "open_weight");
-      out.push(sec("esc", "Escalate", "esc", html`<div>${validated ? "Same messages sent once to frontier."
-        : `Open-weight call failed; same messages sent once to frontier. ${e.outcome.escalationReason || ""}`}</div>`));
+      const failed = (rtVal(e, "open_weight") || []).filter(c => !c.passed);
+      const why = failed.length
+        ? `${failed.map(c => names[c.id] || c.id).join(", ")} failed (${failed.map(c => c.id).join(", ")}).`
+        : `the open-weight call failed: ${e.outcome.escalationReason || "no response"}.`;
+      out.push(sec("esc", "Escalate", "esc", html`<div>
+        <div><b>Why:</b> ${why}</div>
+        <div className="rt-small"><b>What frontier received:</b> the same instructions, question and objective text${e.inputChars ? ` (${fmt.num(e.inputChars)} characters)` : ""}, sent once.</div>
+        <div className="rt-small muted">${ow && ow.seq != null ? html`open-weight <a href=${href(runId, "trace", ow.seq)}>step #${ow.seq}</a>` : null}${fr && fr.seq != null ? html` → frontier <a href=${href(runId, "trace", fr.seq)}>step #${fr.seq}</a>` : null}</div>
+      </div>`));
     } else if (b.k === "save") {
       const sv = e.saved, lin = sv.lineage;
       const items = Object.entries(sv.items || {}).map(([k, v]) => `${v} ${k}`).join(", ") || "nothing";

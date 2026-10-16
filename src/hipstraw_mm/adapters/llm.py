@@ -101,7 +101,11 @@ class LLMClient:
                 try:
                     return schema.model_validate_json(content)
                 except ValidationError as exc:
-                    problem = f"schema validation failed: {exc.error_count()} errors"
+                    where = "; ".join(
+                        f"{'.'.join(str(part) for part in err['loc']) or 'response'}: {err['msg'][:140]}"
+                        for err in exc.errors()[:3]
+                    )
+                    problem = f"schema validation failed: {exc.error_count()} error(s): {where}"
             else:
                 problem = raw.get("error") or raw.get("refusal") or "empty response"
         raise LLMSchemaError(f"{schema.__name__} for {match_key!r}: {problem}")

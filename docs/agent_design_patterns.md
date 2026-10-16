@@ -77,6 +77,27 @@ diagram replayed task by task from the trace (router rule, open-weight answer, v
 escalation, frontier answer, saved lineage), kept/escalated counts, cost against an all-frontier
 estimate, and a task table linking each model call to Activity. The run is marked as a simulation.
 
+### Validation layer (validation.v1)
+
+Every open-weight answer to `vichara.v1` is checked by rules only, never a model call; the rubric is
+`config/validation.yaml` and a test keeps it in step with the code:
+
+- **Right form** (`schema`): the answer parses into the strict schema; an answered item has an answer and
+  a quote, an unresolved item has a reason and no quote.
+- **Right question** (`echo_key`): the answer's dimension is the one asked.
+- **Real quotes** (`grounding`): every quote of the kept items is word for word in the objective text,
+  after normalising quotes, dashes, spaces and case.
+- **Read before saying nothing** (`abstention`, open-weight only): not every kept item is "no
+  information" while a document is attached.
+
+Any failure sends the same prompt once to frontier; frontier's answer is checked the same way and logged,
+but kept. The router stores the full log per tier in `outputs.routing.validation`: for each quote, whether
+it was found, and for a miss the closest passage, words matched, the first difference (replaced, missing
+or extra word, or a character difference) and any unusual characters, with a verdict: near miss (all
+words match, only punctuation or special characters differ), partial match, or not found. The viewer's
+Routing tab shows the rubric and this log for every task. On the Kozmo whitepaper most grounding failures
+are near misses caused by the PDF's characters (for example U+02BC for an apostrophe, U+E088 for a dash).
+
 ## Agents
 
 | Agent | Central question | Innate capabilities | Skills | Tools |

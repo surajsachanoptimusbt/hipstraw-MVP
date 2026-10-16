@@ -87,7 +87,12 @@ def test_walkthrough_follows_each_task_to_its_saved_result(sim: tuple[dict[str, 
     assert kept["question"]
     assert kept["saved"]["lineage"]["servedBy"] == "open_weight"
 
+    assert {c["id"] for c in kept["validation"]["open_weight"]} == {"schema", "echo_key", "grounding", "abstention"}
+    assert result["validationRubric"]["version"] == "validation.v1"
+
     bad = by_subject[BAD_DIMENSION]
+    ground = next(c for c in bad["validation"]["open_weight"] if c["id"] == "grounding")
+    assert ground["details"]["quotes"][0]["diagnosis"]["verdict"] == "not_found"
     assert [a["tier"] for a in bad["attempts"]] == ["open_weight", "frontier"]
     assert bad["outcome"]["escalated"] is True
     assert any(c["name"] == "open_weight.grounding" and c["status"] == "fail" for c in bad["checks"])

@@ -108,6 +108,11 @@ class Check:
     passed: bool
     blocking: bool
     reason: str
+    details: dict[str, Any] | None = None
+
+    def log(self) -> Doc:
+        return {"id": self.name, "passed": self.passed, "blocking": self.blocking, "reason": self.reason,
+                "details": self.details}
 
 
 Validator = Callable[[Any, Route], list[Check]]
@@ -150,7 +155,9 @@ class TaskRouter:
             "class": entry.class_ if entry else None,
             "ruleId": decision.ruleId, "why": decision.why, "route": decision.route,
             "servedBy": None, "escalated": False, "escalationReason": None, "attempts": [],
+            "validation": {},
         }
+        form_ok = Check("schema", True, True, f"parsed into {schema.__name__}")
 
         if decision.route == "open_weight":
             assert open_llm is not None
@@ -161,13 +168,23 @@ class TaskRouter:
                     match_key=f"ow:{open_llm.model}:{match_key}", prompt_version=task, run_id=self.run_id,
                     client=open_llm, route="open_weight", max_attempts=1,
                 )
-            except (LLMSchemaError, ExternalServiceError, ReplayMissingError) as exc:
+            except LLMSchemaError as exc:
                 # Only call failures count toward R7: a failing endpoint, not a weak answer.
+                self.consecutive_failures += 1
+                reason = f"{type(exc).__name__}: {exc}"
+                if validate:
+                    form = Check("schema", False, True, str(exc))
+                    self._record(step, [form], "open_weight")
+                    routing["validation"]["open_weight"] = [form.log()]
+            except (ExternalServiceError, ReplayMissingError) as exc:
                 self.consecutive_failures += 1
                 reason = f"{type(exc).__name__}: {exc}"
             else:
                 self.consecutive_failures = 0
-                failed = self._record(step, validate(result, "open_weight") if validate else [], "open_weight")
+                checks = [form_ok, *validate(result, "open_weight")] if validate else []
+                failed = self._record(step, checks, "open_weight")
+                if validate:
+                    routing["validation"]["open_weight"] = [c.log() for c in checks]
                 if not failed:
                     routing["servedBy"] = "open_weight"
                     routing["attempts"].append({"route": "open_weight", "model": open_llm.model, "outcome": "kept"})
@@ -180,7 +197,10 @@ class TaskRouter:
             self.ctx, self.tracer, schema, messages,
             match_key=match_key, prompt_version=task, run_id=self.run_id,
         )
-        self._record(step, validate(result, "frontier") if validate else [], "frontier")
+        checks = [form_ok, *validate(result, "frontier")] if validate else []
+        self._record(step, checks, "frontier")
+        if validate:
+            routing["validation"]["frontier"] = [c.log() for c in checks]
         routing["servedBy"] = "frontier"
         routing["attempts"].append({"route": "frontier", "model": self.ctx.llm.model, "outcome": "kept"})
         return result, routing

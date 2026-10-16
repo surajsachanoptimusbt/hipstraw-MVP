@@ -1,0 +1,62 @@
+# Validation rubric (validation.v1) for answers routed to the open-weight tier. Every check is code:
+# string, schema and status matching, never a model call. The viewer shows this rubric next to the
+# validation log of each task, and a test keeps it in step with the checks the code runs.
+version: validation.v1
+source: Hipstraw proposal, 2026-10-16 review
+task: vichara.v1
+analogy: >-
+  Like a manager checking a junior's answer before it goes into the file: is it in the form I asked
+  for, did you answer my question, show me where the document says that, and did you actually read
+  the document before saying there is nothing in it?
+escalation: >-
+  If any check fails, the same prompt (same instructions, same question, same objective text) goes
+  once to the frontier model. Its answer is checked the same way and the results are logged, but it
+  is kept either way, because frontier is the last tier. Quotes that still fail go to the existing
+  repair step, and an item that cannot be repaired is saved as unresolved.
+checks:
+  - id: schema
+    name: Right form
+    question: Is the answer in the form we asked for?
+    method: Schema match (strict Pydantic model DimensionDeliberation)
+    passWhen: >-
+      It has the dimension key and at least one item; an answered item has an answer and at least
+      one quote; an unresolved item has a reason and no quote; no unknown fields.
+    onFail: Escalate to frontier. The open-weight model gets one attempt.
+    catches: Broken output, an answer with no evidence, a quote attached to "no information".
+    tiers: [open_weight, frontier]
+  - id: echo_key
+    name: Right question
+    question: Did the model answer the dimension we asked about?
+    method: Exact string match of the answer's dimensionKey against the one asked
+    passWhen: The two keys are identical.
+    onFail: Escalate to frontier.
+    catches: An answer to a different question.
+    tiers: [open_weight, frontier]
+  - id: grounding
+    name: Real quotes
+    question: Is every quote copied word for word from the objective or its documents?
+    method: >-
+      Exact substring match after normalising curly quotes, dashes, non-breaking spaces, letter
+      case and spacing, for every quote of the first 3 items (the ones that are kept)
+    passWhen: Every quote is found.
+    onFail: >-
+      Escalate to frontier. The log shows each quote, the closest passage in the objective, how many
+      words match, the first word that differs, and any unusual characters in the document.
+    catches: Paraphrased or invented evidence.
+    tiers: [open_weight, frontier]
+  - id: abstention
+    name: Read before saying nothing
+    question: Did the model say "no information" although documents are attached?
+    method: Status match. Every kept item is unresolved, and at least one objective document is attached
+    passWhen: At least one item is answered, or no document is attached.
+    onFail: >-
+      Escalate so frontier double-checks. Applies to open-weight only; a frontier "no information" is
+      accepted.
+    catches: A cheap model giving up on a long document.
+    tiers: [open_weight]
+groundingVerdicts:
+  near_miss: >-
+    Every word matches in order; only punctuation or special characters differ. Usually the PDF's
+    own characters (for example a private-use glyph for a dash), so the quote is probably real.
+  partial: The start of the quote is in the document, then it differs. Often a quote that was edited or shortened.
+  not_found: No passage shares most of the quote's words in order. The quote is paraphrased or invented.

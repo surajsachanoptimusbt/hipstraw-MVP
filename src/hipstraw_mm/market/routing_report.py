@@ -16,6 +16,7 @@ from hipstraw_mm import prompts
 from hipstraw_mm.market.grammar import load_grammar
 from hipstraw_mm.market.router import RoutingConfig, decide_route, load_routing
 from hipstraw_mm.market.settings import load_pipeline_settings
+from hipstraw_mm.market.validation_rubric import load_validation_rubric
 
 Doc = dict[str, Any]
 
@@ -58,6 +59,7 @@ def build_simulation(store: Any, run_id: str, config_dir: Path = Path("config"))
         "frontier": {"model": frontier_model},
         "openWeightRouteOn": route_on,
         "rubric": rubric(policy, open_weight_available=ow_model is not None),
+        "validationRubric": load_validation_rubric(config_dir).model_dump(),
         "walkthrough": entries,
         "summary": summarize(entries),
     }
@@ -104,6 +106,7 @@ def walkthrough(store: Any, run_id: str, config_dir: Path) -> list[Doc]:
             "router": {k: routing[k] for k in ("ruleId", "why", "route", "class")} if routing else None,
             "attempts": attempts,
             "checks": s.get("checks") or [],
+            "validation": (routing or {}).get("validation") or {},
             "outcome": {k: routing[k] for k in ("servedBy", "escalated", "escalationReason")} if routing else None,
             "saved": _saved(op, inputs, outputs, saved),
         })

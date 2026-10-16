@@ -95,6 +95,7 @@ def render_text(sim: Doc) -> str:
                 if a["tier"] == "frontier" and e["outcome"]["escalated"]:
                     if any(c["name"].startswith("open_weight.") for c in e["checks"]):
                         out.append(f"    {'Validation':15s} {_checks(e['checks'], 'open_weight')}")
+                        out.extend(_quote_lines(e, "open_weight"))
                     out.append(f"    {'Escalate':15s} {e['outcome']['escalationReason'][:140]}")
                 out.append(f"    {label:15s} {_attempt_line(a)}")
             if not e["outcome"]["escalated"]:
@@ -104,6 +105,7 @@ def render_text(sim: Doc) -> str:
                     out.append(f"    {'Validation':15s} {_checks(e['checks'], tier)}{note}")
             elif any(c["name"].startswith("frontier.") for c in e["checks"]):
                 out.append(f"    {'Frontier check':15s} {_checks(e['checks'], 'frontier')} (recorded only)")
+                out.extend(_quote_lines(e, "frontier"))
         saved = e["saved"]
         items = ", ".join(f"{v} {k}" for k, v in saved["items"].items()) or "nothing"
         lineage = saved.get("lineage")
@@ -130,6 +132,21 @@ def render_text(sim: Doc) -> str:
     if c["unpricedCalls"]:
         out.append(f"   calls with no price entry: {c['unpricedCalls']}")
     return "\n".join(out) + "\n"
+
+
+def _quote_lines(entry: Doc, tier: str) -> list[str]:
+    """One line per quote that failed grounding, with the diagnosis from the validation log."""
+    lines = []
+    for check in (entry.get("validation") or {}).get(tier) or []:
+        if check["id"] != "grounding":
+            continue
+        for q in (check.get("details") or {}).get("quotes", []):
+            d = q.get("diagnosis")
+            if q["found"] or not d:
+                continue
+            quote = q["quote"] if len(q["quote"]) <= 70 else q["quote"][:69] + "…"
+            lines.append(f"{'':20s}quote {quote!r}: {d['verdict'].replace('_', ' ')}. {d['explanation']}")
+    return lines
 
 
 def _checks(checks: list[Doc], tier: str) -> str:
