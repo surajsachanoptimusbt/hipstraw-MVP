@@ -18,7 +18,7 @@ from typing import Any, NoReturn, TextIO
 from dotenv import load_dotenv
 
 from hipstraw_mm.adapters.fetch import Fetcher
-from hipstraw_mm.adapters.llm import LLMClient, LLMSchemaError
+from hipstraw_mm.adapters.llm import LLMClient, LLMSchemaError, open_weight_client
 from hipstraw_mm.adapters.replay import ReplayMissingError, ReplayStore, mode_from_env
 from hipstraw_mm.adapters.search import BraveSearch
 from hipstraw_mm.config import LoadedConfig, load_config
@@ -78,6 +78,7 @@ def build_context(config: LoadedConfig) -> Context:
         llm=LLMClient(model=config.run.model.name, replay=replay, log=log),
         search=BraveSearch(replay, denylist_domains=policy.denylistDomains, timeout_seconds=fetch.timeoutSeconds),
         new_fetcher=new_fetcher,
+        open_llm=_open_llm(config, replay, log),
     )
 
 
@@ -111,7 +112,16 @@ def build_memory_context(config: LoadedConfig) -> Context:
         llm=LLMClient(model=config.run.model.name, replay=replay, log=log),
         search=BraveSearch(replay, denylist_domains=policy.denylistDomains, timeout_seconds=fetch.timeoutSeconds),
         new_fetcher=new_fetcher,
+        open_llm=_open_llm(config, replay, log),
     )
+
+
+def _open_llm(config: LoadedConfig, replay: ReplayStore, log: EventLog) -> LLMClient | None:
+    """The open-weight tier, only when routing.yaml allows it and an endpoint is configured."""
+    from hipstraw_mm.market.router import load_routing
+
+    policy = load_routing(config.config_dir).openWeight
+    return open_weight_client(replay, log, policy.timeoutSeconds) if policy.enabled else None
 
 
 class _Parser(argparse.ArgumentParser):
@@ -199,6 +209,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="objective document (PDF) to add to the run's objective; repeat for several",
     )
     p.add_argument("--serve", action="store_true", help="serve the viewer from this process while the run goes")
+    p.add_argument("--port", type=int, default=8765, help="viewer port for --serve")
+
+    p = msub.add_parser(
+        "simulate", parents=[common_after],
+        help="routing simulation: run the vichara stage with the open-weight route on and walk through the trace",
+    )
+    p.add_argument("--program", required=True)
+    p.add_argument(
+        "--objective-pdf", action="append", default=[], metavar="PATH",
+        help="objective document (PDF) to add to the run's objective; repeat for several",
+    )
+    p.add_argument("--out", default=None, help="simulation JSON path (default: reports/<run>_routing.json)")
+    p.add_argument("--serve", action="store_true", help="serve the viewer afterwards to inspect the trace")
     p.add_argument("--port", type=int, default=8765, help="viewer port for --serve")
 
     p = msub.add_parser("show", parents=[common_after], help="print run status and counts")
@@ -348,15 +371,19 @@ def _stage_handler(
 
 
 def _market_decide(ctx: Context, args: argparse.Namespace) -> CommandResult:
-    """Market Manager Review: rule decision per final path, then the canonical Market Position commit
-    (versioned, with lineage to the Position & Evaluation case), Market Status, and the market map."""
+    """Market Manager Review: the playbook quick picker per final market unit (seven axes, binding
+    constraint, stance, Strategy, Play, Line, next step, Disposition), then the canonical Market Position
+    commit (versioned, with lineage to the Position & Evaluation case), Market Status, and the market map."""
     from datetime import datetime, timezone
 
-    from hipstraw_mm.market.decide import compute_market_status, decide_path, unassessed_dimensions
+    from hipstraw_mm.market.agents import load_agent_registry
+    from hipstraw_mm.market.decide import compute_market_status, unassessed_dimensions
     from hipstraw_mm.market.evaluation import latest_positions, match_prior
     from hipstraw_mm.market.layers import load_layers
     from hipstraw_mm.market.market_map import build_market_map
+    from hipstraw_mm.market.playbook import load_playbook
     from hipstraw_mm.market.position import build_market_position, commit_record, companies_for_path
+    from hipstraw_mm.market.review import performed_steps, run_review
     from hipstraw_mm.market.settings import load_pipeline_settings
     from hipstraw_mm.market.trace import Tracer
 
@@ -380,49 +407,56 @@ def _market_decide(ctx: Context, args: argparse.Namespace) -> CommandResult:
         if p.get("marketRunId") != run_id
     ]
     now = datetime.now(timezone.utc).isoformat()
+    playbook = load_playbook(config_dir)
+    order = playbook.picker.disposition.order
+    market_types = run.get("marketTypes") or []
+    registry = run.get("agentRegistry") or load_agent_registry(config_dir).model_dump()
+    ran = {str(s.get("operation")) for s in ctx.store.list_trace_steps_after(run_id, 0)}
+    performed = performed_steps(registry, ran)
+    roles_by_path: dict[str, int] = {}
+    for doc in ctx.store.list_buyer_roles(run_id):
+        roles_by_path[doc["pathId"]] = roles_by_path.get(doc["pathId"], 0) + len(doc.get("roles", []))
     decided: list[dict[str, Any]] = []
     committed: dict[str, dict[str, Any]] = {}
     for path in finals:
         pid = path["pathId"]
-        linked = [
-            {"disposition": link.get("disposition"), "verified": link.get("disposition") == "include"}
-            for c in companies for link in c.get("links", []) if link.get("pathId") == pid
-        ]
-        view = {
-            "companies": linked,
-            "sufficiency": path.get("evidenceStates", {}).get("sufficiency", "insufficient"),
-            "canStillFill": bool(path.get("canStillFill")),
-        }
         case = cases.get(pid)
-        with tracer.step("market_manager", "market_manager", "decide_path", right="decide_path") as step_ctx:
-            step_ctx.set_inputs({"pathId": pid, **view,
+        with tracer.step("market_manager", "market_manager", "market_review", right="decide_path") as step_ctx:
+            step_ctx.set_inputs({"pathId": pid, "marketTypes": market_types, "playbook": playbook.version,
                                  "recommendation": (case or {}).get("recommendation", {}).get("recommendation")})
-            result = decide_path(view)
-            step_ctx.set_outputs(result)
-            step_ctx.set_decision(result["decision"])
+            chain = run_review(playbook, path, case, buyer_roles=roles_by_path.get(pid, 0),
+                               market_types=market_types, performed=performed)
+            step_ctx.set_outputs({
+                "bindingConstraint": chain["bindingConstraint"], "stance": chain["stance"]["stance"],
+                "strategy": chain["strategy"], "play": chain["play"],
+                "line": (chain["line"] or {}).get("current"), "nextStep": (chain["nextStep"] or {}).get("id"),
+                "disposition": chain["disposition"], "attention": chain["attention"],
+            })
+            step_ctx.set_decision(chain["disposition"], chain["pickReason"])
         with tracer.step("market_manager", "market_manager", "commit_position", right="commit_position") as step_ctx:
             prior = match_prior(path.get("nodeLabels", []), priors)
-            record = commit_record(run, path, case, result, prior, now)
+            record = commit_record(run, path, case, chain, prior, now, order)
             ctx.store.create_market_position(record)
-            position = build_market_position(path, companies_for_path(pid, companies), result, case, record)
+            position = build_market_position(path, companies_for_path(pid, companies), case, record)
             step_ctx.set_inputs({"pathId": pid, "evaluationCaseId": (case or {}).get("caseId"),
                                  "priorVersion": record["evidenceLineage"]["priorVersion"]})
             step_ctx.set_outputs({"positionKey": record["positionKey"], "version": record["version"],
-                                  "status": record["status"], "trajectory": record["trajectory"],
+                                  "disposition": record["disposition"], "trajectory": record["trajectory"],
                                   "recommendationAccepted": record["recommendationAccepted"]})
-            step_ctx.set_decision(record["status"], record["reviewNote"])
+            step_ctx.set_decision(record["disposition"], record["reviewNote"])
             ctx.store.create_path_decision({
-                "marketRunId": run_id, "pathId": pid, **result, "marketPosition": position,
-                "inputs": view, "decidedAt": now,
+                "marketRunId": run_id, "pathId": pid, "disposition": chain["disposition"],
+                "attention": chain["attention"], "reason": chain["reason"], "marketPosition": position,
+                "decidedAt": now,
             })
             stored = ctx.store.get_path(pid) or {}
             ctx.store.upsert_path({"pathId": pid, "marketRunId": run_id, "marketPosition": position,
                                    "statusHistory": stored.get("statusHistory", [])})
         committed[pid] = record
-        decided.append({"pathId": pid, "decision": result["decision"]})
+        decided.append({"pathId": pid, "disposition": chain["disposition"]})
     with tracer.step("market_manager", "market_manager", "set_market_status", right="set_market_status") as step_ctx:
         status = compute_market_status(decided)
-        step_ctx.set_inputs({"decisions": decided})
+        step_ctx.set_inputs({"dispositions": decided})
         step_ctx.set_outputs(status)
         step_ctx.set_decision(status["state"])
 
@@ -442,7 +476,7 @@ def _market_decide(ctx: Context, args: argparse.Namespace) -> CommandResult:
             previous = ctx.store.get_market_map(r["marketRunId"])
             if previous:
                 break
-        market_map = build_market_map(run, deepest, economics, committed, cases, previous, now)
+        market_map = build_market_map(run, deepest, economics, committed, cases, previous, now, order)
         ctx.store.create_market_map(market_map)
         step_ctx.set_inputs({
             "tilesFrom": (deepest or {}).get("levelName"), "previousRunId": market_map["previousRunId"],
@@ -502,6 +536,39 @@ def _start_viewer(ctx: Context, port: int) -> Any:
     threading.Thread(target=server.serve_forever, daemon=True).start()
     print(f"viewer: http://{server.server_address[0]!s}:{server.server_address[1]}/", file=sys.stderr)
     return server
+
+
+def _market_simulate(ctx: Context, args: argparse.Namespace) -> CommandResult:
+    """The vichara stage on a program with the open-weight route on for this run only, then the trace read
+    back as a walk-through: rubric, each task from router to saved result, and a summary."""
+    import time
+
+    from hipstraw_mm.market.objective import resolve_pdf_paths
+    from hipstraw_mm.market.router import load_routing
+    from hipstraw_mm.market.routing_sim import render_text, simulate
+
+    config_dir = Path(args.config_dir)
+    if ctx.open_llm is None:
+        ctx.open_llm = open_weight_client(ctx.llm.replay, ctx.log, load_routing(config_dir).openWeight.timeoutSeconds)
+    sim = simulate(ctx, args.program, resolve_pdf_paths(args.objective_pdf), config_dir)
+    out_path = Path(args.out) if args.out else ctx.reports_dir / f"{sim['runId']}_routing.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(sim, indent=2, ensure_ascii=False), encoding="utf-8")
+    text = render_text(sim) + f"\nsimulation saved to {out_path}\n"
+    encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+    print(text.encode(encoding, errors="replace").decode(encoding), flush=True)
+    if args.serve:
+        server = _start_viewer(ctx, args.port)
+        host, port = server.server_address[0], server.server_address[1]
+        print(f"routing: http://{host}:{port}/#/run/{sim['runId']}/routing", file=sys.stderr)
+        print("viewer is running; press Ctrl+C to stop", file=sys.stderr)
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            server.shutdown()
+    return CommandResult("market simulate", runId=sim["runId"], status="deliberated",
+                         counts={k: v for k, v in sim["summary"].items() if isinstance(v, int)})
 
 
 def _market_run_pipeline(ctx: Context, args: argparse.Namespace) -> CommandResult:
@@ -570,6 +637,7 @@ MARKET_HANDLERS: dict[str, Callable[[Context, argparse.Namespace], CommandResult
     "report": _market_report,
     "run": _market_run_pipeline,
     "show": _market_show,
+    "simulate": _market_simulate,
 }
 
 HANDLERS: dict[str, Callable[[Context, argparse.Namespace], CommandResult]] = {

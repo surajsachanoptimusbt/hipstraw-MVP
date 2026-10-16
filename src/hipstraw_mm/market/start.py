@@ -8,6 +8,7 @@ from hipstraw_mm.context import Context
 from hipstraw_mm.errors import PreconditionError
 from hipstraw_mm.market.agents import load_agent_registry
 from hipstraw_mm.market.layers import load_layers
+from hipstraw_mm.market.playbook import load_playbook
 from hipstraw_mm.market.settings import load_pipeline_settings
 from hipstraw_mm.market.trace import Tracer
 
@@ -50,6 +51,9 @@ def market_start(ctx: Context, program_id: str, objective_pdfs: list[Path] | Non
         "finalPathShortfall": None,
         # The agent design in force for this run: capabilities, skills, tools (config/agents.yaml).
         "agentRegistry": load_agent_registry().model_dump(),
+        # The playbook the Review will use, and the market types it chooses plays by.
+        "playbookVersion": load_playbook().version,
+        "marketTypes": program.get("marketTypes", []),
     }
     ctx.store.upsert_market_run(run_doc)
 

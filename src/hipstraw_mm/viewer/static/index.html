@@ -7,7 +7,7 @@
 <title>hipstraw trace</title>
 <style>
 :root {
-  --map-good: #0ca30c; --map-warn: #fab219; --map-crit: #d03b3b; --map-neutral: #d9d8d2;
+  --map-good: #0ca30c; --map-warn: #fab219; --map-crit: #d03b3b; --map-neutral: #d9d8d2; --map-park: #8b93a7;
   --map-up-1: #86b6ef; --map-up-2: #256abf; --map-down-1: #ee8a89; --map-down-2: #c43a39; --map-flat: #f0efec;
   --map-ink-dark: #0b0b0b; --map-ink-light: #ffffff;
   --bg: #f6f7f9; --panel: #ffffff; --fg: #0f172a; --muted: #64748b; --faint: #94a3b8;
@@ -15,6 +15,7 @@
   --accent: #2563eb; --ok: #15803d; --ok-bg: #dcfce7; --warn: #b45309; --warn-bg: #fef3c7;
   --fail: #b91c1c; --fail-bg: #fee2e2; --info: #1d4ed8; --info-bg: #dbeafe; --neutral-bg: #f1f5f9;
   --code: #f8fafc; --shadow: 0 1px 2px rgba(15, 23, 42, .05);
+  --tier-ow: #0d9488; --tier-fr: #7c3aed; --tier-esc: #d97706; --tier-rules: #a16207; --track: #dbe1e8;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -24,7 +25,8 @@
     --accent: #60a5fa; --ok: #4ade80; --ok-bg: #052e1a; --warn: #fbbf24; --warn-bg: #3a2a06;
     --fail: #f87171; --fail-bg: #3b0d0d; --info: #93c5fd; --info-bg: #102445; --neutral-bg: #1b2230;
     --code: #0d1118; --shadow: none;
-    --map-neutral: #44443f; --map-up-1: #1c5cab; --map-up-2: #6da7ec; --map-down-1: #9e2f2e;
+    --tier-ow: #2dd4bf; --tier-fr: #a78bfa; --tier-esc: #fbbf24; --tier-rules: #facc15; --track: #263042;
+    --map-neutral: #44443f; --map-park: #5d6679; --map-up-1: #1c5cab; --map-up-2: #6da7ec; --map-down-1: #9e2f2e;
     --map-down-2: #e66767; --map-flat: #383835;
     color-scheme: dark;
   }
@@ -149,6 +151,15 @@ td.wrap { max-width: 520px; }
 .kv { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 6px 12px; align-items: center; }
 .kv dt { color: var(--muted); }
 .kv dd { min-width: 0; overflow-wrap: anywhere; }
+.axes { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px; margin-top: 10px; }
+.axis { border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; min-width: 0; }
+.axis.bind { border-color: var(--warn); box-shadow: inset 0 0 0 1px var(--warn); }
+.axis .an { font-size: 11px; color: var(--muted); }
+.axis .as { font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }
+.chain { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; }
+.chain .arrow { color: var(--muted); }
+.steps { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.next-step { margin-top: 10px; padding: 10px 12px; border-radius: 6px; background: var(--sel); border-left: 3px solid var(--accent); }
 
 pre.json { background: var(--code); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; line-height: 1.55; }
 .more { margin-top: 6px; background: none; border: none; color: var(--accent); cursor: pointer; font: inherit; font-size: 12px; }
@@ -213,6 +224,68 @@ pre.json { background: var(--code); border: 1px solid var(--border); border-radi
 .lifecycle { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 11px; }
 .lifecycle span { background: var(--subtle); border-radius: 4px; padding: 1px 6px; }
 .lifecycle .arrow { background: none; color: var(--faint); padding: 0; }
+/* routing: the task router replayed from the trace */
+.rt-top { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr); gap: 16px; align-items: start; }
+.rt-top > * { min-width: 0; }
+.rt-controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.rt-play { border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 6px; padding: 4px 14px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; min-width: 84px; }
+.rt-pos { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; min-width: 52px; text-align: right; }
+.rt-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.rt-chip { font-size: 11.5px; border: 1px solid var(--border); border-radius: 999px; padding: 1px 9px; color: var(--muted); overflow-wrap: anywhere; }
+.rt-chip b { color: var(--fg); font-weight: 550; }
+.rt-chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: 0; }
+.rt-dia { overflow-x: auto; padding: 6px 6px 0; }
+.rt-dia svg { display: block; width: 100%; min-width: 680px; height: auto; }
+.rt-node rect { fill: var(--panel); stroke: var(--border); stroke-width: 1.5; transition: stroke .2s; }
+.rt-node.on rect { stroke: var(--accent); stroke-width: 2.5; }
+.rt-node.dim { opacity: .5; }
+.rt-nl { font-size: 13px; font-weight: 650; letter-spacing: .05em; fill: var(--fg); }
+.rt-ns { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 10.5px; fill: var(--muted); }
+.rt-tl { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 9.5px; letter-spacing: .05em; fill: var(--faint); }
+.rt-track, .rt-lit { fill: none; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.rt-track { stroke: var(--track); }
+.rt-lit.ow { stroke: var(--tier-ow); } .rt-lit.fr { stroke: var(--tier-fr); }
+.rt-lit.esc { stroke: var(--tier-esc); } .rt-lit.rules { stroke: var(--tier-rules); }
+.rt-lamp { fill: var(--subtle); stroke: var(--border); stroke-width: 1; transition: fill .2s; }
+.rt-lamp.on { fill: var(--tier-esc); } .rt-lamp.pass { fill: var(--ok); } .rt-lamp.fail { fill: var(--fail); }
+.rt-lt { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 9px; fill: var(--muted); }
+.rt-tok { stroke: var(--panel); stroke-width: 3; }
+.rt-tok.ow { fill: var(--tier-ow); } .rt-tok.fr { fill: var(--tier-fr); } .rt-tok.esc { fill: var(--tier-esc); } .rt-tok.rules { fill: var(--tier-rules); }
+.rt-legend { padding: 8px 16px 12px; }
+.rt-legend .sw { width: 14px; height: 4px; border-radius: 2px; }
+.rt-now .dsec > h3 { display: flex; align-items: center; gap: 6px; }
+.rt-now .dsec > h3 .dot { width: 7px; height: 7px; }
+.rt-now .dot.ow { background: var(--tier-ow); } .rt-now .dot.fr { background: var(--tier-fr); } .rt-now .dot.esc { background: var(--tier-esc); }
+.rt-q { font-size: 14px; margin-top: 4px; }
+.rt-said { background: var(--subtle); border-radius: 6px; padding: 6px 10px; margin-top: 6px; font-size: 12.5px; }
+.rt-said .ans { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.rt-said .quote { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-style: italic; }
+.rt-pills { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.rt-figs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding: 0 16px 16px; }
+.rt-figs .rt-cost { grid-column: 1 / -1; }
+.rt-fig, .rt-cost { border: 1px solid var(--border); border-radius: 8px; background: var(--panel); }
+.rt-figs > * { min-width: 0; }
+.rt-fig { padding: 12px 16px; }
+.rt-fig .value { font-size: 26px; font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.rt-fig .label { display: flex; align-items: center; gap: 6px; }
+.rt-cost { padding: 12px 16px; display: grid; gap: 8px; }
+.rt-mrow { display: grid; grid-template-columns: 104px minmax(0, 1fr) 64px; gap: 10px; align-items: center; font-size: 12px; }
+.rt-meter { height: 10px; border-radius: 3px; background: var(--subtle); overflow: hidden; display: flex; }
+.rt-meter span { height: 100%; transition: width .35s ease; }
+.rt-mval { text-align: right; font-variant-numeric: tabular-nums; }
+.rt-row { cursor: pointer; }
+.rt-row:hover td { background: var(--hover); }
+.rt-row.cur td { background: var(--sel); }
+.rt-row.cur td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
+.rt-row.pending td { opacity: .45; }
+.rt-tier { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 550; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+.rt-tier.ow { color: var(--tier-ow); background: color-mix(in srgb, var(--tier-ow) 14%, transparent); }
+.rt-tier.fr { color: var(--tier-fr); background: color-mix(in srgb, var(--tier-fr) 14%, transparent); }
+.rt-tier.x { text-decoration: line-through; opacity: .7; }
+.rt-path { display: inline-flex; align-items: center; gap: 4px; }
+@media (max-width: 1180px) { .rt-top { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 640px) { .rt-figs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { .rt-node rect, .rt-lamp, .rt-meter span { transition: none; } }
 @media (max-width: 1180px) { .trace { grid-template-columns: 1fr; } .detail { position: static; max-height: none; } }
 @media (max-width: 760px) {
   .app { grid-template-columns: 1fr; grid-template-rows: 48px auto 1fr; }
@@ -263,6 +336,7 @@ const TABS = [
   { k: "beam", label: "Ranking" },
   { k: "links", label: "Links" },
   { k: "deliberations", label: "Vichara", tech: true },
+  { k: "routing", label: "Routing" },
   { k: "agents", label: "Agents" },
   { k: "trace", label: "Activity", tech: true },
 ];
@@ -300,10 +374,11 @@ const fmt = {
 
 const OK = new Set(["ok", "pass", "reported", "kept", "final", "pursue", "answered", "has_evidence", "unique",
   "progressing", "decision-ready", "sufficient", "high-confidence", "strong", "resolved", "valid", "grounded",
-  "include", "pursue", "recommend transition", "strengthen", "maintain", "up"]);
+  "include", "pursue", "recommend transition", "strengthen", "maintain", "up", "activate", "build", "scale", "done", "allowed"]);
 const FAIL = new Set(["failed", "fail", "drop", "pruned", "blocked", "insufficient", "contradictory", "weak",
-  "no_evidence_found", "repair exhausted", "exclude", "research failed", "recommend retirement", "weaken", "down"]);
-const WARN = new Set(["deferred", "unresolved", "needs more evidence", "partial", "mixed", "open", "reduced",
+  "no_evidence_found", "repair exhausted", "exclude", "research failed", "recommend retirement", "weaken", "down",
+  "stop", "ruled out"]);
+const WARN = new Set(["explore", "test", "reframe", "deferred", "unresolved", "needs more evidence", "partial", "mixed", "open", "reduced",
   "at-risk", "awaiting-evidence", "needs-attention", "flagged", "duplicate", "unreviewed", "needs_verification",
   "evidence ceiling", "partial", "validate", "investigate further", "defer", "challenge", "needs_research",
   "needs more evidence"]);
@@ -312,7 +387,7 @@ function tone(v) {
   if (OK.has(s)) return "ok";
   if (FAIL.has(s)) return "fail";
   if (WARN.has(s)) return "warn";
-  if (s === "running" || s === "live" || s === "proposed" || STAGES.includes(s)) return "info";
+  if (s === "running" || s === "live" || s === "proposed" || s === "next" || STAGES.includes(s)) return "info";
   return "";
 }
 
@@ -466,7 +541,7 @@ function TechToggle() {
 function App() {
   const route = parseRoute(useHash());
   // Each poll reads every run document; with cloud Firestore that is billed, so slow down when idle.
-  const runs = usePoll("/api/runs", d => (d || []).some(r => !TERMINAL.has(r.status)) ? 3000 : 30000);
+  const runs = usePoll("/api/runs", d => (d || []).some(r => !TERMINAL.has(r.status) && !r.simulation) ? 3000 : 30000);
   const list = runs.data || [];
   const runId = route.runId || (list[0] && list[0].marketRunId) || null;
   return html`<div className="app">
@@ -482,8 +557,8 @@ function App() {
       ${runs.error && !runs.data ? html`<div className="alert fail" style=${{ margin: "8px 12px" }}>${runs.error}</div>` : null}
       ${list.map(r => html`<a key=${r.marketRunId} href=${href(r.marketRunId, route.runId === r.marketRunId ? route.tab : "overview")}
           className=${`run-item ${r.marketRunId === runId ? "active" : ""}`}>
-        <div className="rid"><${StatusDot} status=${TERMINAL.has(r.status) ? r.status : "running"} />${r.marketRunId}</div>
-        <div className="rmeta">${r.programId || ""} · ${r.status}${r.counts && r.counts.modelCalls ? ` · ${r.counts.modelCalls} calls` : ""}</div>
+        <div className="rid"><${StatusDot} status=${r.simulation ? "simulation" : TERMINAL.has(r.status) ? r.status : "running"} />${r.marketRunId}</div>
+        <div className="rmeta">${r.programId || ""} · ${r.simulation ? "routing simulation" : r.status}${r.counts && r.counts.modelCalls ? ` · ${r.counts.modelCalls} calls` : ""}</div>
       </a>`)}
       ${runs.data && !list.length ? html`<div className="muted" style=${{ padding: "8px 16px" }}>No runs yet.</div>` : null}
     </aside>
@@ -499,14 +574,14 @@ function RunView({ runId, tab, seq }) {
   const [tech] = useTech();
   const runState = usePoll(`/api/runs/${enc(runId)}`, 2000, live);
   const run = runState.data;
-  useEffect(() => { if (run && TERMINAL.has(run.status)) setLive(false); }, [run && run.status]);
+  useEffect(() => { if (run && (TERMINAL.has(run.status) || run.simulation)) setLive(false); }, [run && run.status, run && !!run.simulation]);
   const steps = useSteps(runId, live);
 
   if (runState.error && !run) return html`<div className="content"><div className="alert fail">${runState.error}</div></div>`;
   if (!run) return html`<${Empty} title="Loading run…" />`;
 
   const started = run.createdAt || (steps[0] && steps[0].startedAt);
-  const isLive = !TERMINAL.has(run.status);
+  const isLive = !TERMINAL.has(run.status) && !run.simulation;
 
   const views = {
     overview: () => html`<${Overview} run=${run} />`,
@@ -521,6 +596,7 @@ function RunView({ runId, tab, seq }) {
     map: () => html`<${MarketMapView} runId=${runId} live=${isLive} />`,
     evaluation: () => html`<${EvaluationView} runId=${runId} live=${isLive} />`,
     agents: () => html`<${AgentsView} runId=${runId} live=${isLive} />`,
+    routing: () => html`<${RoutingView} runId=${runId} live=${isLive} />`,
   };
   const view = views[tab] || (() => html`<${Empty} title="Unknown view" />`);
 
@@ -528,7 +604,9 @@ function RunView({ runId, tab, seq }) {
     <div className="run-head">
       <div className="title-row">
         <h1>${run.marketRunId}</h1>
-        ${isLive
+        ${run.simulation
+          ? html`<${Pill} value="next">Routing simulation · ${run.simulation.stage} stage only<//>`
+          : isLive
           ? html`<${Pill} value="live"><span className="dot info"></span>Running · ${STAGE_LABEL[run.status] || run.status}<//>`
           : html`<${Pill} value=${run.status} />`}
         ${run.marketStatus ? html`<${Pill} value=${run.marketStatus.state}>Market: ${run.marketStatus.state}<//>` : null}
@@ -552,7 +630,7 @@ function Stepper({ run }) {
     let st = "todo";
     if (failed) st = i < failIdx ? "done" : i === failIdx ? "failed" : "todo";
     else if (i <= cur) st = "done";
-    else if (i === cur + 1 && !TERMINAL.has(run.status)) st = "active";
+    else if (i === cur + 1 && !TERMINAL.has(run.status) && !run.simulation) st = "active";
     return html`<li key=${s} className=${`stage ${st}`}><span className="stage-dot"></span><span>${STAGE_LABEL[s]}</span></li>`;
   })}</ol>`;
 }
@@ -920,19 +998,73 @@ function Narrative({ items }) {
   const [open, setOpen] = useState(false);
   if (!items || !items.length) return null;
   return html`<div style=${{ marginTop: 10 }}>
-    <button className="more" onClick=${() => setOpen(!open)}>${open ? "Hide" : "Show"} the seven assessment dimensions</button>
+    <button className="more" onClick=${() => setOpen(!open)}>${open ? "Hide" : "Show"} the assessment narrative (Assess stage)</button>
     ${open ? html`<table style=${{ marginTop: 6 }}><thead><tr><th>Dimension</th><th>State (hypothesis)</th><th>Rationale</th></tr></thead><tbody>
       ${items.map(a => html`<tr key=${a.dimensionKey}><td>${a.dimensionKey}</td><td><${Pill}>${a.state}<//></td><td className="wrap muted">${a.rationale}</td></tr>`)}
     </tbody></table>` : null}
   </div>`;
 }
 
-function PositionCard({ position }) {
+const STEP_TONE = { done: "done", "to do": "", "ruled out": "ruled out" };
+
+// The playbook chain (§6 quick picker): Position → Stance → Strategy → Play → Line → Move/Gambit → Action.
+function PlaybookChain({ p, reason }) {
+  if (!p.axes) return null;
+  const bc = p.bindingConstraint || {};
+  const stance = p.stance || {};
+  const line = p.line;
+  const nxt = p.nextStep;
+  return html`<div>
+    <div className="eyebrow" style=${{ marginTop: 12 }}>Position · seven axes</div>
+    <div className="axes">${p.axes.map(a => html`<div key=${a.axis} className=${`axis${a.axis === bc.axis ? " bind" : ""}`} title=${a.note || ""}>
+      <div className="an">${a.axis} ${a.screenName}${a.axis === bc.axis ? " · binding" : ""}</div>
+      <div className="as">${a.state}</div></div>`)}</div>
+    <div className="chain">
+      <span>Stance <b>${stance.stance || "—"}</b></span>
+      ${(stance.ruledOut || []).length ? html`<span className="muted">(ruled out: ${stance.ruledOut.map(r => r.stance).join(", ")})</span>` : null}
+      <span className="arrow">→</span><span><b>${p.strategy}</b> ${p.strategyName}</span>
+      ${p.play ? html`<span className="arrow">→</span><span><b>${p.play}</b> ${p.playName}</span>` : null}
+      ${line ? html`<span className="arrow">→</span><span>Line <b>${line.sequenceText || line.sequence.join(" → ")}</b></span>` : null}
+    </div>
+    ${line ? html`<div style=${{ marginTop: 8 }}>
+      <div className="muted" style=${{ fontSize: 12 }}>Steps of ${line.current} ${line.currentName}${line.then ? ` · then ${line.then}` : ""}</div>
+      <div className="steps">${line.steps.map(s => html`<span key=${s.id} title=${s.text || ""}>
+        <${Pill} value=${nxt && s.id === nxt.id ? "next" : STEP_TONE[s.status]}>${s.id} ${s.name} · ${nxt && s.id === nxt.id ? "next" : s.status}<//></span>`)}</div>
+    </div>` : null}
+    ${nxt ? html`<div className="next-step">
+      <div className="eyebrow">Recommended next step</div>
+      <div style=${{ marginTop: 2 }}><b>${nxt.id} ${nxt.name}</b> <span className="muted">· ${nxt.where}</span></div>
+      ${nxt.doneWhen ? html`<div className="muted" style=${{ fontSize: 12, marginTop: 2 }}>Done when: ${nxt.doneWhen}</div>` : null}
+      <div className="muted" style=${{ fontSize: 12, marginTop: 2 }}>${nxt.whoCanRun ? `Who can run it: ${nxt.whoCanRun}. ` : ""}${nxt.allowedInMode ? "Allowed in Advisory mode." : "Not allowed in Advisory mode; needs approval."}</div>
+    </div>` : null}
+    ${(p.gambits || []).length ? html`<div style=${{ marginTop: 10 }}>
+      <div className="eyebrow">Gambit options (proposals only, not authorized)</div>
+      <table style=${{ marginTop: 4 }}><tbody>${p.gambits.map(g => html`<tr key=${g.id}>
+        <td><b>${g.id}</b> ${g.name}</td>
+        <td className="wrap muted">Give ${g.give}; get ${g.get}; max loss ${g.maxLoss}; approver ${g.approver}</td>
+        <td>${g.fitsStance ? html`<${Pill} value="allowed">fits ${stance.stance}<//>` : html`<${Pill}>needs ${g.needsStance}<//>`}</td>
+      </tr>`)}</tbody></table></div>` : null}
+    ${(p.actions || []).length ? html`<div style=${{ marginTop: 10 }}>
+      <div className="eyebrow">Actions on this line</div>
+      <table style=${{ marginTop: 4 }}><tbody>${p.actions.map(a => html`<tr key=${a.id}>
+        <td><b>${a.id}</b> ${a.name}</td><td className="muted">Tier ${a.tier} ${a.tierName}</td>
+        <td className="wrap muted">${a.whoCanRun}</td>
+        <td><${Pill} value=${a.allowedInMode ? "allowed" : "blocked"}>${a.allowedInMode ? "Advisory OK" : "needs approval"}<//></td>
+      </tr>`)}</tbody></table></div>` : null}
+    <div className="muted" style=${{ fontSize: 12, marginTop: 8 }}>
+      ${p.pickReason}${reason ? ` Disposition: ${reason}.` : ""} Binding constraint by ${bc.rule || "picker.yaml"}. ${p.playbookVersion || ""} · ${p.pickerVersion || ""}
+    </div>
+  </div>`;
+}
+
+function PositionCard({ position, reason }) {
   const p = position;
+  const label = p.axes ? p.disposition : p.decision || p.disposition;
   return html`<${Card}>
     <div style=${{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
       <h3 style=${{ fontSize: 15 }}>${(p.pathLabels || []).join(" › ")}</h3>
-      <${Pill} value=${p.decision}>${p.disposition}<//>
+      <${Pill} value=${label}>${p.axes ? `${posGlyph(p)} ${p.disposition}` : p.disposition}<//>
+      ${p.attention ? html`<span className="muted">attention: ${p.attention}</span>` : null}
       <span className="muted">confidence: ${p.confidence}</span>
     </div>
     <p style=${{ marginTop: 6 }}>${p.headline}</p>
@@ -950,8 +1082,9 @@ function PositionCard({ position }) {
       ${p.risks ? html`<dt>Risks</dt><dd>${p.risks}</dd>` : null}
       ${p.economicEstimate ? html`<dt>Value pool (hypothesis)</dt><dd>${fmt.money(p.economicEstimate.valuePoolUsdLow)}–${fmt.money(p.economicEstimate.valuePoolUsdHigh)} <span className="muted">${p.economicEstimate.unit}</span></dd>` : null}
       ${(p.limitingFactors || []).length ? html`<dt>Confidence limited by</dt><dd className="muted">${p.limitingFactors.join("; ")}</dd>` : null}
-      <dt>Recommended action</dt><dd>${p.recommendedAction} <span className="muted mono">(${p.ruleFired})</span></dd>
+      ${p.recommendedAction ? html`<dt>Recommended action</dt><dd>${p.recommendedAction} <span className="muted mono">(${p.ruleFired})</span></dd>` : null}
     </dl>
+    <${PlaybookChain} p=${p} reason=${reason} />
     ${(p.openGaps || []).length ? html`<div className="muted" style=${{ marginTop: 8 }}>Open gaps: ${p.openGaps.map(g => `${g.field} (${g.companies})`).join(", ")}</div>` : null}
     ${(p.targetCompanies || []).length ? html`<div style=${{ marginTop: 10 }}>
       <div className="eyebrow">Target companies (${p.companiesIncluded} verified)</div>
@@ -971,15 +1104,23 @@ function DecisionsView({ runId, live }) {
     ${d.marketStatus ? html`<div className=${`alert ${tone(d.marketStatus.state) || "info"}`}>
       <b>Market status: ${d.marketStatus.state}.</b> ${d.marketStatus.reason}</div>` : null}
     ${(d.decisions || []).map(x => x.marketPosition
-      ? html`<${PositionCard} key=${x.pathId} position=${x.marketPosition} />`
-      : html`<${Card} key=${x.pathId}><b>${x.pathId}</b> — <${Pill} value=${x.decision} /> <span className="muted">${x.reason}</span><//>`)}
+      ? html`<${PositionCard} key=${x.pathId} position=${x.marketPosition} reason=${x.reason} />`
+      : html`<${Card} key=${x.pathId}><b>${x.pathId}</b> — <${Pill} value=${x.disposition || x.decision} /> <span className="muted">${x.reason}</span><//>`)}
     ${(d.unassessed || []).length ? html`<${Card} title="Not assessed in this run" flush=${true}><table><tbody>
       ${d.unassessed.map(u => html`<tr key=${u.dimensionKey}><td>${u.dimensionKey}</td><td className="muted">${u.reason}</td></tr>`)}</tbody></table><//>` : null}
   </div>`}<//>`;
 }
 
 
-const STATUS_GLYPH = { "Pursue": "▲", "Needs more evidence": "●", "Drop": "▼" };
+// Disposition groups (playbook §2.4): advancing, testing, parked or reframed, stopped.
+const DISPOSITION_GROUP = { ACTIVATE: "good", BUILD: "good", SCALE: "good", EXPLORE: "warn", TEST: "warn",
+  REFRAME: "park", PARK: "park", STOP: "crit" };
+const GROUP_GLYPH = { good: "▲", warn: "●", park: "◆", crit: "▼" };
+// Runs before the playbook Review stored a status (Pursue / Needs more evidence / Drop) instead.
+const LEGACY_GROUP = { "Pursue": "good", "Needs more evidence": "warn", "Drop": "crit" };
+const posLabel = p => (p && (p.disposition || p.status)) || "";
+const posGroup = p => DISPOSITION_GROUP[posLabel(p)] || LEGACY_GROUP[posLabel(p)] || "warn";
+const posGlyph = p => GROUP_GLYPH[posGroup(p)];
 
 function squarify(items, x, y, w, h) {
   const out = [];
@@ -1020,15 +1161,14 @@ function tileStyle(t, mode) {
     const c = t.change || {};
     if (c.direction === "new" || !c.direction) return { bg: "var(--map-neutral)", ink: "ink-dark", key: "new" };
     if (c.direction === "flat") return { bg: "var(--map-flat)", ink: "ink-dark", key: "flat" };
-    const strong = Math.abs(c.searchScorePp || 0) >= 5 || (c.previousStatus && t.position && c.previousStatus !== t.position.status);
+    const strong = Math.abs(c.searchScorePp || 0) >= 5 || (c.previousDisposition && t.position && c.previousDisposition !== posLabel(t.position));
     if (c.direction === "up") return { bg: strong ? "var(--map-up-2)" : "var(--map-up-1)", ink: strong ? "ink-light" : "ink-dark", key: "up" };
     return { bg: strong ? "var(--map-down-2)" : "var(--map-down-1)", ink: strong ? "ink-light" : "ink-dark", key: "down" };
   }
   if (!t.position) return { bg: "var(--map-neutral)", ink: "ink-dark", key: "screened" };
-  const st = t.position.status;
-  if (st === "Pursue") return { bg: "var(--map-good)", ink: "ink-light", key: st };
-  if (st === "Drop") return { bg: "var(--map-crit)", ink: "ink-light", key: st };
-  return { bg: "var(--map-warn)", ink: "ink-dark", key: st };
+  const g = posGroup(t.position);
+  const ink = g === "warn" ? "ink-dark" : "ink-light";
+  return { bg: `var(--map-${g})`, ink, key: posLabel(t.position) };
 }
 
 function changeText(c) {
@@ -1068,7 +1208,7 @@ function MarketMapView({ runId, live }) {
   const groupRects = squarify(groups.map(g => ({ ...g, value: g.value })), 0, 0, width, H);
   const selected = tiles.find(t => t.tileId === sel);
   const legend = mode === "position"
-    ? [["var(--map-good)", "▲ Pursue"], ["var(--map-warn)", "● Needs more evidence"], ["var(--map-crit)", "▼ Drop"], ["var(--map-neutral)", "Screened, not researched"]]
+    ? [["var(--map-good)", "▲ ACTIVATE · BUILD · SCALE"], ["var(--map-warn)", "● EXPLORE · TEST"], ["var(--map-park)", "◆ REFRAME · PARK"], ["var(--map-crit)", "▼ STOP"], ["var(--map-neutral)", "Screened, not researched"]]
     : [["var(--map-down-2)", "Down a lot"], ["var(--map-down-1)", "Down"], ["var(--map-flat)", "Flat"], ["var(--map-up-1)", "Up"], ["var(--map-up-2)", "Up a lot"], ["var(--map-neutral)", "New (no earlier match)"]];
 
   return html`<div className="stack">
@@ -1082,13 +1222,13 @@ function MarketMapView({ runId, live }) {
       <button className=${`chip ${table ? "on" : ""}`} onClick=${() => setTable(!table)}>${table ? "Map view" : "Table view"}</button>
     </div>
     <div className="muted" style=${{ fontSize: 12 }}>
-      ${tiles.length} micro markets at the ${map.level} level, grouped by segment. Size: ${map.sizeBasis}.
+      ${tiles.length} market units at the ${map.level} level, grouped by segment. Size: ${map.sizeBasis}.
       ${mode === "change" ? (map.previousRunId ? ` Compared with ${map.previousRunId}.` : " No earlier run of this program to compare with yet.") : ""}
     </div>
-    ${table ? html`<${Card} flush=${true}><table><thead><tr><th>Market unit</th><th>Segment</th><th className="num">Value pool (mid)</th><th>Position</th><th className="num">Search score</th><th>Change</th></tr></thead><tbody>
+    ${table ? html`<${Card} flush=${true}><table><thead><tr><th>Market unit</th><th>Segment</th><th className="num">Value pool (mid)</th><th>Disposition</th><th className="num">Search score</th><th>Change</th></tr></thead><tbody>
       ${[...tiles].sort((a, b) => (b.valueMid || 0) - (a.valueMid || 0)).map(t => html`<tr key=${t.tileId} style=${{ cursor: "pointer" }} onClick=${() => setSel(t.tileId)}>
         <td className="wrap">${t.labels.slice(1).join(" › ")}</td><td>${t.group}</td><td className="num">${fmt.money(t.valueMid)}</td>
-        <td>${t.position ? html`<${Pill} value=${t.position.status}>${STATUS_GLYPH[t.position.status] || ""} ${t.position.status}<//>` : html`<span className="muted">screened</span>`}</td>
+        <td>${t.position ? html`<${Pill} value=${posLabel(t.position)}>${posGlyph(t.position)} ${posLabel(t.position)}<//>` : html`<span className="muted">screened</span>`}</td>
         <td className="num">${Math.round(t.searchScore * 100)}%</td><td>${changeText(t.change)}</td></tr>`)}
     </tbody></table><//>` : html`<div className="map-wrap" ref=${ref} onMouseLeave=${() => setTip(null)}>
       ${groupRects.map(g => {
@@ -1103,8 +1243,8 @@ function MarketMapView({ runId, live }) {
                 style=${{ left: r.x + 1, top: r.y + 1, width: Math.max(0, r.w - 2), height: Math.max(0, r.h - 2), background: sty.bg }}
                 onClick=${() => setSel(t.tileId)}
                 onMouseMove=${e => setTip({ t, x: e.clientX, y: e.clientY })}>
-              ${big ? html`<div className="t1">${t.position ? (STATUS_GLYPH[t.position.status] || "") + " " : ""}${t.title}</div>
-                <div className="t2">${fmt.money(t.valueMid)} · ${mode === "change" ? changeText(t.change) : t.position ? t.position.status : "screened"}</div>` : null}
+              ${big ? html`<div className="t1">${t.position ? posGlyph(t.position) + " " : ""}${t.title}</div>
+                <div className="t2">${fmt.money(t.valueMid)} · ${mode === "change" ? changeText(t.change) : t.position ? posLabel(t.position) : "screened"}</div>` : null}
             </div>`;
           })}
         <//>`;
@@ -1113,7 +1253,7 @@ function MarketMapView({ runId, live }) {
     ${tip ? html`<div className="map-tip" style=${{ left: Math.min(tip.x + 14, window.innerWidth - 340), top: tip.y + 14 }}>
       <div><b>${tip.t.labels.join(" › ")}</b></div>
       <div style=${{ marginTop: 4 }}>Value pool ${fmt.money(tip.t.valuePoolUsdLow)}–${fmt.money(tip.t.valuePoolUsdHigh)} <span className="muted">(hypothesis)</span></div>
-      <div>${tip.t.position ? `${tip.t.position.status} · confidence ${tip.t.position.confidence}` : "Screened by search score only"}</div>
+      <div>${tip.t.position ? `${posLabel(tip.t.position)}${tip.t.position.play ? ` · ${tip.t.position.play}` : ""}${tip.t.position.nextStep ? ` · next ${tip.t.position.nextStep}` : ""} · confidence ${tip.t.position.confidence}` : "Screened by search score only"}</div>
       <div className="muted">Search score ${Math.round(tip.t.searchScore * 100)}% · change ${changeText(tip.t.change)}</div>
     </div>` : null}
     ${selected ? html`<${TileDetail} tile=${selected} runId=${runId} />` : html`<div className="muted">Click a market unit to see its detail.</div>`}
@@ -1122,16 +1262,17 @@ function MarketMapView({ runId, live }) {
 
 function TileDetail({ tile, runId }) {
   const t = tile;
-  return html`<${Card} title=${t.labels.join(" › ")} hint=${t.researched ? "Researched final path" : "Screened by search score and economics only; not researched"}
-      right=${t.position ? html`<${Pill} value=${t.position.status}>${STATUS_GLYPH[t.position.status] || ""} ${t.position.status}<//>` : html`<${Pill}>screened<//>`}>
+  return html`<${Card} title=${t.labels.join(" › ")} hint=${t.researched ? "Researched final market unit" : "Screened by search score and economics only; not researched"}
+      right=${t.position ? html`<${Pill} value=${posLabel(t.position)}>${posGlyph(t.position)} ${posLabel(t.position)}<//>` : html`<${Pill}>screened<//>`}>
     <dl className="kv">
       <dt>Value pool</dt><dd>${fmt.money(t.valuePoolUsdLow)} – ${fmt.money(t.valuePoolUsdHigh)} <span className="muted">${t.economicsBasis || ""} (hypothesis)</span></dd>
       ${t.targetCompanyEstimate != null ? html`<dt>Target companies (est.)</dt><dd>${fmt.num(t.targetCompanyEstimate)}</dd>` : null}
       <dt>Search score</dt><dd><${Bar} value=${t.searchScore} /></dd>
-      ${t.position ? html`<dt>Position</dt><dd>${t.position.status} · confidence ${t.position.confidence} · v${t.position.version} · trajectory ${t.position.trajectory}</dd>
+      ${t.position ? html`<dt>Disposition</dt><dd>${posLabel(t.position)} · attention ${t.position.attention || "—"} · confidence ${t.position.confidence} · v${t.position.version} · trajectory ${t.position.trajectory}</dd>
+        ${t.position.play ? html`<dt>Play · next step</dt><dd>${t.position.play}${t.position.nextStep ? ` · ${t.position.nextStep}` : ""}</dd>` : null}
         <dt>P&E recommendation</dt><dd>${t.position.recommendation || "—"}</dd>
         <dt>Verified companies</dt><dd>${t.includedCompanies}</dd>` : null}
-      <dt>Change</dt><dd>${t.change && t.change.direction !== "new" ? `${t.change.direction} (${changeText(t.change)} search score${t.change.previousStatus ? `, was ${t.change.previousStatus}` : ""})` : "new micro market (no match in the previous run)"}</dd>
+      <dt>Change</dt><dd>${t.change && t.change.direction !== "new" ? `${t.change.direction} (${changeText(t.change)} search score${t.change.previousDisposition ? `, was ${t.change.previousDisposition}` : ""})` : "new market unit (no match in the previous run)"}</dd>
     </dl>
     ${(t.assumptions || []).length ? html`<div style=${{ marginTop: 10 }}><div className="eyebrow">Assumptions</div>
       <ul style=${{ marginLeft: 18 }}>${t.assumptions.map((a, i) => html`<li key=${i}>${a}</li>`)}</ul></div>` : null}
@@ -1252,6 +1393,364 @@ function AgentsView({ runId, live }) {
     ${d.simple && d.simple.agents.length ? html`<${AgentsSimple} view=${d.simple} tech=${tech} />` : null}
     ${tech || !(d.simple && d.simple.agents.length) ? html`<${AgentsTechnical} d=${d} />` : null}
   </div>`}<//>`;
+}
+
+/* ---------- routing: the task router replayed from the trace ---------- */
+
+const RT_TRACKS = {
+  "in-router": "M150 190 H190", "router-rules": "M345 150 H372 V52 H410", "rules-save": "M560 52 H880 V160",
+  "router-ow": "M345 160 H410", "ow-val": "M560 160 H610", "val-save": "M760 160 H790 V176 H820",
+  "val-fr": "M685 195 V280", "ow-fr": "M485 195 V292 H610", "router-fr": "M345 228 H372 V326 H610",
+  "fr-save": "M760 310 H790 V214 H820",
+};
+const RT_RULES = ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"];
+const RT_CHECKS = [["echo_key", "ECHO"], ["grounding", "GROUND"], ["abstention", "ABSTAIN"]];
+const RT_MS = { enter: 350, move: 650, router: 500, node: 650, checks: 750, escalate: 450, save: 700 };
+const RT_REDUCED = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+const rtCheck = c => { const i = c.name.indexOf("."); return [c.name.slice(0, i), c.name.slice(i + 1)]; };
+const rtShort = e => ({ repair_deliberation: "repair", judge_coverage: "coverage", propose_hypotheses: "propose" }[e.operation]
+  || String(e.subject || "").replace(/_/g, " "));
+const rtSecs = ms => ms != null && ms < 50 ? "replayed" : fmt.ms(ms);
+const rtTier = t => t === "open_weight" ? "open-weight" : t;
+
+function rtBeats(e) {
+  const b = [{ k: "enter" }, { k: "move", t: "in-router", c: "esc" }, { k: "router" }];
+  const ow = e.attempts.find(a => a.tier === "open_weight");
+  const fr = e.attempts.find(a => a.tier === "frontier");
+  const route = e.router ? e.router.route : "frontier";
+  if (route === "open_weight" && ow) {
+    b.push({ k: "move", t: "router-ow", c: "ow" }, { k: "node", n: "ow", a: ow });
+    if (ow.status !== "ok") b.push({ k: "move", t: "ow-fr", c: "esc" }, { k: "escalate" });
+    else {
+      b.push({ k: "move", t: "ow-val", c: "ow" }, { k: "checks" });
+      if (e.outcome.escalated) b.push({ k: "move", t: "val-fr", c: "esc" }, { k: "escalate" });
+      else b.push({ k: "move", t: "val-save", c: "ow" });
+    }
+    if (e.outcome.escalated && fr) b.push({ k: "node", n: "fr", a: fr }, { k: "move", t: "fr-save", c: "fr" });
+  } else if (route === "rules") {
+    b.push({ k: "move", t: "router-rules", c: "rules" }, { k: "move", t: "rules-save", c: "rules" });
+  } else {
+    b.push({ k: "move", t: "router-fr", c: "fr" });
+    if (fr) b.push({ k: "node", n: "fr", a: fr });
+    b.push({ k: "move", t: "fr-save", c: "fr" });
+  }
+  b.push({ k: "save" });
+  return b;
+}
+
+function rtOutcome(e) {
+  if (!e.routed) return "nr";
+  if (e.outcome.escalated) return "esc";
+  return e.outcome.servedBy === "open_weight" ? "kept" : "dir";
+}
+
+function rtFailed(e, tier) {
+  return e.checks.filter(c => rtCheck(c)[0] === tier && c.status === "fail").map(c => rtCheck(c)[1]);
+}
+
+function RoutingView({ runId, live }) {
+  const st = usePoll(`/api/runs/${enc(runId)}/routing`, live ? 5000 : 0, live);
+  if (st.error && !st.data) return html`<${Empty} title="Routing not available" hint=${st.error} />`;
+  if (!st.data) return html`<${Empty} title="Loading…" />`;
+  const sim = st.data;
+  if (!(sim.walkthrough || []).some(e => e.routed)) {
+    return html`<${Empty} title="No routed tasks in this run"
+      hint=${html`Runs from before the task router have none. To see routing on a program, run <code>hipstraw-mm market --memory simulate --program invoice_alpha_genesis --serve</code>`} />`;
+  }
+  return html`<${RoutingReplay} key=${sim.runId} sim=${sim} runId=${runId} />`;
+}
+
+function RoutingReplay({ sim, runId }) {
+  const entries = sim.walkthrough;
+  const n = entries.length;
+  const featured = Math.max(0, entries.findIndex(e => e.outcome && e.outcome.escalated));
+  const [pos, setPos] = useState({ idx: featured, upto: n, beat: Infinity });
+  const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(2);
+  const tokRef = useRef(null);
+  const animRef = useRef(null);
+  const idx = Math.min(pos.idx, n - 1);
+  const e = entries[idx];
+  const beats = useMemo(() => rtBeats(e), [e]);
+  const shown = playing ? beats.slice(0, pos.beat) : beats;
+  // A live run adds tasks: keep them counted when the replay was showing everything.
+  const prevN = useRef(n);
+  useEffect(() => {
+    if (!playing && pos.upto >= prevN.current) setPos(p => ({ ...p, upto: n }));
+    prevN.current = n;
+  }, [n]);
+
+  useEffect(() => {
+    if (!playing) return undefined;
+    if (pos.beat >= beats.length) {
+      const t = setTimeout(() => {
+        if (pos.idx + 1 < n) setPos({ idx: pos.idx + 1, upto: pos.idx + 1, beat: 0 });
+        else { setPos({ idx: pos.idx, upto: n, beat: Infinity }); setPlaying(false); }
+      }, 250 / speed);
+      return () => clearTimeout(t);
+    }
+    const b = beats[pos.beat];
+    const ms = RT_MS[b.k] / speed;
+    const advance = () => setPos(p => ({ ...p, beat: p.beat + 1 }));
+    if (b.k !== "move" || RT_REDUCED) {
+      const t = setTimeout(advance, b.k === "move" ? ms * 0.3 : ms);
+      return () => clearTimeout(t);
+    }
+    const tok = tokRef.current, path = animRef.current;
+    path.setAttribute("d", RT_TRACKS[b.t]);
+    path.setAttribute("class", `rt-lit ${b.c}`);
+    tok.setAttribute("class", `rt-tok ${b.c}`);
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = `${len} ${len}`;
+    path.style.strokeDashoffset = `${len}`;
+    let stop = false;
+    const done = () => { if (!stop) { stop = true; advance(); } };
+    // Animation frames stop in background tabs; the timer keeps the replay moving.
+    const timer = setTimeout(done, ms + 120);
+    const t0 = performance.now();
+    const frame = now => {
+      if (stop) return;
+      const k = Math.min(1, (now - t0) / ms);
+      const q = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      const pt = path.getPointAtLength(q * len);
+      tok.setAttribute("cx", pt.x); tok.setAttribute("cy", pt.y);
+      path.style.strokeDashoffset = `${len * (1 - q)}`;
+      if (k < 1) requestAnimationFrame(frame); else done();
+    };
+    requestAnimationFrame(frame);
+    return () => {
+      stop = true; clearTimeout(timer);
+      path.setAttribute("d", ""); tok.setAttribute("cx", -30); tok.setAttribute("cy", -30);
+    };
+  }, [playing, pos, beats, speed, n]);
+
+  const play = () => {
+    setPos(pos.upto >= n ? { idx: 0, upto: 0, beat: 0 } : { idx, upto: idx, beat: 0 });
+    setPlaying(true);
+  };
+  const pause = () => { setPlaying(false); setPos(p => ({ ...p, upto: Math.max(p.upto, p.idx + 1), beat: Infinity })); };
+  const jump = i => { setPlaying(false); setPos({ idx: Math.max(0, Math.min(n - 1, i)), upto: Math.max(0, Math.min(n - 1, i)) + 1, beat: Infinity }); };
+  const showAll = () => { setPlaying(false); setPos({ idx: featured, upto: n, beat: Infinity }); };
+
+  const done = entries.slice(0, pos.upto);
+  const count = k => done.filter(x => rtOutcome(x) === k).length;
+  const sum = (list, f) => list.reduce((a, x) => a + (f(x) || 0), 0);
+  const owUsd = sum(done, x => sum(x.attempts.filter(a => a.tier === "open_weight"), a => a.usd));
+  const frUsd = sum(done, x => sum(x.attempts.filter(a => a.tier === "frontier"), a => a.usd));
+  const allUsd = sum(done, x => x.allFrontierUsd);
+  const scale = Math.max(sum(entries, x => x.costUsd), sum(entries, x => x.allFrontierUsd), 1e-9);
+  const pct = v => `${(100 * v / scale).toFixed(2)}%`;
+  const saved = allUsd - owUsd - frUsd;
+
+  const docs = (sim.objective && sim.objective.documents) || [];
+  const controls = html`<div className="rt-controls">
+    <button className="chip" onClick=${() => jump(0)} title="First task" aria-label="First task">⏮</button>
+    <button className="chip" onClick=${() => jump(idx - 1)} title="Previous task" aria-label="Previous task">◀</button>
+    <button className="rt-play" onClick=${playing ? pause : play}>${playing ? "❚❚ Pause" : pos.upto >= n ? "▶ Replay" : "▶ Play"}</button>
+    <button className="chip" onClick=${() => jump(idx + (playing ? 0 : 1))} title="Next task" aria-label="Next task">▶</button>
+    <button className="chip" onClick=${showAll} title="Show every task" aria-label="Show every task">⏭</button>
+    <span className="seg">${[1, 2, 4].map(s => html`<button key=${s} className=${speed === s ? "on" : ""} onClick=${() => setSpeed(s)}>${s}×</button>`)}</span>
+    <span className="rt-pos">${idx + 1} / ${n}</span>
+  </div>`;
+
+  return html`<div className="stack">
+    <${Card} title="Task routing" right=${controls}
+      hint=${html`<div>Vichara stage · ${n} tasks read back from this run's trace · ${sim.routerVersion}. The route is chosen by rules in config/routing.yaml, never by a model.</div>
+        <div className="rt-chips">
+          <span className="rt-chip"><i style=${{ background: "var(--tier-ow)" }}></i>open-weight <b>${(sim.openWeight && sim.openWeight.model) || "none configured"}</b></span>
+          <span className="rt-chip"><i style=${{ background: "var(--tier-fr)" }}></i>frontier <b>${(sim.frontier && sim.frontier.model) || "—"}</b></span>
+          <span className="rt-chip">open-weight route <b>${sim.openWeightRouteOn ? "on" : "off"}</b></span>
+          ${docs.length ? html`<span className="rt-chip">objective <b>${fmt.num(sim.objective.chars)} chars</b> · ${docs.map(d => `${d.fileName} (${d.pages} pages)`).join(", ")}</span>` : null}
+        </div>`} flush>
+      <div className="rt-top">
+        <div>
+          <div className="rt-dia"><${RtDiagram} e=${e} shown=${shown} sim=${sim} tokRef=${tokRef} animRef=${animRef} /></div>
+          <div className="legend rt-legend">
+            <span><span className="sw" style=${{ background: "var(--tier-ow)" }}></span>open-weight</span>
+            <span><span className="sw" style=${{ background: "var(--tier-fr)" }}></span>frontier</span>
+            <span><span className="sw" style=${{ background: "var(--tier-esc)" }}></span>router decision, escalation</span>
+            <span><span className="sw" style=${{ background: "var(--tier-rules)" }}></span>rules</span>
+          </div>
+        <div className="rt-figs">
+          ${[["kept", "Kept on open-weight", "var(--tier-ow)"], ["esc", "Escalated to frontier", "var(--tier-esc)"],
+             ["dir", "Straight to frontier", "var(--tier-fr)"], ["nr", "Not routed yet", "var(--faint)"]].map(([k, label, color]) => html`
+            <section key=${k} className="rt-fig stat"><div className="label"><span className="dot" style=${{ background: color }}></span>${label}</div><div className="value">${count(k)}</div></section>`)}
+          <section className="rt-cost">
+            <div className="stat"><div className="label">Cost of this stage</div></div>
+            <div className="rt-mrow"><span>With routing</span><span className="rt-meter"><span style=${{ width: pct(owUsd), background: "var(--tier-ow)" }}></span><span style=${{ width: pct(frUsd), background: "var(--tier-fr)" }}></span></span><span className="rt-mval">$${(owUsd + frUsd).toFixed(3)}</span></div>
+            <div className="rt-mrow"><span>All on frontier</span><span className="rt-meter"><span style=${{ width: pct(allUsd), background: "var(--faint)" }}></span></span><span className="rt-mval">$${allUsd.toFixed(3)}</span></div>
+            <div className="muted">${allUsd > 0 ? html`${saved >= 0 ? "Saved" : "Extra"} <b style=${{ color: "var(--fg)" }}>$${Math.abs(saved).toFixed(3)}</b> (${Math.abs(Math.round(100 * saved / allUsd))}%) so far · open-weight $${owUsd.toFixed(3)} · frontier $${frUsd.toFixed(3)}` : "Nothing routed yet."}</div>
+          </section>
+        </div>
+        </div>
+        <${RtNow} e=${e} idx=${idx} shown=${shown} runId=${runId} />
+      </div>
+    <//>
+
+    <${Card} title="Tasks" hint="Click a task to see its route; the step numbers open each model call in Activity." flush>
+      <div style=${{ overflowX: "auto" }}><table>
+        <thead><tr><th className="num">#</th><th>Task</th><th>Prompt</th><th>Rule</th><th>Route taken</th><th>Validation</th><th>Saved</th><th className="num">Cost</th><th className="num">All frontier</th><th>Steps</th></tr></thead>
+        <tbody>${entries.map((x, i) => {
+          const ow = x.attempts.find(a => a.tier === "open_weight");
+          const fr = x.attempts.find(a => a.tier === "frontier");
+          const failed = rtFailed(x, "open_weight");
+          const kind = rtOutcome(x);
+          const items = Object.entries(x.saved.items || {}).map(([k, v]) => `${v} ${k}`).join(", ");
+          return html`<tr key=${i} className=${`rt-row ${i === idx ? "cur" : ""} ${i >= pos.upto && i !== idx ? "pending" : ""}`} onClick=${() => jump(i)}>
+            <td className="num">${i + 1}</td>
+            <td><div style=${{ fontWeight: 550 }}>${rtShort(x)}</div><div className="mono muted">${x.task}</div></td>
+            <td className="num muted">${x.inputChars ? fmt.num(x.inputChars) : "—"}</td>
+            <td className="mono">${x.router ? x.router.ruleId : "—"}</td>
+            <td><span className="rt-path">
+              ${ow ? html`<span className=${`rt-tier ow ${kind === "esc" ? "x" : ""}`}>open-weight</span>` : null}
+              ${ow && fr ? html`<span className="muted">→</span>` : null}
+              ${fr ? html`<span className="rt-tier fr">frontier</span>` : null}
+              ${!x.routed ? html`<span className="muted">not routed</span>` : null}
+            </span></td>
+            <td>${ow && ow.status !== "ok" ? html`<${Pill} value="fail">call failed<//>`
+              : failed.length ? failed.map(f => html`<${Pill} key=${f} value="fail">${f}<//>`)
+              : ow ? html`<${Pill} value="pass">pass<//>` : html`<span className="muted">—</span>`}</td>
+            <td className="muted">${items}</td>
+            <td className="num">${fmt.usd(x.costUsd)}</td>
+            <td className="num muted">${fmt.usd(x.allFrontierUsd)}</td>
+            <td>${x.attempts.map(a => a.seq != null ? html`<a key=${a.seq} href=${href(runId, "trace", a.seq)} onClick=${ev => ev.stopPropagation()} className="mono" style=${{ marginRight: 6 }}>#${a.seq}</a>` : null)}</td>
+          </tr>`;
+        })}</tbody>
+      </table></div>
+    <//>
+
+    <${Card} title="Rubric" hint="Where every model task goes by its class in config/routing.yaml. Only wired tasks run through the router today." flush>
+      <div style=${{ overflowX: "auto" }}><table>
+        <thead><tr><th>Task</th><th>Class</th><th>Wired</th><th>Rule</th><th>Route</th><th>Why</th></tr></thead>
+        <tbody>${(sim.rubric || []).map(r => html`<tr key=${r.task}>
+          <td className="mono" style=${{ fontWeight: r.wired ? 600 : 400 }}>${r.task}</td>
+          <td>${r.class}</td>
+          <td>${r.wired ? html`<${Pill} value="ok">wired<//>` : html`<span className="muted">not yet</span>`}</td>
+          <td className="mono">${r.ruleId}</td>
+          <td>${r.route === "open_weight" ? html`<span className="rt-tier ow">open-weight</span>` : r.route === "frontier" ? html`<span className="rt-tier fr">frontier</span>` : html`<${Pill} value="warn">rules<//>`}</td>
+          <td className="muted">${r.why}</td>
+        </tr>`)}</tbody>
+      </table></div>
+    <//>
+  </div>`;
+}
+
+function RtDiagram({ e, shown, sim, tokRef, animRef }) {
+  const lit = shown.filter(b => b.k === "move");
+  const has = k => shown.some(b => b.k === k);
+  const last = [...shown].reverse().find(b => b.k !== "move");
+  const active = !last ? null : last.k === "enter" ? "in" : last.k === "router" ? "router"
+    : last.k === "node" ? last.n : last.k === "checks" ? "val" : last.k === "escalate" ? "fr" : "save";
+  const node = (id, x, y, w, h, label, sub, dim, sub2) => html`<g className=${`rt-node ${active === id ? "on" : ""} ${dim ? "dim" : ""}`}>
+    <rect x=${x} y=${y} width=${w} height=${h} rx="7" />
+    <text className="rt-nl" x=${x + 14} y=${y + 24}>${label}</text>
+    ${sub ? html`<text className="rt-ns" x=${x + 14} y=${y + 42}>${sub}</text>` : null}
+    ${sub2 ? html`<text className="rt-ns" x=${x + 14} y=${y + 58}>${sub2}</text>` : null}
+  </g>`;
+  const ruleOn = has("router") && e.router ? e.router.ruleId : null;
+  const checks = {};
+  if (has("checks")) e.checks.forEach(c => { const [tier, name] = rtCheck(c); if (tier === "open_weight") checks[name] = c.status; });
+  const served = e.outcome ? e.outcome.servedBy : "frontier";
+  return html`<svg viewBox="0 0 960 360" role="img" aria-label="Routing diagram: incoming task, router, rules, open-weight, validation, frontier, saved">
+    ${Object.entries(RT_TRACKS).map(([k, d]) => html`<path key=${k} className="rt-track" d=${d} />`)}
+    ${lit.map(b => html`<path key=${"l" + b.t} className=${`rt-lit ${b.c}`} d=${RT_TRACKS[b.t]} />`)}
+    <path ref=${animRef} className="rt-lit" d="" />
+    <text className="rt-tl" x="775" y="150">PASS</text>
+    <text className="rt-tl" x="693" y="243">ESCALATE</text>
+    <text className="rt-tl" x="493" y="245">CALL FAILED</text>
+    <text className="rt-tl" x="380" y="318">COMPLEX OR NOT WIRED</text>
+    ${node("in", 20, 160, 130, 60, "INCOMING", rtShort(e).slice(0, 18))}
+    <g className=${`rt-node ${active === "router" ? "on" : ""}`}>
+      <rect x="190" y="120" width="155" height="140" rx="7" />
+      <text className="rt-nl" x="204" y="144">ROUTER</text>
+      <text className="rt-ns" x="204" y="161">rules, no model call</text>
+      ${RT_RULES.map((r, i) => {
+        const x = 214 + (i % 4) * 36, y = 192 + Math.floor(i / 4) * 40;
+        return html`<g key=${r}><circle className=${`rt-lamp ${ruleOn === r ? "on" : ""}`} cx=${x} cy=${y} r="8" /><text className="rt-lt" x=${x - 7} y=${y + 21}>${r}</text></g>`;
+      })}
+    </g>
+    ${node("rules", 410, 24, 150, 56, "RULES", "no task wired yet", true)}
+    ${node("ow", 410, 125, 150, 70, "OPEN-WEIGHT", (sim.openWeight && sim.openWeight.model) || "none")}
+    <g className=${`rt-node ${active === "val" ? "on" : ""}`}>
+      <rect x="610" y="125" width="150" height="70" rx="7" />
+      <text className="rt-nl" x="624" y="149">VALIDATION</text>
+      ${RT_CHECKS.map(([k, label], i) => {
+        const x = 636 + i * 48, y = 166;
+        return html`<g key=${k}><circle className=${`rt-lamp ${checks[k] || ""}`} cx=${x} cy=${y} r="7" /><text className="rt-lt" x=${x - 14} y=${y + 20}>${label}</text></g>`;
+      })}
+    </g>
+    ${node("fr", 610, 280, 150, 60, "FRONTIER", (sim.frontier && sim.frontier.model) || "")}
+    ${node("save", 820, 160, 125, 70, "SAVED", "+ lineage", false, has("save") ? `by ${rtTier(served)}` : null)}
+    <circle ref=${tokRef} className="rt-tok esc" r="8" cx="-30" cy="-30" />
+  </svg>`;
+}
+
+function RtSaid({ ans }) {
+  if (!ans) return null;
+  return html`<div className="rt-said">
+    <div className="eyebrow">${ans.status || ""}</div>
+    <div className="ans" title=${ans.answer || ans.reason || ""}>${ans.answer || ans.reason || "no answer"}</div>
+    ${ans.basis ? html`<div className="quote" title=${ans.basis}>“${ans.basis}”</div>` : null}
+  </div>`;
+}
+
+function RtAttempt({ a, runId }) {
+  const step = a.seq != null ? html` · <a href=${href(runId, "trace", a.seq)}>step #${a.seq}</a>` : null;
+  if (a.status !== "ok") {
+    return html`<div><b>${a.model || "?"}</b> failed after ${rtSecs(a.latencyMs)}${step}<div className="muted" style=${{ marginTop: 4 }}>${(a.error || "").slice(0, 200)}</div></div>`;
+  }
+  return html`<div><b>${a.model || "?"}</b> · ${rtSecs(a.latencyMs)} · ${fmt.num(a.inputTokens)} in / ${fmt.num(a.outputTokens)} out · ${fmt.usd(a.usd)}${step}
+    <${RtSaid} ans=${a.answer} /></div>`;
+}
+
+function RtChecks({ e, tier }) {
+  const mine = e.checks.filter(c => rtCheck(c)[0] === tier);
+  if (!mine.length) return null;
+  return html`<div>
+    <div className="rt-pills">${mine.map(c => html`<${Pill} key=${c.name} value=${c.status}>${c.status === "pass" ? "✓" : "✕"} ${rtCheck(c)[1]}<//>`)}</div>
+    ${mine.filter(c => c.status === "fail").map(c => html`<div key=${c.name} className="muted" style=${{ marginTop: 4 }}>${rtCheck(c)[1]}: ${c.reason}</div>`)}
+  </div>`;
+}
+
+function RtNow({ e, idx, shown, runId }) {
+  const sec = (key, title, dot, body) => html`<div key=${key} className="dsec"><h3><span className=${`dot ${dot || ""}`}></span>${title}</h3>${body}</div>`;
+  const out = [];
+  for (const b of shown) {
+    if (b.k === "router") {
+      out.push(sec("router", "Router", "esc", e.router
+        ? html`<div><b className="mono">${e.router.ruleId}</b> ${e.router.why} → ${rtTier(e.router.route)}</div>`
+        : html`<div>Not wired to the router yet: stays on frontier, as before.</div>`));
+    } else if (b.k === "node") {
+      out.push(sec(`node-${b.n}`, b.n === "ow" ? "Open-weight" : "Frontier", b.n === "ow" ? "ow" : "fr", html`<${RtAttempt} a=${b.a} runId=${runId} />`));
+      if (b.n === "fr" && e.outcome && e.outcome.escalated) {
+        const fc = html`<${RtChecks} e=${e} tier="frontier" />`;
+        if (e.checks.some(c => rtCheck(c)[0] === "frontier")) out.push(sec("frcheck", "Frontier checks (recorded only)", "fr", fc));
+      }
+    } else if (b.k === "checks") {
+      out.push(sec("val", "Validation", e.outcome.escalated ? "esc" : "ok", html`<${RtChecks} e=${e} tier="open_weight" />`));
+    } else if (b.k === "escalate") {
+      const validated = e.checks.some(c => rtCheck(c)[0] === "open_weight");
+      out.push(sec("esc", "Escalate", "esc", html`<div>${validated ? "Same messages sent once to frontier."
+        : `Open-weight call failed; same messages sent once to frontier. ${e.outcome.escalationReason || ""}`}</div>`));
+    } else if (b.k === "save") {
+      const sv = e.saved, lin = sv.lineage;
+      const items = Object.entries(sv.items || {}).map(([k, v]) => `${v} ${k}`).join(", ") || "nothing";
+      out.push(sec("save", "Saved", (e.outcome && e.outcome.servedBy === "open_weight") ? "ow" : "fr", html`<div>
+        <div><b>${sv.record}</b>: ${items}</div>
+        ${lin ? html`<div className="pb-links">${[lin.routerVersion, lin.ruleId, `served by ${rtTier(lin.servedBy)}`, lin.model].map(t => html`<span key=${t} className="pb-link">${t}</span>`)}</div>` : null}
+        <div className="muted" style=${{ marginTop: 4 }}>cost ${fmt.usd(e.costUsd)} · all on frontier ${fmt.usd(e.allFrontierUsd)}</div>
+      </div>`));
+    }
+  }
+  return html`<section className="rt-now" style=${{ borderLeft: "1px solid var(--border)", minHeight: "100%" }} aria-live="off">
+    <div className="dhead"><div>
+      <div className="eyebrow">Now routing · #${idx + 1}</div>
+      <h2 style=${{ marginTop: 2 }}>${rtShort(e)} <span className="pb-link">${e.task}</span></h2>
+      ${e.question ? html`<div className="rt-q">${e.question}</div>` : null}
+      ${e.inputChars ? html`<div className="muted mono" style=${{ marginTop: 4 }}>prompt ${fmt.num(e.inputChars)} characters</div>` : null}
+    </div></div>
+    ${out}
+  </section>`;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);

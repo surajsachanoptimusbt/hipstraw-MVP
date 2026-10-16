@@ -1,0 +1,355 @@
+# Extracted from The Hipstraw Market Mastery Playbook - Case 01.pdf by scripts/extract_playbook.py (playbook.v0.1).
+# Reviewed; edit here, not in the PDF.
+version: playbook.v0.1
+matrices:
+  positionStance:
+    MP1:
+      Not mapped:
+        Listen: default
+        Scout: allowed
+        Activate: never
+        Build: never
+        Expand: never
+      Hypothesis:
+        Listen: allowed
+        Scout: allowed
+        Probe: default
+        Co-create: allowed
+        Activate: never
+        Expand: never
+      Supported:
+        Probe: allowed
+        Co-create: allowed
+        Activate: default
+        Build: allowed
+      Contested:
+        Listen: allowed
+        Scout: allowed
+        Probe: default
+        Activate: never
+        Expand: never
+        Protect: allowed
+      Rejected:
+        Listen: allowed
+        Activate: never
+        Build: never
+        Expand: never
+        Protect: default
+    MP2:
+      Unknown:
+        Listen: allowed
+        Scout: default
+        Activate: never
+        Expand: never
+      Reachable:
+        Listen: allowed
+        Probe: default
+        Co-create: allowed
+      Engaged:
+        Probe: allowed
+        Co-create: allowed
+        Activate: default
+      Converting:
+        Activate: allowed
+        Build: default
+        Expand: allowed
+      Can't reach:
+        Listen: allowed
+        Scout: default
+        Activate: never
+        Expand: never
+        Protect: allowed
+    MP3:
+      Concept:
+        Listen: allowed
+        Probe: allowed
+        Co-create: default
+        Activate: never
+        Expand: never
+      Prototype:
+        Probe: default
+        Co-create: allowed
+        Expand: never
+      Tested:
+        Probe: allowed
+        Co-create: allowed
+        Activate: default
+      Fits:
+        Activate: allowed
+        Build: default
+        Expand: allowed
+      Misfits:
+        Listen: default
+        Probe: allowed
+        Co-create: allowed
+        Activate: never
+        Expand: never
+        Protect: allowed
+    MP4:
+      Untested:
+        Scout: allowed
+        Probe: default
+        Expand: never
+      Piloting:
+        Probe: allowed
+        Co-create: allowed
+        Activate: default
+        Expand: never
+      Repeatable: &id001
+        Probe: default
+        Activate: allowed
+        Build: allowed
+        Expand: allowed
+      Saturated:
+        Scout: allowed
+        Probe: default
+        Expand: never
+        Protect: allowed
+      Blocked:
+        Scout: allowed
+        Activate: never
+        Expand: never
+        Protect: default
+    MP5:
+      Fragile:
+        Probe: allowed
+        Co-create: allowed
+        Build: default
+        Expand: never
+        Protect: allowed
+      Working:
+        Activate: allowed
+        Build: default
+        Expand: never
+      Reliable:
+        Activate: allowed
+        Build: allowed
+        Expand: default
+      Resilient:
+        Activate: allowed
+        Expand: default
+      Broken:
+        Activate: never
+        Build: allowed
+        Expand: never
+        Protect: default
+    MP6:
+      Not modeled:
+        Listen: allowed
+        Probe: default
+        Expand: never
+      Assumed:
+        Probe: default
+        Activate: allowed
+        Build: allowed
+        Expand: never
+      Observed:
+        Probe: allowed
+        Activate: allowed
+        Build: default
+        Expand: allowed
+      Viable:
+        Activate: allowed
+        Build: allowed
+        Expand: default
+      Negative:
+        Probe: allowed
+        Activate: never
+        Build: allowed
+        Expand: never
+        Protect: default
+    MP7:
+      First of its kind:
+        Probe: allowed
+        Co-create: allowed
+        Activate: allowed
+        Build: default
+        Expand: never
+      Repeatable: *id001
+      Transferable:
+        Activate: allowed
+        Build: allowed
+        Expand: default
+      Scaled:
+        Activate: allowed
+        Build: allowed
+        Expand: default
+      Regressing:
+        Probe: allowed
+        Activate: never
+        Build: allowed
+        Expand: never
+        Protect: default
+  strategyStance:
+    S01:
+      Listen: default
+      Scout: allowed
+      Probe: allowed
+      Activate: never
+      Expand: never
+    S02:
+      Listen: allowed
+      Scout: allowed
+      Probe: default
+      Activate: never
+      Expand: never
+    S03:
+      Listen: allowed
+      Scout: default
+      Probe: allowed
+      Expand: never
+    S04:
+      Listen: allowed
+      Scout: default
+      Probe: allowed
+      Co-create: allowed
+      Expand: never
+    S05:
+      Listen: allowed
+      Probe: default
+      Co-create: allowed
+      Activate: allowed
+    S06:
+      Probe: allowed
+      Co-create: allowed
+      Activate: default
+      Expand: never
+    S07:
+      Listen: allowed
+      Probe: allowed
+      Co-create: default
+      Activate: allowed
+      Expand: never
+    S08:
+      Scout: allowed
+      Probe: default
+      Co-create: allowed
+      Activate: allowed
+    S09:
+      Co-create: allowed
+      Activate: allowed
+      Build: default
+      Expand: never
+      Protect: allowed
+    S10:
+      Activate: default
+      Build: allowed
+      Expand: allowed
+      Protect: allowed
+    S11:
+      Probe: allowed
+      Activate: allowed
+      Build: default
+      Expand: never
+      Protect: allowed
+    S12:
+      Probe: allowed
+      Build: allowed
+      Expand: never
+      Protect: default
+    S13:
+      Listen: allowed
+      Scout: default
+      Probe: allowed
+      Co-create: allowed
+      Expand: never
+    S14:
+      Listen: allowed
+      Co-create: default
+      Activate: allowed
+      Build: allowed
+    S15:
+      Scout: allowed
+      Probe: allowed
+      Expand: default
+      Protect: allowed
+    S16:
+      Listen: allowed
+      Probe: allowed
+      Activate: never
+      Expand: never
+      Protect: default
+  gambitStance:
+    G01:
+      Listen: never
+      Scout: never
+      Probe: allowed
+      Co-create: allowed
+      Build: default
+      Expand: never
+      Protect: never
+    G02:
+      Listen: never
+      Scout: never
+      Co-create: default
+      Activate: allowed
+      Protect: never
+    G03:
+      Listen: never
+      Scout: never
+      Probe: allowed
+      Co-create: default
+      Protect: never
+    G04:
+      Listen: never
+      Scout: never
+      Probe: allowed
+      Activate: default
+      Expand: allowed
+      Protect: never
+    G05:
+      Listen: never
+      Scout: never
+      Activate: allowed
+      Build: default
+      Protect: never
+    G06:
+      Listen: never
+      Scout: never
+      Probe: allowed
+      Activate: default
+      Expand: never
+      Protect: never
+    G07:
+      Listen: never
+      Scout: never
+      Probe: never
+      Co-create: default
+      Activate: allowed
+      Build: allowed
+      Protect: never
+    G08:
+      Listen: never
+      Scout: never
+      Co-create: allowed
+      Activate: default
+      Expand: allowed
+      Protect: never
+    G09:
+      Listen: never
+      Scout: never
+      Co-create: allowed
+      Build: default
+      Expand: never
+      Protect: never
+    G10:
+      Listen: never
+      Scout: never
+      Activate: default
+      Build: allowed
+      Expand: allowed
+      Protect: never
+    G11:
+      Listen: never
+      Scout: never
+      Probe: allowed
+      Build: default
+      Expand: never
+      Protect: never
+    G12:
+      Listen: never
+      Scout: never
+      Co-create: default
+      Build: allowed
+      Expand: allowed
+      Protect: never

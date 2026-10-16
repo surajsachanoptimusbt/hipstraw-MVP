@@ -297,14 +297,20 @@ class FirestoreStore:
     def get_trace_step(self, step_id: str) -> Doc | None:
         return self._get(TRACE_STEPS, step_id)
 
+    # Step IDs are `<runId>__<seq:06d>` and seqs are contiguous, so steps are fetched by ID: a viewer
+    # poll reads the run document plus only the new steps, not every step of the run (billed reads).
     def list_trace_steps_after(self, run_id: str, after_seq: int) -> list[Doc]:
-        steps = [s for s in self._list(TRACE_STEPS, "marketRunId", run_id) if s.get("seq", 0) > after_seq]
-        steps.sort(key=lambda d: d.get("seq", 0))
-        return steps
+        run = self._raw(MARKET_RUNS, run_id) or {}
+        last = int(run.get("lastSeq") or 0)
+        return self.get_trace_steps(run_id, list(range(after_seq + 1, last + 1)))
 
     def get_trace_steps(self, run_id: str, seqs: list[int]) -> list[Doc]:
-        wanted = set(seqs)
-        return [s for s in self._list(TRACE_STEPS, "marketRunId", run_id) if s.get("seq", 0) in wanted]
+        refs = [self._ref(TRACE_STEPS, f"{run_id}__{seq:06d}") for seq in sorted(set(seqs))]
+        if not refs:
+            return []
+        steps = [_plain(snap.to_dict()) for snap in self._db.get_all(refs) if snap.exists]
+        steps.sort(key=lambda d: d.get("seq", 0))
+        return steps
 
     def finish_trace_step(self, step_id: str, fields: Doc) -> None:
         ref = self._ref(TRACE_STEPS, step_id)

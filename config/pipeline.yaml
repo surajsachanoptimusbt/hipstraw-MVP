@@ -13,6 +13,7 @@ budgets: {modelCallsPerRun: 300}
 trace: {maxBlobBytes: 900000}
 modelPricing:
   gpt-4o: {input: 2.50, output: 10.00}
+  gpt-4o-mini: {input: 0.15, output: 0.60}   # open-weight stand-in for routing simulations
 viewer: {host: 127.0.0.1, port: 8765, pollSeconds: 2}
 # Objective PDFs: text beyond this many characters is cut and recorded as unresolved.
 objective: {maxChars: 120000}

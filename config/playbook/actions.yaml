@@ -1,0 +1,424 @@
+# Extracted from The Hipstraw Market Mastery Playbook - Case 01.pdf by scripts/extract_playbook.py (playbook.v0.1).
+# Reviewed; edit here, not in the PDF.
+version: playbook.v0.1
+actions:
+- id: A01
+  name: Register Market Position version
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: Registered Position v7 for Bengaluru appliance repair
+  whoCanRun: Agent
+  undo: New version
+- id: A02
+  name: Record consented field observation
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: 'Logged observation: 3 repair shops, consent on file'
+  whoCanRun: Agent · Architect
+  undo: Quarantine
+- id: A03
+  name: Store source and provenance
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: 'Stored source: municipal trade register, as of 1 Oct'
+  whoCanRun: Agent
+  undo: —
+- id: A04
+  name: Code interview or probe evidence
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: 'Coded 12 interviews: 4 contradict thesis'
+  whoCanRun: Agent
+  undo: Recode
+- id: A05
+  name: Reconcile competing hypothesis evidence
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: Compared two explanations for low replies
+  whoCanRun: Agent
+  undo: —
+- id: A06
+  name: Validate permitted evidence access
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: 'Checked data rights for CRM export: allowed'
+  whoCanRun: Agent
+  undo: —
+- id: A07
+  name: Observe source event and freshness
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: Flagged stale price list (92 days)
+  whoCanRun: Agent
+  undo: —
+- id: A08
+  name: Create archetype or role segmentation
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: Segmented RevOps vs CIO buyers
+  whoCanRun: Agent
+  undo: New version
+- id: A09
+  name: Map named market institutions
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: Mapped 6 salon associations
+  whoCanRun: Agent
+  undo: New version
+- id: A10
+  name: Create comparable territory economics
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: Modelled cost-to-serve for 3 wedges
+  whoCanRun: Agent
+  undo: New version
+- id: A11
+  name: Construct a low-risk commitment option
+  tier: 3
+  tierName: Participant and market contact
+  showsInActivityAs: Built a ₹499 pilot booking offer
+  whoCanRun: Agent; principal approves before use
+  undo: Yes, before sending
+- id: A12
+  name: Receive outcome and legitimate opt-out
+  tier: 3
+  tierName: Participant and market contact
+  showsInActivityAs: Opt-out received; suppressed in all channels
+  whoCanRun: Agent
+  undo: —
+- id: A13
+  name: Recruit participants under an approved protocol
+  tier: 3
+  tierName: Participant and market contact
+  showsInActivityAs: Invited 30 owners under protocol v2
+  whoCanRun: Agent or Architect (contact permission)
+  undo: No (sent)
+- id: A14
+  name: Confirm external trigger and safe cutoff
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: Verified rule takes effect 1 Jan; cutoff 1 Dec
+  whoCanRun: Agent
+  undo: —
+- id: A15
+  name: Prepare decision alternatives
+  tier: 2
+  tierName: Internal coordination
+  showsInActivityAs: Prepared 3 options incl. no action
+  whoCanRun: Agent
+  undo: 'Yes'
+- id: A16
+  name: Route decision or approval
+  tier: 2
+  tierName: Internal coordination
+  showsInActivityAs: Sent scale decision to the sponsor
+  whoCanRun: Agent
+  undo: 'Yes'
+- id: A17
+  name: Record switched user cost and reason
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: 'Recorded switch: 9 hours migration, reason “faster close”'
+  whoCanRun: Agent
+  undo: —
+- id: A18
+  name: Create a scoped partner engagement
+  tier: 3
+  tierName: Participant and market contact
+  showsInActivityAs: Opened engagement with Trade Association X
+  whoCanRun: Agent + approval
+  undo: 'Yes'
+- id: A19
+  name: Record recipient permission and contact owner
+  tier: 2
+  tierName: Internal coordination
+  showsInActivityAs: 'Contact owner set: Market Architect R.'
+  whoCanRun: Agent
+  undo: 'Yes'
+- id: A20
+  name: Audit partner-qualified access
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: 'Audited partner list: 60 of 1,000 eligible'
+  whoCanRun: Agent
+  undo: —
+- id: A21
+  name: Prepare partnership terms and authority check
+  tier: 5
+  tierName: Consequential commitments
+  showsInActivityAs: Drafted non-binding terms; signatory confirmed
+  whoCanRun: Agent drafts; signing is human only
+  undo: Yes, before signature
+- id: A22
+  name: Review partner legal and compliance constraints
+  tier: 5
+  tierName: Consequential commitments
+  showsInActivityAs: 'Legal: exclusivity limited to 6 months'
+  whoCanRun: Legal / compliance only
+  undo: —
+- id: A23
+  name: Approve accurate claim or creative versions
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: Approved variant B; variant A refused (scarcity claim)
+  whoCanRun: Brand owner; agent prepares
+  undo: Withdraw
+- id: A24
+  name: Record comprehension response
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: 14 of 20 restated the value correctly
+  whoCanRun: Agent
+  undo: —
+- id: A25
+  name: Launch a capped test and cohort assignment
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: 'Launched test: 200 households, ₹15,000 cap'
+  whoCanRun: Agent in Approved-effect mode
+  undo: Stop at once
+- id: A26
+  name: Prepare buying-committee decision map
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: Mapped 4 approvers; security is the veto
+  whoCanRun: Agent
+  undo: New version
+- id: A27
+  name: Classify objection evidence
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: Classified 31 objections; 12 onboarding
+  whoCanRun: Agent
+  undo: Reclassify
+- id: A28
+  name: Create a human field Mission
+  tier: 3
+  tierName: Participant and market contact
+  showsInActivityAs: 'Mission H-MSN-014 scoped: 2 neighborhoods'
+  whoCanRun: Agent + Mission coordinator approval
+  undo: Yes, before dispatch
+- id: A29
+  name: Verify Market Architect capability and eligibility
+  tier: 3
+  tierName: Participant and market contact
+  showsInActivityAs: 'Verified Scout: Kannada, safety induction done'
+  whoCanRun: Agent + field operations
+  undo: 'Yes'
+- id: A30
+  name: Deliver a safe pilot output receipt
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: Delivered exception report to design partner
+  whoCanRun: Agent + approval
+  undo: 'No'
+- id: A31
+  name: Observe permitted activation events
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: Observed 140 of 2,100 sign-ups activated
+  whoCanRun: Agent
+  undo: —
+- id: A32
+  name: Assess source-specific conversion failures
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: Creator traffic converts at 1/5 of referral
+  whoCanRun: Agent
+  undo: —
+- id: A33
+  name: Publish a tested product or onboarding change
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: Removed duplicate ID step in onboarding
+  whoCanRun: Product owner; agent prepares
+  undo: Roll back
+- id: A34
+  name: Publish an approved price test
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: 'Price test live: ₹499 vs ₹599'
+  whoCanRun: Pricing owner; agent executes
+  undo: Stop at once
+- id: A35
+  name: Set event consent, venue and staffing
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: Venue booked; consent form v3
+  whoCanRun: Event lead
+  undo: Cancel
+- id: A36
+  name: Conduct an accessible, permitted event
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: 'Demo held: 41 attendees, 17 salon owners'
+  whoCanRun: Event lead + Architects
+  undo: 'No'
+- id: A37
+  name: Reconcile event-to-buyer follow-up
+  tier: 2
+  tierName: Internal coordination
+  showsInActivityAs: Matched 23 event sign-ups to consent records
+  whoCanRun: Agent
+  undo: 'Yes'
+- id: A38
+  name: Operate a manual fulfillment episode
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: 'Completed repair job #12 by hand'
+  whoCanRun: Operations + Architect
+  undo: 'No'
+- id: A39
+  name: Reconcile payment, delivery and complaints
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: 'Job #12 paid, delivered, no complaint'
+  whoCanRun: Agent + approval
+  undo: Correct
+- id: A40
+  name: Approve design partner agreements
+  tier: 5
+  tierName: Consequential commitments
+  showsInActivityAs: Design partner agreement signed
+  whoCanRun: Human only (signatory)
+  undo: 'No'
+- id: A41
+  name: Check provider capability and credential proof
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: 10 providers checked; 6 verified
+  whoCanRun: Agent + operations approval
+  undo: Re-check
+- id: A42
+  name: Track a completed supply–demand match
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: Match completed in 3 h 10 min
+  whoCanRun: Agent
+  undo: Correct
+- id: A43
+  name: Throttle unsafe or unprofitable demand
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: Paused bookings in Indiranagar
+  whoCanRun: Agent may throttle; resuming needs approval
+  undo: Resume via Review
+- id: A44
+  name: Record supply-side incidents and quality
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: Logged 3 cancellations, provider P-07
+  whoCanRun: Agent
+  undo: Correct
+- id: A45
+  name: Verify an offered remedial guarantee
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: 'Reserve funded: ₹1,00,000'
+  whoCanRun: Finance
+  undo: —
+- id: A46
+  name: Recompute full net contribution
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: 'Contribution after refunds and commissions: –₹38 per order'
+  whoCanRun: Agent
+  undo: New version
+- id: A47
+  name: Report incremental effects with uncertainty
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: 'Incremental paid users: 18 (range 11–25)'
+  whoCanRun: Agent
+  undo: New version
+- id: A48
+  name: Analyze retention and cohort evidence
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: Cohort 1 week-4 retention 41%
+  whoCanRun: Agent
+  undo: New version
+- id: A49
+  name: Approve an experimental channel budget
+  tier: 5
+  tierName: Consequential commitments
+  showsInActivityAs: 'Budget approved: $6,000, 4 weeks'
+  whoCanRun: Sponsor or budget approver
+  undo: 'No'
+- id: A50
+  name: Verify a recurring process correction
+  tier: 6
+  tierName: Outcome and learning
+  showsInActivityAs: Dispatch fix held for 2 cohorts
+  whoCanRun: Independent verifier
+  undo: —
+- id: A51
+  name: Activate a held-out local study
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: HSR Layout opened as held-out unit
+  whoCanRun: Agent + sponsor approval
+  undo: Stop
+- id: A52
+  name: Score geographic transfer limitations
+  tier: 1
+  tierName: Read, evaluate and record
+  showsInActivityAs: 'Transfer risk high: buyer role differs'
+  whoCanRun: Agent
+  undo: New version
+- id: A53
+  name: Validate local language and compliance claims
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: Counsel approved messaging route
+  whoCanRun: Specialist
+  undo: —
+- id: A54
+  name: Publish a partner operating package
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: Partner kit v1 shared with 2 dealers
+  whoCanRun: Partner owner; agent prepares
+  undo: Withdraw
+- id: A55
+  name: Authorize staged market scale
+  tier: 5
+  tierName: Consequential commitments
+  showsInActivityAs: Scale stage 1 authorized with stop rule
+  whoCanRun: Investment authority only
+  undo: 'No'
+- id: A56
+  name: Log pivot and competing hypothesis
+  tier: 2
+  tierName: Internal coordination
+  showsInActivityAs: 'Logged pivot: salons value training over equipment'
+  whoCanRun: Agent
+  undo: 'Yes'
+- id: A57
+  name: Suspend activities and revoke access
+  tier: 4
+  tierName: Effectful market operations
+  showsInActivityAs: Suspended all outreach to list L-3
+  whoCanRun: Anyone, at once
+  undo: Restore via Review
+- id: A58
+  name: Fetch an authoritative effect receipt
+  tier: 6
+  tierName: Outcome and learning
+  showsInActivityAs: 'Payment receipt fetched for job #12'
+  whoCanRun: Agent
+  undo: —
+- id: A59
+  name: Record verified outcome and ledger attribution
+  tier: 6
+  tierName: Outcome and learning
+  showsInActivityAs: 'Outcome logged once: 1 paid, delivered repair'
+  whoCanRun: Agent
+  undo: Correct
+- id: A60
+  name: Finalize case closure and review
+  tier: 6
+  tierName: Outcome and learning
+  showsInActivityAs: Case closed; next Review 3 Nov
+  whoCanRun: Case owner
+  undo: Reopen

@@ -22,6 +22,7 @@ keys/
 # HipStraw runtime
 .runs/
 reports/*.md
+reports/*_routing.json
 
 # Firebase emulator
 emulator-data/

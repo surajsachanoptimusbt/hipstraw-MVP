@@ -37,6 +37,7 @@ class Context:
     reports_dir: Path = Path("reports")
     now: Callable[[], datetime] = _utc_now
     tracer: Tracer | None = None
+    open_llm: LLMClient | None = None
 
     def now_iso(self) -> str:
         return self.now().isoformat()

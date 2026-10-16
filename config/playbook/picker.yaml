@@ -1,0 +1,56 @@
+# How the Market Manager runs the playbook's quick picker (§6) where the playbook leaves a choice open.
+# Every rule here is a Hipstraw proposal, not playbook doctrine, and is shown as such in the viewer.
+# To confirm with Ashish; see docs/playbook_gaps.md.
+version: picker.v1
+source: "Hipstraw proposal (the playbook does not specify these)"
+executionMode: Advisory   # §5.2: assess, model and recommend; no external contact
+
+# Gap 2: the playbook does not say how to pick the binding constraint.
+bindingConstraint:
+  # Any of these binds first, in this order (a broken or rejected axis outranks everything).
+  worstFirst:
+    - [MP1, Rejected]
+    - [MP5, Broken]
+    - [MP6, Negative]
+    - [MP4, Blocked]
+    - [MP7, Regressing]
+    - [MP2, "Can't reach"]
+    - [MP3, Misfits]
+    - [MP1, Contested]
+  # Otherwise the first axis, in this order, that is not yet in one of its settled states.
+  order: [MP1, MP2, MP3, MP4, MP5, MP6, MP7]
+  settled:
+    MP1: [Supported]
+    MP2: [Reachable, Engaged, Converting]
+    MP3: [Tested, Fits]
+    MP4: [Piloting, Repeatable]
+    MP5: [Working, Reliable, Resilient]
+    MP6: [Observed, Viable]
+    MP7: [Repeatable, Transferable, Scaled]
+
+# The playbook lists eight dispositions (§2.4) but not which one a Review should end with.
+disposition:
+  overrides:            # checked first, in order
+    - {axis: MP1, state: Rejected, disposition: STOP}
+    - {axis: MP1, state: Contested, disposition: REFRAME}
+  noIncludedCompanies: PARK   # research found companies but Review excluded all of them
+  byStance:
+    Listen: EXPLORE
+    Scout: EXPLORE
+    Probe: TEST
+    Co-create: ACTIVATE
+    Activate: ACTIVATE
+    Build: BUILD
+    Expand: SCALE
+    Protect: PARK
+  attention:
+    EXPLORE: Brief
+    TEST: Watch
+    ACTIVATE: Prompt
+    BUILD: Watch
+    SCALE: Request
+    REFRAME: Prompt
+    PARK: Brief
+    STOP: Request
+  # Order used to show whether a later Review moved a market unit up or down.
+  order: [STOP, PARK, REFRAME, EXPLORE, TEST, ACTIVATE, BUILD, SCALE]

@@ -1,0 +1,800 @@
+# Extracted from The Hipstraw Market Mastery Playbook - Case 01.pdf by scripts/extract_playbook.py (playbook.v0.1).
+# Reviewed; edit here, not in the PDF.
+version: playbook.v0.1
+lines:
+- id: L01
+  name: Territory Reconnaissance
+  discipline: Explore
+  purpose: Define the market boundary and make reality visible.
+  startsWhen: a territory or market type is unmapped
+  steps:
+  - id: A01
+    text: register the Position version
+  - id: M05
+    text: triangulate sources
+  - id: M06
+    text: map audience sources
+  - id: M07
+    text: map local institutions
+  - id: M15
+    text: map alternatives
+  - id: A05
+    text: reconcile competing evidence
+  branches: buyers inaccessible → L04 · a structural legal gate → P26, park
+  branchIds:
+  - L04
+  - P26
+  window: 2–4 weeks
+  stopIf: a legal gate closes the territory
+  escalateIf: the scope cannot be bounded → sponsor
+  doneWhen: a market-system map with source limits and at least two alternative wedges
+  stance:
+    default: Listen
+    allowed:
+    - Scout
+    - Probe
+    never: []
+  usedBy:
+    primary:
+    - P01
+    - P03
+    - P06
+    alternative: []
+  whoDecides: Research owner with the field steward
+- id: L02
+  name: Disconfirming Discovery
+  discipline: Explore
+  purpose: Try to refute the current thesis cheaply.
+  startsWhen: a strong assumption lacks behavioural proof
+  steps:
+  - id: A05
+    text: compare explanations
+  - id: M03
+    text: recruit negative cases
+  - id: M02
+    text: run contradiction probes
+  - id: M10
+    text: attempt a meaningful action
+  - id: A05
+    text: compare explanations
+  branches: decisive negative → L16 · undecidable → redesign the test (A15)
+  branchIds:
+  - L16
+  - A15
+  window: 1–3 weeks
+  stopIf: the falsifier is met
+  escalateIf: the sponsor disputes a decisive negative → independent critic
+  doneWhen: valid contradictory evidence changes the Position or bounds confidence
+  stance:
+    default: Probe
+    allowed:
+    - Listen
+    never: []
+  usedBy:
+    primary:
+    - P02
+    - P03
+    alternative:
+    - P18
+    - P32
+  whoDecides: Research Lead with an independent critic
+- id: L03
+  name: Wedge Selection
+  discipline: Explore
+  purpose: Choose one segment instead of a diffuse TAM.
+  startsWhen: many plausible buyers compete for scarce capacity
+  steps:
+  - id: M09
+    text: segment by job, trigger and access
+  - id: A10
+    text: model territory economics
+  - id: M14
+    text: rank options
+  - id: A15
+    text: prepare alternatives
+  - id: A16
+    text: route the decision
+  branches: segment too small → M13 adjacency · segment inaccessible → L04
+  branchIds:
+  - M13
+  - L04
+  window: 1–2 weeks
+  stopIf: no segment beats the no-action option
+  escalateIf: two wedges tie → sponsor picks
+  doneWhen: a narrow thesis is approved with credible alternatives and a locked test boundary
+  stance:
+    default: Scout
+    allowed:
+    - Listen
+    - Probe
+    never: []
+  usedBy:
+    primary:
+    - P01
+    - P04
+    - P10
+    - P28
+    alternative: []
+  whoDecides: sponsor and Market Manager
+- id: L04
+  name: Access Bridge
+  discipline: Explore
+  purpose: Earn permission and trust for first interactions.
+  startsWhen: buyers are hidden or local access is fragmented
+  steps:
+  - id: M07
+    text: map nodes
+  - id: M18
+    text: trusted introductions
+  - id: A19
+    text: record permission and contact owner
+  - id: M19
+    text: lawful field mapping
+  - id: M20
+    text: audit qualified access
+  branches: trust refused → change path or partner · an opt-out → halt that contact everywhere (A57) · physical
+    access needed → L17
+  branchIds:
+  - A57
+  - L17
+  window: 2–4 weeks
+  stopIf: access would need deception
+  escalateIf: no route after two paths → Market Manager marks MP2 Can't reach
+  doneWhen: consented, qualified engagement with a comparable source trace
+  stance:
+    default: Scout
+    allowed:
+    - Listen
+    - Co-create
+    never: []
+  usedBy:
+    primary:
+    - P07
+    alternative:
+    - P13
+    - P16
+  whoDecides: Market Architect manager
+- id: L05
+  name: Message and Offer Probe
+  discipline: Develop
+  purpose: Turn the problem into a proposition people understand.
+  startsWhen: offer language is unproven or objections recur
+  steps:
+  - id: M25
+    text: capture buyer vocabulary and objections
+  - id: A23
+    text: approve two truthful variants
+  - id: M22
+    text: comprehension test
+  - id: M23
+    text: variant experiment
+  - id: A24
+    text: record responses
+  branches: misunderstood → revise and retest · recurring objection → M29 · no real need → L02
+  branchIds:
+  - M29
+  - L02
+  window: 1–3 weeks
+  stopIf: a variant needs an unsupportable claim
+  escalateIf: the brand owner rejects both variants
+  doneWhen: understanding and actual behaviour improve without false claims
+  stance:
+    default: Probe
+    allowed:
+    - Listen
+    - Co-create
+    never: []
+  usedBy:
+    primary:
+    - P04
+    - P09
+    - P12
+    - P15
+    - P18
+    alternative:
+    - P02
+    - P17
+  whoDecides: brand owner with Research
+- id: L06
+  name: Behavioral Test
+  discipline: Develop
+  purpose: Seek the least-cost meaningful commitment.
+  startsWhen: enthusiasm is not backed by action
+  steps:
+  - id: A11
+    text: construct a low-risk commitment option
+  - id: M40
+    text: check capacity
+  - id: A25
+    text: launch a capped test
+  - id: M10
+    text: ask for the action
+  - id: A12
+    text: receive outcomes and opt-outs
+  - id: A47
+    text: report against baseline
+  branches: price is the blocker → M33 · an incentive distorts behaviour → adjust (G06 only with approval) · no
+    action → L02
+  branchIds:
+  - M33
+  - G06
+  - L02
+  window: 1–4 weeks
+  stopIf: cap hit, opt-out failure or misleading term
+  escalateIf: results are ambiguous at the cap → Market Manager
+  doneWhen: real commitments with stated quality, denominator and confidence
+  stance:
+    default: Probe
+    allowed:
+    - Activate
+    never: []
+  usedBy:
+    primary:
+    - P02
+    - P06
+    - P12
+    - P14
+    - P15
+    - P28
+    alternative:
+    - P10
+    - P11
+  whoDecides: growth sponsor
+- id: L07
+  name: Design Partner Loop
+  discipline: Develop
+  purpose: Turn early co-design into adoption evidence.
+  startsWhen: a complex buyer needs situated proof
+  steps:
+  - id: M37
+    text: agree reciprocal terms
+  - id: A40
+    text: approve the agreement
+  - id: M17
+    text: map buyer, budget and outcome owner
+  - id: M28
+    text: build a narrow outcome prototype
+  - id: A30
+    text: deliver the pilot output
+  - id: M56
+    text: read back the outcome
+  - id: A15
+    text: record the next decision
+  branches: security or authority blocks live data → synthetic world · committee stall → M24 · price objection →
+    G02 with approval
+  branchIds:
+  - M24
+  - G02
+  window: 4–10 weeks
+  stopIf: the partner stops using it for two weeks
+  escalateIf: no economic buyer by mid-point → sponsor
+  doneWhen: pilot value is verified and the next decision is recorded
+  stance:
+    default: Co-create
+    allowed:
+    - Probe
+    never: []
+  usedBy:
+    primary:
+    - P10
+    - P11
+    - P17
+    alternative:
+    - P04
+    - P28
+  whoDecides: product or enterprise sponsor
+- id: L08
+  name: Channel Validation
+  discipline: Develop
+  purpose: Test productive intermediary distribution.
+  startsWhen: a partner promises reach but conversion is unknown
+  steps:
+  - id: M20
+    text: audit the partner's qualified access
+  - id: M21
+    text: design the value exchange
+  - id: M42
+    text: set a non-exclusive test
+  - id: A25
+    text: launch a capped referred cohort
+  - id: A20
+    text: audit referrals
+  - id: M47
+    text: measure marginal return
+  branches: untested exclusivity demanded → decline or G07 with approval · weak audience → change partner (L04)
+    · promising but slow → G04
+  branchIds:
+  - G07
+  - L04
+  - G04
+  window: 3–8 weeks
+  stopIf: the partner shares unconsented contacts
+  escalateIf: the partner requests binding terms → signatory
+  doneWhen: incremental, attributable activation and viable partner economics
+  stance:
+    default: Probe
+    allowed:
+    - Co-create
+    - Activate
+    never: []
+  usedBy:
+    primary:
+    - P13
+    - P21
+    alternative: []
+  whoDecides: partnership owner
+- id: L09
+  name: First Transaction Build
+  discipline: Build
+  purpose: Connect demand, delivery, support, payment and quality.
+  startsWhen: there is customer commitment but no working market mechanism
+  steps:
+  - id: M38
+    text: audit provider readiness
+  - id: M36
+    text: run a manual concierge transaction
+  - id: A38
+    text: operate the episode
+  - id: A39
+    text: reconcile payment, delivery and complaints
+  - id: M43
+    text: rebuild true contribution
+  - id: M56
+    text: read back the outcome
+  branches: safety fails → M55 stop service · economics negative → L12 before any scale · tooling not ready → G09
+  branchIds:
+  - M55
+  - L12
+  - G09
+  window: 3–8 weeks
+  stopIf: a safety incident
+  escalateIf: two consecutive failed deliveries → operations owner
+  doneWhen: completed genuine value with correct handling and proof (Gate 2)
+  stance:
+    default: Build
+    allowed:
+    - Co-create
+    - Protect
+    never: []
+  usedBy:
+    primary:
+    - P11
+    - P19
+    - P20
+    - P24
+    - P30
+    alternative:
+    - P08
+  whoDecides: operations owner
+- id: L11
+  name: Supply–Demand Balance
+  discipline: Build
+  purpose: Manage cold start, liquidity and provider readiness.
+  startsWhen: the market lacks matching or service depth
+  steps:
+  - id: A08
+    text: map demand clusters
+  - id: M38
+    text: verify providers
+  - id: M39
+    text: seed liquidity
+  - id: M40
+    text: apply the capacity gate
+  - id: A42
+    text: track completed matches
+  - id: A44
+    text: record supply incidents
+  branches: fill rate degrades → pause buyer growth (A43) · supply too thin → G05 or G11 with approval · subsidy
+    unbounded → L12
+  branchIds:
+  - A43
+  - G05
+  - G11
+  - L12
+  window: 4–10 weeks
+  stopIf: an unsafe provider is found (suspend that source)
+  escalateIf: cancellations stay above the gate for two weeks
+  doneWhen: durable match quality inside an acceptable subsidy and cost envelope
+  stance:
+    default: Build
+    allowed:
+    - Probe
+    - Protect
+    never: []
+  usedBy:
+    primary:
+    - P08
+    - P19
+    - P22
+    alternative:
+    - P30
+  whoDecides: marketplace manager
+- id: L17
+  name: Human Field Mission
+  discipline: Build
+  purpose: Run a physical-world investigation or action safely.
+  startsWhen: digital systems cannot see local reality well enough
+  steps:
+  - id: A28
+    text: create the Mission
+  - id: A29
+    text: verify the Architect's capability and eligibility
+  - id: M19
+    text: dispatch with protocol
+  - id: M08
+    text: null
+  - id: M01
+    text: null
+  - id: A02
+    text: record consented observations
+  - id: A04
+    text: code evidence and run independent QA
+  - id: A60
+    text: close
+  branches: unsafe → withdraw (A57) · implausible or fabricated claims → quarantine and investigate · worker offline
+    → explicit wait state and safety check
+  branchIds:
+  - A57
+  window: hours to weeks by assignment
+  stopIf: worker or participant safety is at risk
+  escalateIf: the QA sample disagrees with submissions
+  doneWhen: accepted, source-backed outputs; the worker is paid; no open safety incident
+  stance:
+    default: Scout
+    allowed:
+    - Listen
+    - Probe
+    - Build
+    never: []
+  usedBy:
+    primary: []
+    alternative:
+    - P03
+    - P05
+    - P07
+    - P22
+    - P26
+  whoDecides: Hipstraw field operations
+- id: L20
+  name: Post-Launch Reliability Pursuit
+  discipline: Build
+  purpose: Own the market mechanism after acquisition.
+  startsWhen: purchases or partner commitments create follow-through duties
+  steps:
+  - id: A12
+    text: set watches
+  - id: A31
+    text: observe activation events
+  - id: M45
+    text: diagnose retention and trust
+  - id: M49
+    text: correct root causes
+  - id: A50
+    text: verify the correction
+  - id: M56
+    text: read back outcomes
+  - id: A60
+    text: close or reopen
+  branches: authority changes → stop affected effects (A57) · outcomes unverifiable → keep the Case open · a late
+    refund → reopen and recalculate
+  branchIds:
+  - A57
+  window: continuous for the mandate term
+  stopIf: the mandate ends (hand off open Cases)
+  escalateIf: a guardrail is breached
+  doneWhen: customer value, delivery and financial effects are confirmed in independent sources
+  stance:
+    default: Build
+    allowed:
+    - Protect
+    never: []
+  usedBy:
+    primary: []
+    alternative:
+    - P20
+    - P24
+    - P31
+  whoDecides: Market Operations manager
+- id: L10
+  name: Repeatable Acquisition
+  discipline: Scale
+  purpose: Turn isolated wins into reproducible acquisition.
+  startsWhen: first transactions succeeded
+  steps:
+  - id: A25
+    text: freeze the cohort and assign it
+  - id: A31
+    text: instrument sources
+  - id: M46
+    text: expand a controlled cohort
+  - id: M47
+    text: test marginal return
+  - id: M45
+    text: diagnose retention
+  - id: A47
+    text: report incremental effects
+  branches: marginal CAC spikes → throttle (A43) · retained value fails → back to L09 · one channel dominates →
+    M48
+  branchIds:
+  - A43
+  - L09
+  - M48
+  window: 4–12 weeks
+  stopIf: contribution turns negative for a cohort
+  escalateIf: the second cohort underperforms the first by more than the agreed band
+  doneWhen: healthy incremental cohort economics and reproducible execution (Gate 3)
+  stance:
+    default: Activate
+    allowed:
+    - Build
+    - Expand
+    never: []
+  usedBy:
+    primary:
+    - P25
+    alternative: []
+  whoDecides: growth with finance
+- id: L12
+  name: Margin and Payback Gate
+  discipline: Scale
+  purpose: Control real incremental returns.
+  startsWhen: discounts, referrals or regional scale are under way
+  steps:
+  - id: M43
+    text: rebuild true contribution
+  - id: M47
+    text: separate incremental from attributed sales
+  - id: M44
+    text: stress-test downside and payback
+  - id: A46
+    text: recompute net contribution
+  - id: A16
+    text: route the decision
+  branches: evidence absent → stay in pilot · margin negative → stop spend (A43) · thesis broken → L16
+  branchIds:
+  - A43
+  - L16
+  window: 2–5 weeks
+  stopIf: — (this Line is the stop check)
+  escalateIf: finance and growth disagree on the cost basis
+  doneWhen: contribution and payback are independently reproducible
+  stance:
+    default: Protect
+    allowed:
+    - Probe
+    - Build
+    never: []
+  usedBy:
+    primary:
+    - P23
+    - P31
+    alternative:
+    - P15
+    - P19
+  whoDecides: finance sponsor
+- id: L13
+  name: Localized Entry
+  discipline: Scale
+  purpose: Adapt offer, evidence and channels to a territory.
+  startsWhen: entry crosses a cultural or regulatory boundary
+  steps:
+  - id: M07
+    text: map local institutions
+  - id: A22
+    text: counsel and permissions
+  - id: M08
+    text: local interpreter Mission
+  - id: M51
+    text: compliance and language pilot
+  - id: L17
+    text: controlled field pilot
+  - id: A01
+    text: Review
+  branches: compliance or safety blocked → no launch (L16) · buyer role differs → remap (M17)
+  branchIds:
+  - L16
+  - M17
+  window: 4–12 weeks
+  stopIf: counsel prohibits the route
+  escalateIf: a local partner demands prepaid exclusivity
+  doneWhen: field-observed local adoption and quality evidence
+  stance:
+    default: Scout
+    allowed:
+    - Listen
+    - Co-create
+    never: []
+  usedBy:
+    primary:
+    - P05
+    - P26
+    alternative:
+    - P27
+  whoDecides: regional principal
+- id: L14
+  name: Community and Partner Loop
+  discipline: Scale
+  purpose: Make repeated, mutually useful participation durable.
+  startsWhen: trusted nodes and advocates influence adoption
+  steps:
+  - id: M01
+    text: listen to the community
+  - id: M21
+    text: define reciprocal value
+  - id: M27
+    text: recruit authentic partners
+  - id: M34
+    text: convene and serve
+  - id: M10
+    text: enable an optional action
+  - id: M45
+    text: track retention
+  branches: advocacy turns deceptive or coercive → stop (M55) · no benefit to members → reframe · a community needs
+    seed money → G03
+  branchIds:
+  - M55
+  - G03
+  window: 6–12 weeks
+  stopIf: undisclosed paid advocacy is found
+  escalateIf: a member complaint about pressure
+  doneWhen: earned repeat participation, trust and attributable referrals
+  stance:
+    default: Co-create
+    allowed:
+    - Listen
+    never: []
+  usedBy:
+    primary:
+    - P16
+    - P29
+    alternative:
+    - P12
+    - P14
+  whoDecides: community steward
+- id: L15
+  name: Transfer and Scale
+  discipline: Scale
+  purpose: Validate a proven mechanism in an adjacent market.
+  startsWhen: the current wedge passed Gate 3
+  steps:
+  - id: M50
+    text: transferability test
+  - id: A51
+    text: activate a held-out local study
+  - id: M51
+    text: local compliance and language pilot
+  - id: M46
+    text: controlled cohort expansion
+  - id: M43
+    text: rebuild contribution
+  - id: M53
+    text: scale release gate
+  - id: A55
+    text: authorize staged scale
+  branches: new-market failure or core deterioration → stop replication and diagnose (M49) · transfer fails → L16
+    for that unit only
+  branchIds:
+  - M49
+  - L16
+  window: 6–16 weeks
+  stopIf: the core market regresses
+  escalateIf: the held-out result conflicts with the core
+  doneWhen: an independent Gate 4 / Gate 5 pass with stable quality
+  stance:
+    default: Expand
+    allowed:
+    - Probe
+    never: []
+  usedBy:
+    primary:
+    - P27
+    - P31
+    alternative: []
+  whoDecides: sponsor or expansion lead
+- id: L16
+  name: Reframe or Stop
+  discipline: Govern and exit
+  purpose: Preserve learning, relationships, data rights and capital on exit.
+  startsWhen: a hypothesis failed or a risk is unacceptable
+  steps:
+  - id: A56
+    text: log the reason
+  - id: M55
+    text: pause and remediate
+  - id: A57
+    text: suspend activities and revoke access
+  - id: M54
+    text: draft a pivot hypothesis
+  - id: A60
+    text: close or restart
+  branches: immediate harm → M55 first, skip experiments · obligations exist → run the transition before closing
+  branchIds:
+  - M55
+  window: immediate for safety stops; otherwise the next Review cycle
+  stopIf: null
+  escalateIf: a customer obligation cannot be met → sponsor
+  doneWhen: a verified halt or handoff, and an evidence-backed new thesis if any
+  stance:
+    default: Protect
+    allowed: []
+    never: []
+  usedBy:
+    primary:
+    - P26
+    - P32
+    alternative:
+    - P21
+    - P23
+  whoDecides: sponsor and governance
+- id: L18
+  name: Campaign as Experiment
+  discipline: Govern and exit
+  purpose: Run a campaign with a falsifiable claim and honest attribution.
+  startsWhen: a distribution test has a credible hypothesis
+  steps:
+  - id: A15
+    text: define intervention and control
+  - id: A23
+    text: approve creatives
+  - id: A49
+    text: null
+  - id: A25
+    text: launch capped
+  - id: A31
+    text: observe permitted events
+  - id: M56
+    text: read back outcomes
+  - id: A47
+    text: report incremental effect
+  branches: misleading claim, opt-out failure or cost cap hit → pause at once (M55)
+  branchIds:
+  - M55
+  window: 1–8 weeks
+  stopIf: any rule 02, 05, 09 or 19 breach
+  escalateIf: the control is contaminated
+  doneWhen: incremental outcome, total cost, uncertainty and adverse effects are reported
+  stance:
+    default: Probe
+    allowed:
+    - Activate
+    never: []
+  usedBy:
+    primary: []
+    alternative:
+    - P06
+    - P09
+    - P25
+    - P29
+  whoDecides: campaign sponsor
+- id: L19
+  name: Pioneer Portfolio Review
+  discipline: Govern and exit
+  purpose: Allocate scarce effort across competing Market Positions. Starts on the portfolio cadence or when many
+    units are active.
+  startsWhen: ''
+  steps:
+  - id: A01
+    text: refresh all Positions
+  - id: M14
+    text: rank opportunities
+  - id: A15
+    text: prepare alternatives
+  - id: A16
+    text: route dispositions
+  - id: A49
+    text: set stage budgets
+  branches: key evidence missing → fund a narrow test, not a program
+  branchIds: []
+  window: weekly or monthly
+  stopIf: null
+  escalateIf: an unfunded commitment is found
+  doneWhen: a rationalized investment slate with no hidden unfunded commitments
+  stance:
+    default: null
+    allowed: []
+    never: []
+  usedBy:
+    primary: []
+    alternative:
+    - P01
+  whoDecides: Faculty Executive and sponsor

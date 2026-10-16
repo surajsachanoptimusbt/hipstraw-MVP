@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from typing import Any
@@ -27,6 +28,7 @@ from hipstraw_mm.viewer.api import (
     shape_market_map,
     shape_paths,
     shape_positions,
+    shape_routing,
     shape_run_detail,
     shape_runs,
     shape_step,
@@ -141,6 +143,15 @@ class _Handler(BaseHTTPRequestHandler):
 
         if path == "/":
             self._serve_index(head)
+            return
+
+        m = re.match(r"^/api/runs/([^/]+)/routing$", path)
+        if m:
+            sim = shape_routing(self.store, m.group(1))
+            if sim is None:
+                self._json_error(404, f"run {m.group(1)} not found")
+            else:
+                self._json_response(200, sim)
             return
 
         m = re.match(r"^/vendor/([^/]+)$", path)
@@ -296,3 +307,9 @@ class ViewerServer(HTTPServer):
             "allowed_hosts": ALLOWED_HOSTS | {host},
         })
         super().__init__((host, port), handler)
+
+    def handle_error(self, request: Any, client_address: Any) -> None:
+        # The browser dropped the connection (tab switched, poll replaced): nothing to report.
+        if isinstance(sys.exc_info()[1], ConnectionError):
+            return
+        super().handle_error(request, client_address)

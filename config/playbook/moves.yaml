@@ -1,0 +1,718 @@
+# Extracted from The Hipstraw Market Mastery Playbook - Case 01.pdf by scripts/extract_playbook.py (playbook.v0.1).
+# Reviewed; edit here, not in the PDF.
+version: playbook.v0.1
+moves:
+- id: M01
+  name: Contextual Observation
+  useWhen: Behaviour, workaround or setting is hidden
+  neverWhen: No lawful, consented observation channel
+  stance:
+    default: Listen
+    never: []
+    everyStance: false
+  tasks:
+  - A01
+  - A02
+  - A05
+  doneWhen: Validated observations anchored to context
+- id: M02
+  name: Interview Contradiction Probe
+  useWhen: Enthusiasm lacks specific past behaviour
+  neverWhen: Probes would be leading or coercive
+  stance:
+    default: Probe
+    never: []
+    everyStance: false
+  tasks:
+  - A03
+  - A04
+  doneWhen: Supported and contested behaviour separated
+- id: M03
+  name: Disconfirming Probe
+  useWhen: Research covers only friendly early adopters
+  neverWhen: Failure cases are cherry-picked
+  stance:
+    default: Probe
+    never: []
+    everyStance: false
+  tasks:
+  - A03
+  - A05
+  doneWhen: The claim is narrowed by adverse evidence
+- id: M04
+  name: Workaround Documentation
+  useWhen: An unmet job shows up as manual work
+  neverWhen: It would expose protected operational secrets
+  stance:
+    default: Listen
+    never: []
+    everyStance: false
+  tasks:
+  - A02
+  - A06
+  doneWhen: A substitute map grounded in evidence
+- id: M05
+  name: Source Triangulation
+  useWhen: A desk or anecdotal signal is material
+  neverWhen: No independent source exists (disclose the limit)
+  stance:
+    default: Scout
+    never: []
+    everyStance: false
+  tasks:
+  - A04
+  - A07
+  doneWhen: Conflicts and uncertainty documented
+- id: M06
+  name: Audience Source Mapping
+  useWhen: Audience or buying access is unclear
+  neverWhen: Personal data would be harvested without lawful basis
+  stance:
+    default: Scout
+    never: []
+    everyStance: false
+  tasks:
+  - A01
+  - A08
+  doneWhen: A qualified, addressable route mapped
+- id: M07
+  name: Local Institution Mapping
+  useWhen: New territory or regulated sector
+  neverWhen: It rests on stereotypes from a few intermediaries
+  stance:
+    default: Scout
+    never: []
+    everyStance: false
+  tasks:
+  - A01
+  - A09
+  doneWhen: A verified local ecosystem account
+- id: M08
+  name: Local Interpreter Mission
+  useWhen: Remote inference may misread a region
+  neverWhen: The task is unsafe or the worker unqualified
+  stance:
+    default: Scout
+    never: []
+    everyStance: false
+  tasks:
+  - A28
+  - A29
+  doneWhen: Local claims independently checked
+- id: M09
+  name: Archetype Segmentation
+  useWhen: An “everyone” strategy
+  neverWhen: Segmenting by a sensitive attribute without purpose or compliance
+  stance:
+    default: Scout
+    never: []
+    everyStance: false
+  tasks:
+  - A08
+  - A10
+  doneWhen: Testable audience boundaries
+- id: M10
+  name: Behavioral Commitment Test
+  useWhen: Positive reactions do not prove intent
+  neverWhen: No delivery capacity, or misleading terms
+  stance:
+    default: Probe
+    never:
+    - Listen
+    - Scout
+    - Protect
+    everyStance: false
+  tasks:
+  - A11
+  - A12
+  doneWhen: Observed response with denominator and non-response
+- id: M11
+  name: Interview Recruitment
+  useWhen: A specific segment must be tested
+  neverWhen: Uncontrolled spam or insider-only samples
+  stance:
+    default: Listen
+    never:
+    - Protect
+    everyStance: false
+  tasks:
+  - A08
+  - A13
+  doneWhen: An auditable eligible sample
+- id: M12
+  name: Trigger Verification
+  useWhen: Urgency is tied to an event
+  neverWhen: The event is rumour
+  stance:
+    default: Scout
+    never: []
+    everyStance: false
+  tasks:
+  - A07
+  - A14
+  doneWhen: Date, applicability and affected population verified
+- id: M13
+  name: Adjacent Job Probe
+  useWhen: A cross-sell or adjacency hypothesis
+  neverWhen: The relationship is assumed to grant demand
+  stance:
+    default: Probe
+    never:
+    - Protect
+    everyStance: false
+  tasks:
+  - A03
+  - A11
+  doneWhen: Independent commitment for the adjacent job
+- id: M14
+  name: Portfolio Opportunity Ranking
+  useWhen: Several funded options compete
+  neverWhen: Weights would hide a hard gate
+  stance:
+    default: Scout
+    never: []
+    everyStance: false
+  tasks:
+  - A15
+  - A16
+  doneWhen: A decision report with uncertainty
+- id: M15
+  name: Alternative Mapping
+  useWhen: Displacement or new category
+  neverWhen: The comparison is invented or unfair
+  stance:
+    default: Scout
+    never: []
+    everyStance: false
+  tasks:
+  - A01
+  - A10
+  doneWhen: A credible switching map
+- id: M16
+  name: Switching Friction Test
+  useWhen: Buyers like the idea but stay with the incumbent
+  neverWhen: Migration cannot be supported safely
+  stance:
+    default: Probe
+    never:
+    - Listen
+    everyStance: false
+  tasks:
+  - A11
+  - A17
+  doneWhen: An actual switch or a quantified honest refusal
+- id: M17
+  name: Buyer Job / Budget Map
+  useWhen: B2B adoption involves several principals
+  neverWhen: Claims are made without authority
+  stance:
+    default: Listen
+    never: []
+    everyStance: false
+  tasks:
+  - A08
+  - A09
+  doneWhen: The true buying process recorded
+- id: M18
+  name: Trusted Introduction
+  useWhen: A segment is hard to reach directly
+  neverWhen: The agent would claim a false affiliation
+  stance:
+    default: Scout
+    never:
+    - Protect
+    everyStance: false
+  tasks:
+  - A18
+  - A19
+  doneWhen: An accepted, consented qualified introduction
+- id: M19
+  name: Trade / Street Mapping
+  useWhen: The market is physically fragmented
+  neverWhen: Photography or intercepts are not permitted
+  stance:
+    default: Scout
+    never:
+    - Protect
+    everyStance: false
+  tasks:
+  - A28
+  - A06
+  doneWhen: Verified coverage and deviations reported
+- id: M20
+  name: Channel Qualification Audit
+  useWhen: A partner claims a large audience
+  neverWhen: Exclusivity is demanded before a pilot
+  stance:
+    default: Probe
+    never: []
+    everyStance: false
+  tasks:
+  - A20
+  - A21
+  doneWhen: A qualified introduced cohort observed
+- id: M21
+  name: Partner Value Exchange Design
+  useWhen: Distribution needs institutional support
+  neverWhen: Unbounded inducement or a conflict
+  stance:
+    default: Co-create
+    never:
+    - Listen
+    everyStance: false
+  tasks:
+  - A21
+  - A22
+  doneWhen: A balanced, approved partner proposal
+- id: M22
+  name: Proposition Comprehension Test
+  useWhen: New category or complex value claim
+  neverWhen: The simplification misleads
+  stance:
+    default: Probe
+    never: []
+    everyStance: false
+  tasks:
+  - A23
+  - A24
+  doneWhen: Respondents correctly describe the value
+- id: M23
+  name: Message Variant Experiment
+  useWhen: Positioning is under test
+  neverWhen: A variant uses fabricated proof
+  stance:
+    default: Probe
+    never:
+    - Listen
+    - Protect
+    everyStance: false
+  tasks:
+  - A23
+  - A25
+  doneWhen: Difference in qualified action estimated
+- id: M24
+  name: Buying Committee Map
+  useWhen: The champion cannot progress alone
+  neverWhen: It bypasses procurement or privacy controls
+  stance:
+    default: Co-create
+    never: []
+    everyStance: false
+  tasks:
+  - A08
+  - A26
+  doneWhen: A real sponsor and decision route
+- id: M25
+  name: Objection Evidence Capture
+  useWhen: Repeated stalls or drop-offs
+  neverWhen: Only unverified sales summaries exist
+  stance:
+    default: Listen
+    never: []
+    everyStance: false
+  tasks:
+  - A04
+  - A27
+  doneWhen: Causes prioritized by validity
+- id: M26
+  name: Creator Audience Fit Test
+  useWhen: An influencer or community offered
+  neverWhen: Audience unverifiable or undisclosed
+  stance:
+    default: Probe
+    never:
+    - Protect
+    everyStance: false
+  tasks:
+  - A20
+  - A23
+  doneWhen: Qualified actions, not impressions
+- id: M27
+  name: Authentic Partner Mission
+  useWhen: Local trust or community learning is needed
+  neverWhen: A paid advocate is presented as independent
+  stance:
+    default: Co-create
+    never:
+    - Protect
+    everyStance: false
+  tasks:
+  - A18
+  - A29
+  doneWhen: Continued trust and voluntary engagement
+- id: M28
+  name: Outcome Prototype
+  useWhen: An enterprise deal needs workflow evidence
+  neverWhen: No authority to touch real customer data
+  stance:
+    default: Co-create
+    never:
+    - Listen
+    everyStance: false
+  tasks:
+  - A11
+  - A30
+  doneWhen: The customer observes measurable value
+- id: M29
+  name: Objection Taxonomy
+  useWhen: Similar declines across prospects
+  neverWhen: Every objection is blamed on price
+  stance:
+    default: Listen
+    never: []
+    everyStance: false
+  tasks:
+  - A04
+  - A27
+  doneWhen: Ranked, actionable gaps by segment
+- id: M30
+  name: Friction Observation
+  useWhen: Many registrations, no first value
+  neverWhen: Session monitoring is not authorized
+  stance:
+    default: Build
+    never: []
+    everyStance: false
+  tasks:
+  - A31
+  - A32
+  doneWhen: Root-cause friction identified
+- id: M31
+  name: First-Value Path Repair
+  useWhen: A specific activation failure is supported
+  neverWhen: The change hides a safety or compliance step
+  stance:
+    default: Build
+    never: []
+    everyStance: false
+  tasks:
+  - A33
+  - A30
+  doneWhen: Better first-value completion, no new harm
+- id: M32
+  name: Trial Meaningfulness Audit
+  useWhen: Trials start but buyers invest no effort
+  neverWhen: There is no proof the trial can succeed
+  stance:
+    default: Probe
+    never: []
+    everyStance: false
+  tasks:
+  - A31
+  - A04
+  doneWhen: Valid trial learning, not hollow sign-ups
+- id: M33
+  name: Price / Value Exchange Probe
+  useWhen: Paid conversion lags perceived need
+  neverWhen: Hidden fees or misleading pre-commitment
+  stance:
+    default: Probe
+    never:
+    - Listen
+    - Scout
+    - Protect
+    everyStance: false
+  tasks:
+  - A11
+  - A34
+  doneWhen: Observed willingness to pay and retained value
+- id: M34
+  name: Live Demo Event
+  useWhen: In-person context shows value better
+  neverWhen: A vanity crowd or an unsafe venue
+  stance:
+    default: Activate
+    never:
+    - Listen
+    - Protect
+    everyStance: false
+  tasks:
+  - A35
+  - A36
+  doneWhen: Participants understand and can act voluntarily
+- id: M35
+  name: Post-Event Qualification
+  useWhen: Sign-ups were collected at an event
+  neverWhen: No permission to follow up
+  stance:
+    default: Activate
+    never:
+    - Protect
+    everyStance: false
+  tasks:
+  - A37
+  - A11
+  doneWhen: Verified qualified responses; opt-outs respected
+- id: M36
+  name: Manual Fulfillment Proof
+  useWhen: The product is immature but a demand test is valuable
+  neverWhen: People unsafe or unqualified, or economics hidden
+  stance:
+    default: Build
+    never:
+    - Listen
+    everyStance: false
+  tasks:
+  - A38
+  - A39
+  doneWhen: Delivery completed; cost and defects accounted
+- id: M37
+  name: Design Partner Terms
+  useWhen: An early customer helps shape the offer
+  neverWhen: Unreasonable unpaid research extraction
+  stance:
+    default: Co-create
+    never:
+    - Listen
+    - Scout
+    everyStance: false
+  tasks:
+  - A21
+  - A40
+  doneWhen: Partner rights and commitments clear
+- id: M38
+  name: Provider Readiness Audit
+  useWhen: The market has nominal supply
+  neverWhen: Missing licences or unsafe operations
+  stance:
+    default: Build
+    never: []
+    everyStance: false
+  tasks:
+  - A28
+  - A41
+  doneWhen: Real available capacity confirmed locally
+- id: M39
+  name: Liquidity Seeding
+  useWhen: Two-sided cold start
+  neverWhen: Subsidy would hide unsustainable demand
+  stance:
+    default: Build
+    never:
+    - Listen
+    - Protect
+    everyStance: false
+  tasks:
+  - A38
+  - A42
+  doneWhen: Matched, fulfilled transactions within bounds
+- id: M40
+  name: Capacity / Service Reliability Gate
+  useWhen: Service failures rise with acquisition
+  neverWhen: An unsafe provider or material complaint is unresolved (stop instead)
+  stance:
+    default: Build
+    never: []
+    everyStance: false
+  tasks:
+  - A43
+  - A44
+  doneWhen: The approved safe capacity limit is observed
+- id: M41
+  name: Assured Pilot
+  useWhen: Fear of poor service blocks
+  neverWhen: The guarantee cannot be
+  stance:
+    default: Activate
+    never:
+    - Listen
+    - Protect
+    everyStance: false
+  tasks:
+  - A38
+  - A45
+  doneWhen: Safe outcomes and resolved remedies
+- id: M42
+  name: Nonexclusive Channel Test
+  useWhen: A partner asks for exclusivity
+  neverWhen: No credible value or no legal review
+  stance:
+    default: Probe
+    never:
+    - Listen
+    - Scout
+    - Protect
+    everyStance: false
+  tasks:
+  - A21
+  - A22
+  doneWhen: Evidence for or against later exclusivity
+- id: M43
+  name: True Contribution Rebuild
+  useWhen: Reported success is suspect
+  neverWhen: Costs are missing without disclosure
+  stance:
+    default: Protect
+    never: []
+    everyStance: false
+  tasks:
+  - A46
+  - A47
+  doneWhen: An auditable incremental contribution range
+- id: M44
+  name: Downside / Payback Scenario
+  useWhen: A large budget or costly Missions are proposed
+  neverWhen: Future benefits are described as certain
+  stance:
+    default: Protect
+    never: []
+    everyStance: false
+  tasks:
+  - A46
+  - A16
+  doneWhen: Bounded exposure and an explicit stop threshold
+- id: M45
+  name: Retention / Trust Diagnosis
+  useWhen: High conversion, falling repeat use
+  neverWhen: Data is missing or privacy basis invalid
+  stance:
+    default: Build
+    never: []
+    everyStance: false
+  tasks:
+  - A31
+  - A48
+  doneWhen: Actionable true churn causes
+- id: M46
+  name: Controlled Cohort Expansion
+  useWhen: One cohort shows promising repeatability
+  neverWhen: Delivery capacity is unverified
+  stance:
+    default: Expand
+    never:
+    - Listen
+    - Scout
+    - Probe
+    - Protect
+    everyStance: false
+  tasks:
+  - A25
+  - A49
+  doneWhen: The scale gate re-evaluated on a new sample
+- id: M47
+  name: Marginal Return Test
+  useWhen: Channels scale and efficiency drops
+  neverWhen: No attribution basis
+  stance:
+    default: Probe
+    never: []
+    everyStance: false
+  tasks:
+  - A47
+  - A49
+  doneWhen: Capped incremental ROI reported
+- id: M48
+  name: Channel Mix Diversification
+  useWhen: One channel saturating or dependent
+  neverWhen: Diversification hides low-quality leads
+  stance:
+    default: Probe
+    never:
+    - Protect
+    everyStance: false
+  tasks:
+  - A20
+  - A25
+  doneWhen: Qualified yield improves with diversified risk
+- id: M49
+  name: Root-Cause System Correction
+  useWhen: Repeated fulfillment or
+  neverWhen: Causality inferred from one episode
+  stance:
+    default: Build
+    never: []
+    everyStance: false
+  tasks:
+  - A33
+  - A50
+  doneWhen: Repeat failure declines in an cohort
+- id: M50
+  name: Transferability Test
+  useWhen: Replication beyond the known market type
+  neverWhen: Language, culture or institutions assumed constant
+  stance:
+    default: Expand
+    never: []
+    everyStance: false
+  tasks:
+  - A51
+  - A52
+  doneWhen: Transfer boundaries recorded
+- id: M51
+  name: Local Compliance / Language Pilot
+  useWhen: Expansion into a new geography
+  neverWhen: No qualified legal and linguistic route
+  stance:
+    default: Scout
+    never: []
+    everyStance: false
+  tasks:
+  - A28
+  - A53
+  doneWhen: The local conduct and quality gate passed
+- id: M52
+  name: Partner Enablement Kit
+  useWhen: A partner wants a scalable motion
+  neverWhen: Claims unreviewed or kit untested
+  stance:
+    default: Expand
+    never:
+    - Listen
+    - Scout
+    - Probe
+    everyStance: false
+  tasks:
+  - A23
+  - A54
+  doneWhen: The partner runs a compliant test independently
+- id: M53
+  name: Scale Release Gate
+  useWhen: The portfolio wants a bigger launch
+  neverWhen: One metric overrides trust or margin
+  stance:
+    default: Expand
+    never:
+    - Listen
+    - Scout
+    - Probe
+    everyStance: false
+  tasks:
+  - A55
+  - A16
+  doneWhen: A signed decision with bounds, stage and stop rule
+- id: M54
+  name: Pivot Hypothesis Draft
+  useWhen: The core thesis failed but assets remain
+  neverWhen: The pivot is an unsupported success story
+  stance:
+    default: Protect
+    never: []
+    everyStance: false
+  tasks:
+  - A15
+  - A56
+  doneWhen: A new falsifiable thesis, not recycled optimism
+- id: M55
+  name: Pause / Remediate Intervention
+  useWhen: Consent, safety, quality, economics or rights fail
+  neverWhen: Never delayed for an experiment
+  stance:
+    default: Protect
+    never: []
+    everyStance: true
+  tasks:
+  - A43
+  - A57
+  doneWhen: Affected activity stopped and harm resolved
+- id: M56
+  name: Outcome Readback
+  useWhen: A campaign or transaction outcome is reported
+  neverWhen: A dashboard event is taken as fulfillment
+  stance:
+    default: Build
+    never: []
+    everyStance: false
+  tasks:
+  - A58
+  - A59
+  doneWhen: The realized outcome logged once, with attribution

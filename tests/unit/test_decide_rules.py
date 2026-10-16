@@ -1,84 +1,39 @@
-"""T084: rule tables of research R15."""
+"""T084: Market Status rule table (research R15), over the Review's playbook Dispositions."""
 
 from __future__ import annotations
 
-
-def _path(**over):
-    base = {"companies": [], "sufficiency": "insufficient", "canStillFill": False}
-    base.update(over)
-    return base
+from hipstraw_mm.market.decide import compute_market_status, unassessed_dimensions
 
 
-class TestPathDecision:
-    def test_pursue(self) -> None:
-        from hipstraw_mm.market.decide import decide_path
-
-        d = decide_path(_path(companies=[{"disposition": "include", "verified": True}], sufficiency="sufficient"))
-        assert d["decision"] == "pursue"
-
-    def test_included_but_partial_needs_more(self) -> None:
-        from hipstraw_mm.market.decide import decide_path
-
-        d = decide_path(_path(companies=[{"disposition": "include", "verified": True}], sufficiency="partial"))
-        assert d["decision"] == "needs more evidence"
-
-    def test_drop(self) -> None:
-        from hipstraw_mm.market.decide import decide_path
-
-        d = decide_path(_path(companies=[{"disposition": "exclude", "verified": False}]))
-        assert d["decision"] == "drop"
-
-    def test_fillable_gap_not_dropped(self) -> None:
-        from hipstraw_mm.market.decide import decide_path
-
-        assert decide_path(_path(canStillFill=True))["decision"] == "needs more evidence"
-
-    def test_stores_rule_reason_right(self) -> None:
-        from hipstraw_mm.market.decide import decide_path
-
-        for p in (_path(), _path(canStillFill=True)):
-            d = decide_path(p)
-            assert d["ruleFired"] and d["reason"] and d["right"] == "decide_path"
+def status(*dispositions: str, **extra: object) -> str:
+    return str(compute_market_status([{"disposition": d, **extra} for d in dispositions])["state"])
 
 
 class TestMarketStatus:
-    def test_progressing(self) -> None:
-        from hipstraw_mm.market.decide import compute_market_status
+    def test_progressing_when_any_unit_advances(self) -> None:
+        for d in ("ACTIVATE", "BUILD", "SCALE"):
+            assert status(d, "STOP") == "progressing"
 
-        assert compute_market_status([{"decision": "pursue"}, {"decision": "drop"}])["state"] == "progressing"
-
-    def test_blocked_all_drop_or_empty(self) -> None:
-        from hipstraw_mm.market.decide import compute_market_status
-
-        assert compute_market_status([{"decision": "drop"}])["state"] == "blocked"
+    def test_blocked_when_every_unit_stops_or_none_survive(self) -> None:
+        assert status("STOP", "STOP") == "blocked"
         assert compute_market_status([])["state"] == "blocked"
 
     def test_at_risk(self) -> None:
-        from hipstraw_mm.market.decide import compute_market_status
+        assert status("TEST", unresolvedAtSegmentOrBuyer=True) == "at-risk"
 
-        s = compute_market_status([{"decision": "needs more evidence", "unresolvedAtSegmentOrBuyer": True}])
-        assert s["state"] == "at-risk"
+    def test_awaiting_evidence_for_explore_or_test(self) -> None:
+        assert status("TEST") == "awaiting-evidence"
+        assert status("EXPLORE", "PARK") == "awaiting-evidence"
 
-    def test_awaiting_evidence(self) -> None:
-        from hipstraw_mm.market.decide import compute_market_status
-
-        assert compute_market_status([{"decision": "needs more evidence"}])["state"] == "awaiting-evidence"
-
-    def test_needs_attention(self) -> None:
-        from hipstraw_mm.market.decide import compute_market_status
-
-        assert compute_market_status([{"decision": "other"}])["state"] == "needs-attention"
+    def test_needs_attention_for_park_or_reframe(self) -> None:
+        assert status("PARK", "REFRAME") == "needs-attention"
 
     def test_stores_rule_reason_right(self) -> None:
-        from hipstraw_mm.market.decide import compute_market_status
-
-        s = compute_market_status([{"decision": "pursue"}])
+        s = compute_market_status([{"disposition": "ACTIVATE"}])
         assert s["ruleFired"] and s["reason"] and s["right"] == "set_market_status"
 
 
 def test_trajectory_transition_unassessed() -> None:
-    from hipstraw_mm.market.decide import unassessed_dimensions
-
     items = unassessed_dimensions()
     assert {i["dimensionKey"] for i in items} == {"trajectory", "transition"}
     assert all(i["reason"] == "needs a comparison with an earlier run" for i in items)

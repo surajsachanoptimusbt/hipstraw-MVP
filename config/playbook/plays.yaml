@@ -1,0 +1,1058 @@
+# Extracted from The Hipstraw Market Mastery Playbook - Case 01.pdf by scripts/extract_playbook.py (playbook.v0.1).
+# Reviewed; edit here, not in the PDF.
+version: playbook.v0.1
+plays:
+- id: P01
+  name: Territory Prioritization
+  discipline: Explore
+  purpose: Choose a small territory from broad plausible demand.
+  useWhen: many industries or regions compete for attention
+  dontUseWhen: segment economics and access are not comparable
+  mustBeTrue: a territory map, jobs, feasible reach, substitutes, stated uncertainties
+  stance:
+    default: Scout
+    allowed:
+    - Listen
+    - Probe
+    never:
+    - Activate
+    - Expand
+  strategy:
+    primary: S03
+    also:
+    - S01
+  lines:
+    preferredText: L01 → L03
+    preferred:
+    - L01
+    - L03
+    alternatives:
+    - L19
+  gambits: []
+  firstStep:
+    id: M06
+    text: M06 Audience Source Mapping
+  whoDecides: Market Manager with the sponsor
+  doneWhen: a ranked wedge, excluded alternatives and a testable reason
+  example: compare Series B SaaS RevOps teams against “all software firms”
+  tip: write down why the losers lost; you will revisit them
+- id: P02
+  name: Need Claim Versus Behavior
+  discipline: Explore
+  purpose: Separate reported interest from costly behaviour.
+  useWhen: polite interviews or content enthusiasm
+  dontUseWhen: the user has no realistic way to act yet
+  mustBeTrue: the buyer job, a compliant trial or commitment, realistic alternatives
+  stance:
+    default: Probe
+    allowed:
+    - Listen
+    - Activate
+    never:
+    - Expand
+  strategy:
+    primary: S06
+    also:
+    - S02
+  lines:
+    preferredText: L02, then L06
+    preferred:
+    - L02
+    - L06
+    alternatives:
+    - L05
+  gambits:
+  - G06
+  firstStep:
+    id: M10
+    text: M10 Behavioral Commitment Test
+  whoDecides: Research Lead
+  doneWhen: at least one real action threshold is tested and negative cases are interpreted
+  example: after a positive concept review, ask for a live trial on the buyer's own data
+  tip: report the denominator. “3 of 40 said yes”, never “3 said yes”
+- id: P03
+  name: Unmet Job Discovery
+  discipline: Explore
+  purpose: Reveal workarounds and persistent jobs nobody serves well.
+  useWhen: repeated manual improvisation is visible
+  dontUseWhen: research would expose confidential or intimate data
+  mustBeTrue: consent, site context, independent observations
+  stance:
+    default: Listen
+    allowed:
+    - Scout
+    never:
+    - Activate
+    - Expand
+  strategy:
+    primary: S01
+    also:
+    - S02
+  lines:
+    preferredText: L01; L02 once a thesis exists
+    preferred:
+    - L01
+    - L02
+    alternatives:
+    - L17
+  gambits: []
+  firstStep:
+    id: M01
+    text: M01 Contextual Observation
+  whoDecides: field Research Lead
+  doneWhen: problem mechanisms and willingness- to-change constraints are understood
+  example: observe independent caterers reconciling fragmented lunch orders
+  tip: cost the workaround in hours or money; that is your price ceiling
+- id: P05
+  name: Local Context Translation
+  discipline: Explore
+  purpose: Stop assumptions travelling unchanged across places.
+  useWhen: a global offer meets an unfamiliar context
+  dontUseWhen: law or safe field access cannot be supported
+  mustBeTrue: local language and trade structure; counsel where material
+  stance:
+    default: Scout
+    allowed:
+    - Listen
+    - Co-create
+    never:
+    - Expand
+  strategy:
+    primary: S13
+    also: []
+  lines:
+    preferredText: L13
+    preferred:
+    - L13
+    alternatives:
+    - L17
+  gambits:
+  - G07
+  firstStep:
+    id: M08
+    text: M08 Local Interpreter Mission
+  whoDecides: regional owner
+  doneWhen: the local proposition and delivery format survive a field test
+  example: adapt booking, payment and support formats for one Indian city
+  tip: translate the buying process, not just the words
+- id: P06
+  name: Trigger and Timing Window
+  discipline: Explore
+  purpose: Act on an authentic event that opens a limited window.
+  useWhen: a regulatory, technical or financial trigger shifts urgency
+  dontUseWhen: the event is speculative or targeting it would exploit people
+  mustBeTrue: a source-confirmed event, affected parties and a cutoff date
+  stance:
+    default: Scout
+    allowed:
+    - Probe
+    - Activate
+    never:
+    - Expand
+  strategy:
+    primary: S01
+    also:
+    - S06
+  lines:
+    preferredText: L01 → L06; L06 first if the window is closing
+    preferred:
+    - L01
+    - L06
+    alternatives:
+    - L18
+  gambits: []
+  firstStep:
+    id: M12
+    text: M12 Trigger Verification
+  whoDecides: research and compliance sponsor
+  doneWhen: a useful decision is made before the window closes
+  example: a new procurement rule opens demand for evidence software
+  tip: deadlines come first; a quick, honest test beats a perfect late one
+- id: P07
+  name: Street / Trade Access Bridge
+  discipline: Explore
+  purpose: Gain lawful local access to fragmented buyers and sellers.
+  useWhen: phone lists and ads cannot reach small operators
+  dontUseWhen: ambassadors would pressure people or misrepresent who they work for
+  mustBeTrue: permitted venues, voluntary introductions, a credible local partner
+  stance:
+    default: Scout
+    allowed:
+    - Listen
+    - Co-create
+    never:
+    - Activate
+    - Expand
+  strategy:
+    primary: S04
+    also: []
+  lines:
+    preferredText: L04
+    preferred:
+    - L04
+    alternatives:
+    - L17
+  gambits:
+  - G03
+  - G07
+  firstStep:
+    id: M18
+    text: M18 Trusted Introduction
+  whoDecides: local Market Architect manager
+  doneWhen: verified permitted interviews, sample quality and a feasible channel
+  example: map 25 salon owners across two neighborhoods
+  tip: log refusals as carefully as yeses; they define the reachable market
+- id: P04
+  name: Vertical Wedge Selection
+  discipline: Develop
+  purpose: Make one segment's offer more precise than a generic pitch.
+  useWhen: several markets express generic demand
+  dontUseWhen: no segment- specific difference survives testing
+  mustBeTrue: buyer archetypes, workflow economics, vertical language
+  stance:
+    default: Probe
+    allowed:
+    - Scout
+    - Co-create
+    never:
+    - Expand
+  strategy:
+    primary: S03
+    also:
+    - S05
+  lines:
+    preferredText: L03 → L05
+    preferred:
+    - L03
+    - L05
+    alternatives:
+    - L07
+  gambits:
+  - G02
+  firstStep:
+    id: M09
+    text: M09 Archetype Segmentation
+  whoDecides: product / market sponsor
+  doneWhen: a vertical offer is chosen and one segment engages meaningfully
+  example: a contract-review tool positioned for healthcare staffing teams
+  tip: a vertical is real when buyers use their own jargon back to you
+- id: P09
+  name: Positioning Comprehension
+  discipline: Develop
+  purpose: Fix a value proposition nobody can restate.
+  useWhen: awareness is high but understanding is low
+  dontUseWhen: simplifying would hide material terms
+  mustBeTrue: original customer language and comparator claims
+  stance:
+    default: Probe
+    allowed:
+    - Listen
+    - Co-create
+    never: []
+  strategy:
+    primary: S05
+    also: []
+  lines:
+    preferredText: L05
+    preferred:
+    - L05
+    alternatives:
+    - L18
+  gambits: []
+  firstStep:
+    id: M22
+    text: M22 Proposition Comprehension Test
+  whoDecides: brand owner
+  doneWhen: the target audience explains who, what, when and why correctly
+  example: test “AI vendor discovery” against “saves 6 hours a week of supplier research”
+  tip: if a buyer cannot repeat it to their boss, it does not exist
+- id: P10
+  name: Switching Wedge
+  discipline: Develop
+  purpose: Find a defensible advantage against a habitual incumbent.
+  useWhen: satisfied category users rarely switch
+  dontUseWhen: there is no credible advantage
+  mustBeTrue: substitutes, switching cost, pilot safety
+  stance:
+    default: Probe
+    allowed:
+    - Co-create
+    - Activate
+    never:
+    - Expand
+  strategy:
+    primary: S03
+    also:
+    - S07
+  lines:
+    preferredText: L03 → L07
+    preferred:
+    - L03
+    - L07
+    alternatives:
+    - L06
+  gambits:
+  - G02
+  - G10
+  firstStep:
+    id: M15
+    text: M15 Alternative Mapping
+  whoDecides: product sponsor
+  doneWhen: specific switchers commit for a reason that survives objection
+  example: pilot alongside the incumbent first, displace later
+  tip: measure the switching cost honestly with M16 before you price
+- id: P11
+  name: Design Partner Proof
+  discipline: Develop
+  purpose: Build evidence for complex enterprise adoption.
+  useWhen: the buyer wants proof inside its own processes
+  dontUseWhen: the partner has no staff or economic decision access
+  mustBeTrue: a pilot charter, a sponsor, security clearance and a measurable success test
+  stance:
+    default: Co-create
+    allowed:
+    - Probe
+    never:
+    - Expand
+  strategy:
+    primary: S07
+    also:
+    - S06
+  lines:
+    preferredText: L07 → L09
+    preferred:
+    - L07
+    - L09
+    alternatives:
+    - L06
+  gambits:
+  - G01
+  - G02
+  firstStep:
+    id: M28
+    text: M28 Outcome Prototype
+  whoDecides: enterprise sponsor
+  doneWhen: adoption is evaluated and the joint next decision is recorded
+  example: run one real workflow with an executive and an operator
+  tip: agree the success metric and the stop date in the charter, not at week 6
+- id: P12
+  name: Category Education to Action
+  discipline: Develop
+  purpose: Turn an unfamiliar capability into action and value.
+  useWhen: users understand the old alternatives but not the new category
+  dontUseWhen: the “education” is branded propaganda posing as research
+  mustBeTrue: an accurate explanation, unbiased alternatives, permitted content
+  stance:
+    default: Probe
+    allowed:
+    - Co-create
+    - Activate
+    never: []
+  strategy:
+    primary: S05
+    also:
+    - S06
+  lines:
+    preferredText: L05 → L06
+    preferred:
+    - L05
+    - L06
+    alternatives:
+    - L14
+  gambits:
+  - G12
+  firstStep:
+    id: M10
+    text: M10 Behavioral Commitment Test
+  whoDecides: market education steward
+  doneWhen: comprehension and voluntary meaningful action both improve
+  example: a workshop on agent-assisted local supply services, ending in an optional pilot sign-up
+  tip: end every lesson with one small, real action
+- id: P13
+  name: Channel Access Validation
+  discipline: Develop
+  purpose: Test whether an intermediary can deliver qualified demand.
+  useWhen: a reseller promises reach or platform placement
+  dontUseWhen: exclusivity is demanded before proof
+  mustBeTrue: partner referrals, economics, observed activation, disclosure
+  stance:
+    default: Probe
+    allowed:
+    - Scout
+    - Co-create
+    never:
+    - Expand
+  strategy:
+    primary: S08
+    also:
+    - S04
+  lines:
+    preferredText: L08
+    preferred:
+    - L08
+    alternatives:
+    - L04
+  gambits:
+  - G04
+  - G08
+  firstStep:
+    id: M20
+    text: M20 Channel Qualification Audit
+  whoDecides: partner owner
+  doneWhen: net qualified, activated users justify the route
+  example: test one embedded workflow with association members
+  tip: ask for 20 named, consenting introductions before discussing a revenue share
+- id: P14
+  name: Live Demand Event
+  discipline: Develop
+  purpose: Turn an event into measurable learning, not crowd size.
+  useWhen: a demonstration explains the offer better than a page
+  dontUseWhen: safety, venue or permission requirements are missing
+  mustBeTrue: an invited segment, event consent, a follow-up design and a cost cap
+  stance:
+    default: Activate
+    allowed:
+    - Probe
+    - Co-create
+    never: []
+  strategy:
+    primary: S06
+    also:
+    - S14
+  lines:
+    preferredText: L06
+    preferred:
+    - L06
+    alternatives:
+    - L14
+  gambits:
+  - G03
+  firstStep:
+    id: M35
+    text: M35 Post-Event Qualification
+  whoDecides: event lead
+  doneWhen: participant learning and downstream action are documented
+  example: a pop-up demonstration at a trade centre
+  tip: decide the follow-up ask before the venue
+- id: P15
+  name: Trial-to-Paid Conversion
+  discipline: Develop
+  purpose: Find out whether the trial earns a buying decision.
+  useWhen: usage shows value but checkout or pricing fails
+  dontUseWhen: the trial did not actually deliver the benefit
+  mustBeTrue: usage by role, objection evidence, true price and alternatives
+  stance:
+    default: Probe
+    allowed:
+    - Activate
+    never:
+    - Expand
+  strategy:
+    primary: S06
+    also:
+    - S12
+  lines:
+    preferredText: L05 to reframe; L06 to probe price
+    preferred:
+    - L05
+    - L06
+    alternatives:
+    - L12
+  gambits:
+  - G02
+  - G06
+  firstStep:
+    id: M33
+    text: M33 Price / Value Exchange Probe
+  whoDecides: growth or product owner
+  doneWhen: real paid conversions with acceptable churn and margin
+  example: test a paid pilot fee against a permanent free tier
+  tip: check M32 first; a hollow trial makes every price look wrong
+- id: P16
+  name: Community Trust Loop
+  discipline: Develop
+  purpose: Earn belonging and referral without manipulation.
+  useWhen: local or professional relationships shape purchase
+  dontUseWhen: paid influence would be undisclosed or vulnerable people targeted
+  mustBeTrue: community needs, a transparent benefit, room for independent critique
+  stance:
+    default: Co-create
+    allowed:
+    - Listen
+    never:
+    - Expand
+  strategy:
+    primary: S14
+    also:
+    - S04
+  lines:
+    preferredText: L14
+    preferred:
+    - L14
+    alternatives:
+    - L04
+  gambits:
+  - G03
+  - G08
+  firstStep:
+    id: M27
+    text: M27 Authentic Partner Mission
+  whoDecides: community steward
+  doneWhen: repeated authentic interactions and verified useful referrals
+  example: a professional circle hosts peer learning with no forced promotion
+  tip: let members criticize you in public; it is what makes the praise believable
+- id: P17
+  name: Consensus and Buying Roles
+  discipline: Develop
+  purpose: Map objections across economic, technical and user stakeholders.
+  useWhen: the champion cannot progress without a committee
+  dontUseWhen: procurement is missing or authority would be misrepresented
+  mustBeTrue: a decision-rights map and agreed evaluation objectives
+  stance:
+    default: Co-create
+    allowed:
+    - Listen
+    - Probe
+    never: []
+  strategy:
+    primary: S07
+    also:
+    - S06
+  lines:
+    preferredText: L07
+    preferred:
+    - L07
+    alternatives:
+    - L05
+  gambits:
+  - G02
+  firstStep:
+    id: M24
+    text: M24 Buying Committee Map
+  whoDecides: enterprise field lead
+  doneWhen: the actual committee endorses a next step
+  example: security, finance and end-user sign-off for a limited pilot
+  tip: find the person who can say no, then ask what would make it a yes
+- id: P18
+  name: Offer Fit Reframe
+  discipline: Develop
+  purpose: Change a mismatched offer based on patterned evidence.
+  useWhen: the same valid objection recurs across 3+ qualified prospects
+  dontUseWhen: feedback comes from non-targets or is a sales artifact
+  mustBeTrue: segment cohorts, an objection taxonomy, feasibility and margin
+  stance:
+    default: Listen
+    allowed:
+    - Probe
+    - Co-create
+    never:
+    - Activate
+    - Expand
+  strategy:
+    primary: S05
+    also:
+    - S02
+  lines:
+    preferredText: L05
+    preferred:
+    - L05
+    alternatives:
+    - L02
+  gambits:
+  - G06
+  firstStep:
+    id: M29
+    text: M29 Objection Taxonomy
+  whoDecides: product and marketing leads
+  doneWhen: the modified offer produces better paid behaviour than the prior version
+  example: cut onboarding complexity instead of discounting
+  tip: not every objection is about price; discounting a misfit offer just loses money faster
+- id: P21
+  name: Partner Economics and Governance
+  discipline: Develop
+  purpose: Make a partner exchange viable and bounded.
+  useWhen: a distribution partner demands uncertain commitments
+  dontUseWhen: decision rights are missing or there is a competition-law issue
+  mustBeTrue: a commercial forecast, alternatives, an exit, counsel
+  stance:
+    default: Co-create
+    allowed:
+    - Probe
+    - Expand
+    never: []
+  strategy:
+    primary: S08
+    also:
+    - S16
+  lines:
+    preferredText: L08
+    preferred:
+    - L08
+    alternatives:
+    - L16
+  gambits:
+  - G04
+  - G07
+  - G08
+  firstStep:
+    id: M42
+    text: M42 Nonexclusive Channel Test
+  whoDecides: partner signatory
+  doneWhen: terms are agreed and cohort returns are tracked with no dependency trap
+  example: start non-exclusive before granting any territory protection
+  tip: exclusivity is a Gambit (G07), never a default term
+- id: P29
+  name: Creator / Community Fit
+  discipline: Develop
+  purpose: Check whether reach turns into relevant, trusted action.
+  useWhen: an influencer claims to reach ideal customers
+  dontUseWhen: disclosure or identity / cultural fit is unresolved
+  mustBeTrue: a consented audience signal, rates, cohorts
+  stance:
+    default: Probe
+    allowed:
+    - Co-create
+    never:
+    - Expand
+  strategy:
+    primary: S14
+    also:
+    - S08
+  lines:
+    preferredText: L14
+    preferred:
+    - L14
+    alternatives:
+    - L18
+  gambits:
+  - G03
+  firstStep:
+    id: M26
+    text: M26 Creator Audience Fit Test
+  whoDecides: community or creator lead
+  doneWhen: the audience activates in an attributable, credible cohort
+  example: a local home-chef creator gains real recurring subscribers
+  tip: buy one post with a unique code before buying a series
+- id: P08
+  name: Two-Sided Seed
+  discipline: Build
+  purpose: Create early liquidity without unbounded subsidy.
+  useWhen: sellers wait for users while users wait for supply
+  dontUseWhen: quality, safety or capacity is too weak
+  mustBeTrue: behavioural signals on both sides; economic and fill-rate assumptions
+  stance:
+    default: Build
+    allowed:
+    - Probe
+    - Co-create
+    never:
+    - Expand
+  strategy:
+    primary: S11
+    also: []
+  lines:
+    preferredText: L11
+    preferred:
+    - L11
+    alternatives:
+    - L09
+  gambits:
+  - G05
+  - G11
+  firstStep:
+    id: M39
+    text: M39 Liquidity Seeding
+  whoDecides: marketplace sponsor
+  doneWhen: matched transactions complete with repeat intent and controlled cost
+  example: seed reliable tyre-service providers before paid demand
+  tip: seed one dense micro-market, not a thin city
+- id: P19
+  name: Supply / Delivery Balancing
+  discipline: Build
+  purpose: Stop demand generation from breaking service.
+  useWhen: wait times, cancellations or quality flags rise
+  dontUseWhen: supply-side safety or legal duties are unresolved
+  mustBeTrue: capacity, coverage, service quality, cancellations, cost
+  stance:
+    default: Build
+    allowed:
+    - Protect
+    never:
+    - Activate
+    - Expand
+  strategy:
+    primary: S11
+    also:
+    - S09
+  lines:
+    preferredText: L11 → L09
+    preferred:
+    - L11
+    - L09
+    alternatives:
+    - L12
+  gambits:
+  - G05
+  - G09
+  firstStep:
+    id: M40
+    text: M40 Capacity / Service Reliability Gate
+  whoDecides: service owner
+  doneWhen: reliability and fill rate return to the agreed gate
+  example: throttle ad spend until technicians can meet booking windows
+  tip: a throttle is a success, not a failure, when supply is the constraint
+- id: P20
+  name: Trust-and-Quality Assurance
+  discipline: Build
+  purpose: Reduce justified fear with real protections.
+  useWhen: mistrust blocks justified adoption, or early churn is high
+  dontUseWhen: a promised guarantee cannot be funded or honoured
+  mustBeTrue: credentials, dispute handling, privacy and quality evidence
+  stance:
+    default: Build
+    allowed:
+    - Co-create
+    - Activate
+    never:
+    - Expand
+  strategy:
+    primary: S09
+    also:
+    - S14
+  lines:
+    preferredText: L09
+    preferred:
+    - L09
+    alternatives:
+    - L20
+  gambits:
+  - G10
+  firstStep:
+    id: M41
+    text: M41 Assured Pilot (M45 when churn is the signal)
+  whoDecides: operations with compliance
+  doneWhen: quality and complaint rates improve, verified independently
+  example: transparent provider verification with a published remediation flow
+  tip: fund the guarantee before you advertise it
+- id: P22
+  name: Supply Activation
+  discipline: Build
+  purpose: Turn listed supply into available, accepted work.
+  useWhen: many listed suppliers, few accept jobs
+  dontUseWhen: providers lack competence or capacity
+  mustBeTrue: onboarding, training, availability and fair terms
+  stance:
+    default: Build
+    allowed:
+    - Probe
+    never:
+    - Expand
+  strategy:
+    primary: S11
+    also: []
+  lines:
+    preferredText: L11
+    preferred:
+    - L11
+    alternatives:
+    - L17
+  gambits:
+  - G05
+  - G11
+  firstStep:
+    id: M38
+    text: M38 Provider Readiness Audit
+  whoDecides: operations owner
+  doneWhen: accepted and completed work capacity is confirmed
+  example: credential and book local providers for defined shifts
+  tip: list only capacity a provider has accepted this week
+- id: P24
+  name: Activation Reliability
+  discipline: Build
+  purpose: Make first value consistently reachable.
+  useWhen: conversion is high but drop-offs cluster in onboarding
+  dontUseWhen: core value is not yet demonstrated
+  mustBeTrue: funnel events, consented failure recordings, error categories
+  stance:
+    default: Build
+    allowed:
+    - Probe
+    never:
+    - Expand
+  strategy:
+    primary: S09
+    also:
+    - S10
+  lines:
+    preferredText: L09
+    preferred:
+    - L09
+    alternatives:
+    - L20
+  gambits:
+  - G01
+  - G09
+  firstStep:
+    id: M30
+    text: M30 Friction Observation
+  whoDecides: product / operations owner
+  doneWhen: time to first value and completion improve in a held-out cohort
+  example: remove a repeated ID-verification step where lawful
+  tip: fix the smallest verified obstacle first (M31)
+- id: P30
+  name: First Market System Build
+  discipline: Build
+  purpose: Assemble the minimum viable offer, route, supply, trust and economics.
+  useWhen: first commitments exist but transactions break
+  dontUseWhen: there is no safe, lawful delivery channel
+  mustBeTrue: a service blueprint, handoffs, contingency, customer and provider terms
+  stance:
+    default: Build
+    allowed:
+    - Co-create
+    never:
+    - Expand
+  strategy:
+    primary: S09
+    also: []
+  lines:
+    preferredText: L09
+    preferred:
+    - L09
+    alternatives:
+    - L11
+  gambits:
+  - G01
+  - G09
+  firstStep:
+    id: M36
+    text: M36 Manual Fulfillment Proof
+  whoDecides: market builder
+  doneWhen: end-to-end delivery is verified for a repeat sample
+  example: coordinate intake, dispatch, payment and issue handling for a repair service
+  tip: keep a human in every handoff until two cohorts pass
+- id: P23
+  name: Margin Integrity
+  discipline: Scale
+  purpose: Detect loss-making discounts, churn and attribution distortion.
+  useWhen: topline grows while contribution falls
+  dontUseWhen: reliable cost data or data rights are missing
+  mustBeTrue: revenue, fees, incentives, human labour, refunds, payback
+  stance:
+    default: Protect
+    allowed:
+    - Probe
+    - Build
+    never:
+    - Activate
+    - Expand
+  strategy:
+    primary: S12
+    also: []
+  lines:
+    preferredText: L12
+    preferred:
+    - L12
+    alternatives:
+    - L16
+  gambits: []
+  firstStep:
+    id: M43
+    text: M43 True Contribution Rebuild
+  whoDecides: finance and growth sponsor
+  doneWhen: corrected net economics drive the continue or pause decision
+  example: creator commissions make booked orders unprofitable
+  tip: rebuild margin per cohort, never on a blended average
+- id: P25
+  name: Channel Saturation and Renewal
+  discipline: Scale
+  purpose: Detect marginal decline and diversify thoughtfully.
+  useWhen: CPC rises or the same people see repeated outreach
+  dontUseWhen: the new channel is untested or breaks contact rights
+  mustBeTrue: marginal cohort returns, creative fatigue, audience overlap
+  stance:
+    default: Probe
+    allowed:
+    - Activate
+    - Protect
+    never:
+    - Expand
+  strategy:
+    primary: S10
+    also:
+    - S12
+  lines:
+    preferredText: L10
+    preferred:
+    - L10
+    alternatives:
+    - L18
+  gambits: []
+  firstStep:
+    id: M47
+    text: M47 Marginal Return Test
+  whoDecides: growth sponsor
+  doneWhen: incremental cohort quality and marginal margin stabilize
+  example: move to a referral test after search saturates
+  tip: the last dollar matters, not the average dollar
+- id: P27
+  name: Geography Transfer
+  discipline: Scale
+  purpose: Validate repeatability across cultural and logistical boundaries.
+  useWhen: success in a first city prompts wider launch
+  dontUseWhen: the first-city sample or supply economics are atypical
+  mustBeTrue: a matched market comparison, local authority, a holdout
+  stance:
+    default: Expand
+    allowed:
+    - Scout
+    - Probe
+    never: []
+  strategy:
+    primary: S15
+    also:
+    - S13
+  lines:
+    preferredText: L15
+    preferred:
+    - L15
+    alternatives:
+    - L13
+  gambits: []
+  firstStep:
+    id: M50
+    text: M50 Transferability Test
+  whoDecides: regional expansion owner
+  doneWhen: the new territory shows independently verified positive economics
+  example: pilot one adjacent city before national scaling
+  tip: keep distinct Positions per territory; never roll a weak city into a strong average
+- id: P28
+  name: Adjacency Validation
+  discipline: Scale
+  purpose: Find a genuine next job near proven users.
+  useWhen: established users request related workflows
+  dontUseWhen: the request is one-off or weakly priced
+  mustBeTrue: jobs, market boundary, switching and supply cost
+  stance:
+    default: Probe
+    allowed:
+    - Co-create
+    never: []
+  strategy:
+    primary: S15
+    also:
+    - S06
+  lines:
+    preferredText: L03 → L06
+    preferred:
+    - L03
+    - L06
+    alternatives:
+    - L07
+  gambits: []
+  firstStep:
+    id: M13
+    text: M13 Adjacent Job Probe
+  whoDecides: portfolio or product sponsor
+  doneWhen: the new use case earns independent paid usage
+  example: extend invoice review into payment reconciliation
+  tip: check who pays; adjacent jobs often have a different buyer
+- id: P31
+  name: Scale System Repair
+  discipline: Scale
+  purpose: Repair the engine rather than buy more traffic.
+  useWhen: channels look productive but quality or margin falls
+  dontUseWhen: there is no root-cause evidence for the proposed change
+  mustBeTrue: cross-cohort metrics, provider economics, a process trace
+  stance:
+    default: Build
+    allowed:
+    - Protect
+    never:
+    - Expand
+  strategy:
+    primary: S12
+    also:
+    - S10
+  lines:
+    preferredText: L12 → L15
+    preferred:
+    - L12
+    - L15
+    alternatives:
+    - L20
+  gambits: []
+  firstStep:
+    id: M43
+    text: M43 True Contribution Rebuild
+  whoDecides: Market Manager and sponsor
+  doneWhen: contribution and trust recover for a sustained period
+  example: fix a dispatch bottleneck before doubling promotion
+  tip: freeze spend while you diagnose; repairs are cheaper at lower volume
+- id: P26
+  name: Permission and Compliance Review
+  discipline: Any stage
+  purpose: Establish whether outreach and field conduct are permissible.
+  useWhen: sector restrictions, platform terms or consent rules are unknown
+  dontUseWhen: an expert is required and no permitted workaround exists (stop instead)
+  mustBeTrue: legal and platform policies; consent, retention and data maps
+  stance:
+    default: Protect
+    allowed:
+    - Listen
+    - Scout
+    never:
+    - Activate
+    - Expand
+  strategy:
+    primary: S13
+    also:
+    - S16
+  lines:
+    preferredText: L13 steps 1–2 when entering; L16 when an activity is in breach
+    preferred:
+    - L13
+    - L16
+    alternatives:
+    - L17
+  gambits: []
+  firstStep:
+    id: A22
+    text: legal review (A22); M55 if the activity is live
+  whoDecides: legal / compliance specialist
+  doneWhen: an approved route or an explicit prohibition with a safe stop
+  example: no unconsented health-related targeting messages
+  tip: run it before the first send, not after the first complaint
+- id: P32
+  name: Pause, Reframe or Retire
+  discipline: Any stage
+  purpose: Stop effort and incentive bias from keeping a bad thesis alive.
+  useWhen: repeated disconfirmation, an ethics issue or negative margin
+  dontUseWhen: a safer, cheap investigation can still resolve high-value uncertainty
+  mustBeTrue: an investment-to-learning ratio, obligations, a transition plan, lessons
+  stance:
+    default: Protect
+    allowed:
+    - Listen
+    - Probe
+    never:
+    - Activate
+    - Expand
+  strategy:
+    primary: S16
+    also:
+    - S02
+  lines:
+    preferredText: L16
+    preferred:
+    - L16
+    alternatives:
+    - L02
+  gambits: []
+  firstStep:
+    id: M54
+    text: M54 Pivot Hypothesis Draft (M55 if harm is live)
+  whoDecides: sponsor and governance owner
+  doneWhen: spend stops or is reallocated, participants are protected, lessons are kept
+  example: discontinue an unviable local food-delivery wedge safely
+  tip: decide the stop rule when you start, so stopping is not a debate

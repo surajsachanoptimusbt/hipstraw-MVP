@@ -1,6 +1,9 @@
 programId: invoice_alpha_genesis
 name: Kozmo Invoice Alpha Genesis Cohort
 sourceUrl: https://kozmo.ai/invoice-alpha-genesis.html
+# Playbook market types, priority first (to confirm with Ashish): AR04 horizontal product -> vertical niche,
+# AR10 enterprise design-partner market, AR03 mature market displacement.
+marketTypes: [AR04, AR10, AR03]
 objective: >-
   Find companies whose procurement, AP, finance, and commercial teams would benefit from continuous
   obligation intelligence: catching invoice divergence before payment, protecting entitlements, and

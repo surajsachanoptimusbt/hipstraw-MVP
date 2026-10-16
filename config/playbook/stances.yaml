@@ -1,0 +1,99 @@
+# Extracted from The Hipstraw Market Mastery Playbook - Case 01.pdf by scripts/extract_playbook.py (playbook.v0.1).
+# Reviewed; edit here, not in the PDF.
+version: playbook.v0.1
+stances:
+- name: Listen
+  behaviour: Suspends persuasion; asks open, situated questions.
+  typicalMoves:
+  - M01
+  - M02
+  - M04
+  - M17
+  never: Pitching, asking for a commitment, claiming a market exists from politeness, any Gambit.
+  soundsLike: “Walk me through the last time a repair went wrong. What did you do next?”
+  lastsUntil: A specific, testable job survives negative evidence (Gate 0).
+- name: Scout
+  behaviour: Searches for signal sources, access routes and rival hypotheses.
+  typicalMoves:
+  - M05
+  - M06
+  - M07
+  - M15
+  - M19
+  never: Using desk research in place of field validation for a consequential decision; contact without permission;
+    any Gambit.
+  soundsLike: “We're mapping who services salon equipment here. Could you introduce us to two owners willing to
+    talk?”
+  lastsUntil: A qualified, reachable route is mapped, or MP2 is marked Can't reach.
+- name: Probe
+  behaviour: Runs a bounded test with minimal irreversible commitment.
+  typicalMoves:
+  - M03
+  - M10
+  - M22
+  - M23
+  - M33
+  never: Over-reading small or biased tests; commitments beyond the test cap; exclusivity; expansion Moves.
+  soundsLike: “Would you send your next three repair requests through us this month? We'll confirm a technician
+    within two hours or tell you we can't.”
+  lastsUntil: The test answers its decision question, or its cap is hit.
+- name: Co-create
+  behaviour: Develops the offer with consenting participants on fair terms.
+  typicalMoves:
+  - M21
+  - M27
+  - M28
+  - M37
+  never: Extracting unpaid work; vague or misrepresented terms; exclusivity without approval.
+  soundsLike: “For eight weeks we build the exception workflow with your RevOps team. You pay $12,000, you can stop
+    at week 4, and you see everything we learn.”
+  lastsUntil: The partner's real use is measured and a next decision is recorded.
+- name: Activate
+  behaviour: Asks for a meaningful, low-risk conversion or commitment.
+  typicalMoves:
+  - M10
+  - M33
+  - M35
+  - M41
+  never: Hiding commercial intent or consent terms; invented urgency; activating beyond verified supply.
+  soundsLike: “The pilot price is ₹499 a visit until 30 November. That is the real price, and you can cancel any
+    time.”
+  lastsUntil: The cohort completes and is verified, or a stop trigger fires.
+- name: Build
+  behaviour: Makes fulfillment, trust and unit economics reliable.
+  typicalMoves:
+  - M36
+  - M38
+  - M39
+  - M40
+  - M41
+  - M43
+  - M49
+  never: Growing demand beyond safe supply; counting bookings as delivered value.
+  soundsLike: “We're pausing new bookings in Indiranagar this week while we add two technicians. Your booking is
+    confirmed.”
+  lastsUntil: Gate 2 and Gate 3 evidence exists.
+- name: Expand
+  behaviour: Replicates a validated pattern with gates and holdouts.
+  typicalMoves:
+  - M46
+  - M47
+  - M50
+  - M51
+  - M53
+  never: Assuming transfer to new cultures, channels or regions; subsidy that hides economics; scale without a holdout.
+  soundsLike: “Koramangala passed both gates. HSR Layout opens as a held-out test with its own stop rule before
+    any city-wide spend.”
+  lastsUntil: Gate 4 or 5 is passed, or the stop rule fires.
+- name: Protect
+  behaviour: Preserves safety, money, consent, reputation and options.
+  typicalMoves:
+  - M40
+  - M43
+  - M54
+  - M55
+  never: Keeping campaigns running to meet activity quotas; new outreach other than required notices and remedies;
+    new Gambits.
+  soundsLike: “We've stopped all messages to this list while we confirm consent. Nobody else from us will contact
+    you.”
+  lastsUntil: The cause is fixed and a Review reopens the activity.

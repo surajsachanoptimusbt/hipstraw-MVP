@@ -1,0 +1,474 @@
+# Extracted from The Hipstraw Market Mastery Playbook - Case 01.pdf by scripts/extract_playbook.py (playbook.v0.1).
+# Reviewed; edit here, not in the PDF.
+version: playbook.v0.1
+strategies:
+- id: S01
+  name: Map the actual market
+  purpose: Find out who has the problem and how the market works today.
+  useWhen: the segment, actors or substitutes are uncertain; MP1 is Not mapped or MP2 is Unknown
+  dontUseWhen: a credible market and decision unit are already mapped
+  mustBeTrue: an explicit scope, named observation sources, and room for contradictory cases
+  stance:
+    default: Listen
+    allowed:
+    - Scout
+    - Probe
+    never:
+    - Activate
+    - Expand
+  plays:
+    primary:
+    - P03
+    - P06
+    also:
+    - P01
+  lines:
+  - L01
+  levers:
+  - need clarity
+  - access
+  whoDecides: Research Lead runs it; the sponsor approves the market boundary. What you see Play First step Axis
+    The market repeats but margin deteriorates P31 Scale System Repair M43 True Contribution Rebuild MP6 One city
+    strong, the next one collapses P27 Geography Transfer M50 Transferability Test MP7 Conduct and compliance The
+    user group requires regulated acquisition P26 Permission and Compliance Review Legal review A22 (M55 if the
+    activity is live) All Sensitive audience or unsafe practice P26 Permission and Compliance Review M55 Pause /
+    Remediate Intervention All The hypothesis keeps failing or the environment changed P32 Pause, Reframe or Retire
+    M54 Pivot Hypothesis Draft (M55 if harm is live) MP1
+  doneWhen: an actor-and-job map exists with known, unknown and source limits stated
+  example: ten buyers and two supply intermediaries interviewed in one B2B SaaS vertical before any campaign
+  tip: map the substitute first. What people do today is the market you are entering
+- id: S02
+  name: Disconfirm a seductive thesis
+  purpose: Find the fastest evidence that the opportunity is wrong.
+  useWhen: confidence comes from anecdote or founder conviction; MP1 is Hypothesis or Contested
+  dontUseWhen: a stop deadline makes more sampling harmful
+  mustBeTrue: named rival hypotheses and a disconfirming protocol
+  stance:
+    default: Probe
+    allowed:
+    - Listen
+    - Scout
+    never:
+    - Activate
+    - Expand
+  plays:
+    primary: []
+    also:
+    - P02
+    - P03
+    - P18
+    - P32
+  lines:
+  - L02
+  levers:
+  - need clarity
+  - problem intensity
+  whoDecides: Research steward runs it; the sponsor owns the stop
+  doneWhen: the thesis is narrowed, rejected, or survives a genuine test
+  example: interview buyers who chose to stay with the incumbent last quarter
+  tip: write the falsifier before the first interview, or you will move the goalposts
+- id: S03
+  name: Prioritize a market wedge
+  purpose: Pick one narrow, reachable, valuable first market.
+  useWhen: a broad TAM meets scarce capacity
+  dontUseWhen: the wedge would sacrifice a proven strategic obligation
+  mustBeTrue: an archetype map, reach, need, rough economics and comparative cost to learn
+  stance:
+    default: Scout
+    allowed:
+    - Listen
+    - Probe
+    never:
+    - Expand
+  plays:
+    primary:
+    - P01
+    - P04
+    - P10
+    also: []
+  lines:
+  - L03
+  levers:
+  - need clarity
+  - access
+  - optionality
+  whoDecides: Market Manager with the sponsor
+  doneWhen: one testable market unit is chosen, with a bounded second-best alternative
+  example: start with 50 specialty logistics operators rather than “all SMBs”
+  tip: rank wedges by the value of the decision they unlock, not by TAM
+- id: S04
+  name: Establish trusted market access
+  purpose: Earn permission and trust to reach the right buyers.
+  useWhen: buyers sit behind intermediaries, local gatekeepers or low trust; MP2 is Unknown or Can't reach
+  dontUseWhen: access would require deception or unlawful contact
+  mustBeTrue: permission basis, channel evidence, a gatekeeper map and a reciprocal benefit
+  stance:
+    default: Scout
+    allowed:
+    - Listen
+    - Probe
+    - Co-create
+    never:
+    - Expand
+  plays:
+    primary:
+    - P07
+    also:
+    - P13
+    - P16
+  lines:
+  - L04
+  - L17
+  levers:
+  - access
+  - trust and credibility
+  whoDecides: business development owner; Market Manager approves Missions
+  doneWhen: qualified, consenting conversations or introductions happen
+  example: a retired salon-equipment technician joins as a paid local Market Architect
+  tip: give the gatekeeper something useful first. An introduction is a favour, not a lead
+- id: S05
+  name: Make the proposition intelligible
+  purpose: Turn a latent job into accurate, compelling language.
+  useWhen: interest is real but understanding is poor; MP3 is Concept or Prototype
+  dontUseWhen: the claim cannot be substantiated
+  mustBeTrue: user vocabulary, a substitute comparison, a comprehension test
+  stance:
+    default: Probe
+    allowed:
+    - Listen
+    - Co-create
+    - Activate
+    never: []
+  plays:
+    primary:
+    - P09
+    - P12
+    - P18
+    also:
+    - P04
+  lines:
+  - L05
+  levers:
+  - attention and education
+  - offer and differentiation
+  whoDecides: brand or product sponsor approves every claim
+  doneWhen: target users can restate what changes for them and why
+  example: replace “AI-first vertical platform” with “closes month-end exceptions in a day, not a week”
+  tip: test whether people can explain it back, not whether they like it
+- id: S06
+  name: Create a credible first commitment
+  purpose: Turn interest into meaningful, low-friction behaviour.
+  useWhen: qualified attention exists without evidence of real demand
+  dontUseWhen: delivery is unsafe or the offer terms are unsupported
+  mustBeTrue: a valid offer, the buyer role, real capacity and consent
+  stance:
+    default: Activate
+    allowed:
+    - Probe
+    - Co-create
+    never:
+    - Expand
+  plays:
+    primary:
+    - P02
+    - P14
+    - P15
+    also:
+    - P06
+    - P11
+    - P12
+    - P17
+    - P28
+  lines:
+  - L06
+  levers:
+  - trial and adoption friction
+  - price
+  whoDecides: the commercial principal approves incentive and spend
+  doneWhen: a deposit, booked appointment, real trial use or paid pilot is verified
+  example: ask for a paid design-partner slot, not another follow-up call
+  tip: 'the commitment must cost the buyer something they value: money, data, time or reputation'
+- id: S07
+  name: Recruit market co-builders
+  purpose: Create value with a small set of committed partners.
+  useWhen: the product needs situated co-design
+  dontUseWhen: participants lack consent or would receive no fair value
+  mustBeTrue: a sponsor on each side, design-partner terms, expected mutual contribution
+  stance:
+    default: Co-create
+    allowed:
+    - Listen
+    - Probe
+    - Activate
+    never:
+    - Expand
+  plays:
+    primary:
+    - P11
+    - P17
+    also:
+    - P10
+  lines:
+  - L07
+  levers:
+  - value delivery
+  - trust
+  whoDecides: product sponsor and partnership owner
+  doneWhen: partners use it for real and supply evaluated outcome evidence
+  example: two RevOps teams co-design an exception workflow and run it on live data
+  tip: two partners who pay beat ten who advise
+- id: S08
+  name: Unlock channel leverage
+  purpose: Get productive third-party access without a dependency trap.
+  useWhen: trusted distributors, associations or platforms reach the target audience
+  dontUseWhen: the partner offers only vanity introductions
+  mustBeTrue: evidence of the partner's ability, economics, conflicts and access permissions
+  stance:
+    default: Probe
+    allowed:
+    - Scout
+    - Co-create
+    - Activate
+    never: []
+  plays:
+    primary:
+    - P13
+    - P21
+    also:
+    - P29
+  lines:
+  - L08
+  levers:
+  - channel productivity
+  - partnership and ecosystem
+  whoDecides: partnership lead; the signatory approves any terms
+  doneWhen: a partner-sourced cohort converts and retains with viable economics
+  example: test one trade association before signing a national agreement
+  tip: count activated buyers per partner, never introductions
+- id: S09
+  name: Build a viable transaction
+  purpose: Make trial, fulfillment, payment and support work together.
+  useWhen: demand exists but value delivery is uncertain; MP5 is Fragile or Working
+  dontUseWhen: safety, assurance or economics prohibit launch
+  mustBeTrue: real service and support capacity; legal review where needed
+  stance:
+    default: Build
+    allowed:
+    - Co-create
+    - Activate
+    - Protect
+    never:
+    - Expand
+  plays:
+    primary:
+    - P20
+    - P24
+    - P30
+    also:
+    - P19
+  lines:
+  - L09
+  levers:
+  - value delivery
+  - supply and liquidity
+  whoDecides: the principal's operating owner
+  doneWhen: end-to-end transactions settle with verified customer value (Gate 2)
+  example: book and fulfil one appliance repair with a verified technician, payment and follow-up
+  tip: do it by hand first. Automate only the steps that worked
+- id: S10
+  name: Create repeatable acquisition
+  purpose: Develop a predictable, responsible market-entry motion.
+  useWhen: two pilot cohorts succeeded with stable supply
+  dontUseWhen: acquisition economics are negative or trust is declining
+  mustBeTrue: a segmented funnel, incremental costs and cohort data
+  stance:
+    default: Activate
+    allowed:
+    - Build
+    - Expand
+    - Protect
+    never: []
+  plays:
+    primary:
+    - P25
+    also:
+    - P24
+    - P31
+  lines:
+  - L10
+  levers:
+  - channel productivity
+  - retention and referrals
+  whoDecides: growth owner with a finance partner
+  doneWhen: incremental new customers convert at sustainable contribution (Gate 3)
+  example: repeat the same niche offer to a second, independently recruited cohort
+  tip: freeze the cohort definition before you look at results
+- id: S11
+  name: Develop market liquidity
+  purpose: Increase effective matching on every side of the market.
+  useWhen: a supply–demand cold start
+  dontUseWhen: subsidy would mask permanently negative economics
+  mustBeTrue: two-sided capacity, fulfillment and participation incentives
+  stance:
+    default: Build
+    allowed:
+    - Probe
+    - Activate
+    - Protect
+    never:
+    - Expand
+  plays:
+    primary:
+    - P08
+    - P19
+    - P22
+    also: []
+  lines:
+  - L11
+  levers:
+  - supply and liquidity
+  whoDecides: marketplace owner
+  doneWhen: match time, fill rate and repeat use meet the stated gates
+  example: recruit five reliable local providers before promoting 200 bookings
+  tip: supply first, then demand, in that order, every time
+- id: S12
+  name: Protect unit economics
+  purpose: Stop expansion that destroys value.
+  useWhen: growth and incentives conceal costs; MP6 is Negative or MP7 is Regressing
+  dontUseWhen: there is no reliable cost or fulfillment attribution yet (model it first)
+  mustBeTrue: direct and allocated cost, refunds, discounts and marginal CAC
+  stance:
+    default: Protect
+    allowed:
+    - Probe
+    - Build
+    never:
+    - Expand
+  plays:
+    primary:
+    - P23
+    - P31
+    also:
+    - P15
+    - P25
+  lines:
+  - L12
+  levers:
+  - price and unit economics
+  whoDecides: finance or economic sponsor
+  doneWhen: net incremental contribution and cash use are defensible
+  example: stop a city launch after delivery overruns exceed margin
+  tip: include refunds, creator commissions and human hours, or the margin is fiction
+- id: S13
+  name: Establish regional legitimacy
+  purpose: Adapt route, offer and operations to a real place.
+  useWhen: entry crosses a language, norm or policy boundary
+  dontUseWhen: localization would rely on cultural stereotypes
+  mustBeTrue: local research, counsel, partners and field evidence
+  stance:
+    default: Scout
+    allowed:
+    - Listen
+    - Probe
+    - Co-create
+    never:
+    - Expand
+  plays:
+    primary:
+    - P05
+    - P26
+    also:
+    - P27
+  lines:
+  - L13
+  levers:
+  - trust and credibility
+  - partnership
+  whoDecides: regional owner
+  doneWhen: local participants validate relevance, fulfillment and trust
+  example: partner with bilingual neighborhood organizers in Bengaluru
+  tip: a region is not a unit of proof. Each country, city or segment earns its own Position
+- id: S14
+  name: Compound partnerships and community
+  purpose: Make mutually valuable relationships durable.
+  useWhen: trust and repeat participation drive adoption
+  dontUseWhen: engagement would be extractive
+  mustBeTrue: a benefit allocation, disclosures, partner expectations
+  stance:
+    default: Co-create
+    allowed:
+    - Listen
+    - Activate
+    - Build
+    never: []
+  plays:
+    primary:
+    - P16
+    - P29
+    also:
+    - P14
+    - P20
+  lines:
+  - L14
+  levers:
+  - partnership and ecosystem
+  - retention and referrals
+  whoDecides: partner or community steward
+  doneWhen: retention, referrals and partner economics persist
+  example: a community event that gives useful, independent education
+  tip: if the community would not invite you back, it was a campaign, not a relationship
+- id: S15
+  name: Expand to adjacent markets
+  purpose: Transfer a validated pattern to a new segment, context or geography.
+  useWhen: the core niche has proven economics (Gate 3)
+  dontUseWhen: transfer assumptions are untested or the core is deteriorating
+  mustBeTrue: new-market holdouts, supply, unit economics and compliance
+  stance:
+    default: Expand
+    allowed:
+    - Scout
+    - Probe
+    - Protect
+    never: []
+  plays:
+    primary:
+    - P27
+    - P28
+    also: []
+  lines:
+  - L15
+  levers:
+  - optionality
+  - channel productivity
+  whoDecides: market portfolio sponsor
+  doneWhen: the new segment passes its own evaluation gate (Gate 4)
+  example: test a nearby vertical before opening three countries
+  tip: treat every new territory as a new experiment with its own stop rule
+- id: S16
+  name: Preserve optionality and exit intelligently
+  purpose: Avoid sunk-cost escalation; park, pivot or retire weak options.
+  useWhen: costs rise faster than learning, or the thesis is invalidated
+  dontUseWhen: waiting would expose people to harm or create binding obligations
+  mustBeTrue: a decision cutoff, salvageable assets, an alternate thesis and a transition plan
+  stance:
+    default: Protect
+    allowed:
+    - Listen
+    - Probe
+    never:
+    - Activate
+    - Expand
+  plays:
+    primary:
+    - P32
+    also:
+    - P21
+    - P26
+  lines:
+  - L16
+  levers:
+  - optionality
+  whoDecides: sponsor or investment authority
+  doneWhen: spend stops or is reallocated, participants are protected and learning is kept
+  example: retire paid acquisition in a failed micro-market but keep the research
+  tip: a well-documented stop is a result. Count it in the Quarterly Review

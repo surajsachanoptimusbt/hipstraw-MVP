@@ -20,18 +20,20 @@ TRANSITION_RUBRIC = "position_transition.v1"
 CASE_STATES = ("RECEIVED", "QUEUED", "EVALUATING", "NEEDS_RESEARCH", "WAITING", "DECIDING", "READY",
                "ESCALATED", "CLOSED")
 
-# 5.6 recommendation states -> the Market Manager decision each one supports
+# 5.6 recommendation states -> the playbook Disposition (§2.4) each one supports
 RECOMMENDATION_SUPPORTS = {
-    "Recommend Transition": "pursue",
-    "Strengthen": "pursue",
-    "Maintain": "pursue",
-    "Validate": "needs more evidence",
-    "Investigate Further": "needs more evidence",
-    "Defer": "needs more evidence",
-    "Challenge": "needs more evidence",
-    "Weaken": "needs more evidence",
-    "Recommend Retirement": "drop",
+    "Recommend Transition": "TEST",  # "advance to selective testing"
+    "Strengthen": "TEST",
+    "Maintain": "TEST",
+    "Validate": "EXPLORE",
+    "Investigate Further": "EXPLORE",
+    "Defer": "PARK",
+    "Challenge": "REFRAME",
+    "Weaken": "REFRAME",
+    "Recommend Retirement": "STOP",
 }
+# Dispositions under which an earlier Position was being worked, so new evidence maintains or weakens it.
+HELD = ("TEST", "ACTIVATE", "BUILD", "SCALE")
 
 _SUFFICIENT = {"sufficient", "decision-ready"}
 _BANDS = ("Low", "Medium", "High")
@@ -133,11 +135,12 @@ def recommend(path: Doc, packet: Doc, evidence: Doc, confidence: Doc, prior: Doc
     included = int(packet.get("included") or 0)
     pending = int(packet.get("needsVerification") or 0)
     sufficient = evidence.get("sufficiency") in _SUFFICIENT
-    prior_status = (prior or {}).get("status")
+    prior_disposition = (prior or {}).get("disposition")
+    advanced = prior_disposition in HELD
 
     def out(rec: str, rule: str, why: str) -> Doc:
         return {"recommendation": rec, "ruleFired": rule, "rationale": why, "rubric": TRANSITION_RUBRIC,
-                "supportsDecision": RECOMMENDATION_SUPPORTS[rec]}
+                "supportsDisposition": RECOMMENDATION_SUPPORTS[rec]}
 
     if packet.get("error"):
         return out("Investigate Further", "research_failed",
@@ -148,18 +151,19 @@ def recommend(path: Doc, packet: Doc, evidence: Doc, confidence: Doc, prior: Doc
     if packet.get("contradictions"):
         return out("Validate", "contradiction_present", "Contradictory evidence must be validated first.")
     if not included and not pending:
-        if prior_status == "Pursue":
-            return out("Weaken", "prior_pursue_now_unsupported",
-                       "Every company was excluded; the earlier Pursue position is no longer supported.")
+        if advanced:
+            return out("Weaken", "prior_advanced_now_unsupported",
+                       f"Every company was excluded; the earlier {prior_disposition} position is no longer supported.")
         return out("Recommend Retirement", "all_companies_excluded",
                    "Every company found was excluded by Review; nothing more evidence could fill.")
     if included and sufficient and confidence["band"] != "Low":
-        if prior_status == "Pursue":
+        if advanced:
             if _BANDS.index(confidence["band"]) > _BANDS.index((prior or {}).get("confidence", "Low")):
-                return out("Strengthen", "prior_pursue_confidence_up",
-                           "Evidence raises confidence in a Pursue position.")
-            return out("Maintain", "prior_pursue_still_supported", "The Pursue position remains supported.")
-        if prior_status:
+                return out("Strengthen", "prior_advanced_confidence_up",
+                           f"Evidence raises confidence in the {prior_disposition} position.")
+            return out("Maintain", "prior_advanced_still_supported",
+                       f"The {prior_disposition} position remains supported.")
+        if prior_disposition:
             return out("Strengthen", "evidence_now_sufficient",
                        f"Evidence is now {evidence.get('sufficiency')} with {included} verified compan"
                        f"{'y' if included == 1 else 'ies'}.")
@@ -167,8 +171,9 @@ def recommend(path: Doc, packet: Doc, evidence: Doc, confidence: Doc, prior: Doc
                    f"{included} verified compan{'y' if included == 1 else 'ies'} and {evidence.get('sufficiency')} "
                    "evidence support advancing to selective testing.")
     if included:
-        if prior_status == "Pursue":
-            return out("Weaken", "prior_pursue_evidence_thinner", "Evidence no longer meets the Pursue bar.")
+        if advanced:
+            return out("Weaken", "prior_advanced_evidence_thinner",
+                       f"Evidence no longer supports the {prior_disposition} position.")
         return out("Validate", "verified_but_insufficient",
                    f"{included} verified compan{'y' if included == 1 else 'ies'}, but evidence is "
                    f"{evidence.get('sufficiency')} with {confidence['band'].lower()} confidence.")

@@ -49,14 +49,44 @@ def build_market_report(store: Any, run_id: str) -> str:
 
     decisions = store.list_path_decisions(run_id) if hasattr(store, "list_path_decisions") else []
     if decisions:
-        lines.append("\n## Path Decisions\n")
+        lines.append("\n## Market Review (playbook quick picker)\n")
         for d in decisions:
-            lines.append(f"- **{d.get('pathId', '?')}**: {d.get('decision', '?')} — {d.get('reason', '')}")
-        lines.append("")
+            lines.extend(_review_lines(d.get("marketPosition") or {}, d))
 
     lines.extend(_market_map_section(store, run_id))
     lines.extend(_companies_section(store, run_id, {d.get("pathId"): d for d in decisions}))
     return "\n".join(lines) + "\n"
+
+
+def _review_lines(p: dict[str, Any], d: dict[str, Any]) -> list[str]:
+    labels = " > ".join(p.get("pathLabels", [])) or d.get("pathId", "?")
+    out = [f"### {labels}\n",
+           f"**Disposition: {d.get('disposition', '?')}** (attention: {d.get('attention', '?')}). "
+           f"{d.get('reason', '')}.\n"]
+    axes = p.get("axes") or []
+    if axes:
+        out.append("Position: " + " · ".join(f"{a['axis']} {a['screenName']}: {a['state']}" for a in axes) + "\n")
+    bc = p.get("bindingConstraint") or {}
+    stance = p.get("stance") or {}
+    if bc:
+        ruled = ", ".join(r["stance"] for r in stance.get("ruledOut", [])) or "none"
+        out.append(f"Binding constraint {bc.get('axis')} ({bc.get('state')}); stance **{stance.get('stance')}**; "
+                   f"ruled out: {ruled}.\n")
+    if p.get("play"):
+        line = p.get("line") or {}
+        out.append(f"{p.get('strategy')} {p.get('strategyName')} → {p.get('play')} {p.get('playName')} → "
+                   f"Line {line.get('sequenceText')}.\n")
+        steps = " → ".join(f"{s['id']} ({s['status']})" for s in line.get("steps", []))
+        out.append(f"Steps of {line.get('current')}: {steps}\n")
+    nxt = p.get("nextStep")
+    if nxt:
+        out.append(f"**Recommended next step:** {nxt['id']} {nxt['name']}, {nxt['where']}.\n")
+    for g in p.get("gambits") or []:
+        fit = "fits the stance" if g["fitsStance"] else f"needs {g['needsStance']}"
+        out.append(f"- Gambit option {g['id']} {g['name']} ({fit}): give {g['give']}; get {g['get']}; "
+                   f"max loss {g['maxLoss']}; approver {g['approver']}. Not authorized.")
+    out.append("")
+    return out
 
 
 def _money(v: Any) -> str:
@@ -73,8 +103,8 @@ def _market_map_section(store: Any, run_id: str) -> list[str]:
     tiles = sorted(market_map["tiles"], key=lambda t: -(t.get("valueMid") or 0))
     lines = [
         "\n## Market Map\n",
-        f"{len(tiles)} micro markets at the {market_map.get('level')} level. Size: {market_map.get('sizeBasis')}.\n",
-        "| Micro market | Segment | Value pool (hypothesis) | Position | Change |",
+        f"{len(tiles)} market units at the {market_map.get('level')} level. Size: {market_map.get('sizeBasis')}.\n",
+        "| Market unit | Segment | Value pool (hypothesis) | Disposition | Change |",
         "|---|---|---|---|---|",
     ]
     for t in tiles[:15]:
@@ -82,7 +112,7 @@ def _market_map_section(store: Any, run_id: str) -> list[str]:
         change = t.get("change") or {}
         lines.append(
             f"| {' > '.join(t['labels'][1:])} | {t['group']} | {_money(t.get('valuePoolUsdLow'))}-"
-            f"{_money(t.get('valuePoolUsdHigh'))} | {pos.get('status', 'screened')} | "
+            f"{_money(t.get('valuePoolUsdHigh'))} | {pos.get('disposition', 'screened')} | "
             f"{change.get('direction', 'new')} |"
         )
     lines.append("")
@@ -95,11 +125,11 @@ def _companies_section(store: Any, run_id: str, decisions: dict[str, Any]) -> li
         return []
     companies = store.list_market_companies(run_id)
     roles = store.list_buyer_roles(run_id)
-    lines = ["\n## Target Companies by Path\n"]
+    lines = ["\n## Target Companies by Market Unit\n"]
     for n, path in enumerate(finals, start=1):
         pid = path["pathId"]
-        decision = decisions.get(pid, {}).get("decision", "not decided")
-        lines.append(f"### Path {n}: {' > '.join(path.get('nodeLabels', []))}\n")
+        decision = decisions.get(pid, {}).get("disposition", "not reviewed")
+        lines.append(f"### Market unit {n}: {' > '.join(path.get('nodeLabels', []))}\n")
         packet = path.get("researchPacket") or {}
         position = path.get("marketPosition") or {}
         estimate = position.get("economicEstimate") or {}
@@ -116,7 +146,7 @@ def _companies_section(store: Any, run_id: str, decisions: dict[str, Any]) -> li
         if position.get("researchRequirements"):
             lines.append("")
         lines.append(
-            f"Decision: **{decision}**. Child run `{path.get('childRunId', '-')}`: "
+            f"Disposition: **{decision}**. Desk research `{path.get('childRunId', '-')}`: "
             f"{packet.get('found', 0)} found, {packet.get('included', 0)} included, "
             f"{packet.get('needsVerification', 0)} need verification, {packet.get('excluded', 0)} excluded.\n"
         )

@@ -1,0 +1,241 @@
+# Extracted from The Hipstraw Market Mastery Playbook - Case 01.pdf by scripts/extract_playbook.py (playbook.v0.1).
+# Reviewed; edit here, not in the PDF.
+version: playbook.v0.1
+stateCalls:
+- axis: MP1
+  state: Not mapped
+  showsWhen: No specific job, actor or substitute has been observed.
+  callsFor:
+  - S01
+  callsForText: S01
+- axis: MP1
+  state: Hypothesis
+  showsWhen: A specific testable job exists, from desk work or anecdote.
+  callsFor:
+  - S02
+  - S03
+  callsForText: S02 · S03
+- axis: MP1
+  state: Supported
+  showsWhen: Independent target buyers showed costly behaviour, not just interest.
+  callsFor:
+  - S05
+  - S06
+  callsForText: S05 · S06
+- axis: MP1
+  state: Contested
+  showsWhen: Behaviour and claims conflict, or disconfirming cases are material.
+  callsFor:
+  - S02
+  callsForText: S02
+- axis: MP1
+  state: Rejected
+  showsWhen: A genuine test failed and no cheap test remains.
+  callsFor:
+  - S16
+  callsForText: S16
+- axis: MP2
+  state: Unknown
+  showsWhen: Buying roles or reachable sources are not identified.
+  callsFor:
+  - S01
+  - S04
+  callsForText: S01 · S04
+- axis: MP2
+  state: Reachable
+  showsWhen: Qualified people can be contacted with permission.
+  callsFor:
+  - S05
+  - S06
+  callsForText: S05 · S06
+- axis: MP2
+  state: Engaged
+  showsWhen: Qualified people respond and take part.
+  callsFor:
+  - S06
+  - S07
+  callsForText: S06 · S07
+- axis: MP2
+  state: Converting
+  showsWhen: Qualified buyers complete paid or committed transactions in a defined cohort.
+  callsFor:
+  - S09
+  - S10
+  callsForText: S09 · S10
+- axis: MP2
+  state: Can't reach
+  showsWhen: Access fails after a fair test of routes.
+  callsFor:
+  - S04
+  - S08
+  callsForText: S04 · S08
+- axis: MP3
+  state: Concept
+  showsWhen: Proposition described, not experienced.
+  callsFor:
+  - S05
+  - S07
+  callsForText: S05 · S07
+- axis: MP3
+  state: Prototype
+  showsWhen: Buyers can try a narrow version.
+  callsFor:
+  - S05
+  - S06
+  callsForText: S05 · S06
+- axis: MP3
+  state: Tested
+  showsWhen: Comprehension and trial evidence exist.
+  callsFor:
+  - S06
+  callsForText: S06
+- axis: MP3
+  state: Fits
+  showsWhen: Paid use with acceptable churn in the target archetype.
+  callsFor:
+  - S09
+  - S10
+  callsForText: S09 · S10
+- axis: MP3
+  state: Misfits
+  showsWhen: The same valid objection recurs across qualified prospects.
+  callsFor:
+  - S02
+  - S16
+  callsForText: S02 (via P18) · S16
+- axis: MP4
+  state: Untested
+  showsWhen: No route has run a capped test.
+  callsFor:
+  - S04
+  - S08
+  callsForText: S04 · S08
+- axis: MP4
+  state: Piloting
+  showsWhen: A route is in a bounded test.
+  callsFor:
+  - S08
+  - S06
+  callsForText: S08 · S06
+- axis: MP4
+  state: Repeatable
+  showsWhen: The same route delivered healthy cohorts twice.
+  callsFor:
+  - S10
+  - S15
+  callsForText: S10 · S15
+- axis: MP4
+  state: Saturated
+  showsWhen: Marginal returns fall or the same people see repeated outreach.
+  callsFor:
+  - S10
+  - S12
+  callsForText: S10 (via P25) · S12
+- axis: MP4
+  state: Blocked
+  showsWhen: A rule, partner or platform closes the route.
+  callsFor:
+  - S04
+  - S16
+  callsForText: S04 · S16
+- axis: MP5
+  state: Fragile
+  showsWhen: Supply, quality or fulfillment is unproven or thin.
+  callsFor:
+  - S09
+  - S11
+  callsForText: S09 · S11
+- axis: MP5
+  state: Working
+  showsWhen: Transactions complete, with visible defects.
+  callsFor:
+  - S09
+  - S11
+  callsForText: S09 · S11
+- axis: MP5
+  state: Reliable
+  showsWhen: Fill rate, quality and complaints meet the agreed gates.
+  callsFor:
+  - S10
+  callsForText: S10
+- axis: MP5
+  state: Resilient
+  showsWhen: Reliability holds under stress or a new cohort.
+  callsFor:
+  - S15
+  callsForText: S15
+- axis: MP5
+  state: Broken
+  showsWhen: Safety, quality or availability fails a gate.
+  callsFor:
+  - S16
+  - S11
+  callsForText: S16 (pause) · S11 (repair)
+- axis: MP6
+  state: Not modeled
+  showsWhen: No cost-to-serve or acquisition model exists.
+  callsFor:
+  - S03
+  - S12
+  callsForText: S03 · S12
+- axis: MP6
+  state: Assumed
+  showsWhen: A model exists; no real cohort has tested it.
+  callsFor:
+  - S06
+  - S12
+  callsForText: S06 · S12
+- axis: MP6
+  state: Observed
+  showsWhen: Real cohort costs and revenue are measured.
+  callsFor:
+  - S10
+  - S12
+  callsForText: S10 · S12
+- axis: MP6
+  state: Viable
+  showsWhen: Incremental contribution and payback are positive and reproducible.
+  callsFor:
+  - S10
+  - S15
+  callsForText: S10 · S15
+- axis: MP6
+  state: Negative
+  showsWhen: Contribution is negative after every real cost.
+  callsFor:
+  - S12
+  - S16
+  callsForText: S12 · S16
+- axis: MP7
+  state: First of its kind
+  showsWhen: No repeat yet.
+  callsFor:
+  - S09
+  - S10
+  callsForText: S09 · S10
+- axis: MP7
+  state: Repeatable
+  showsWhen: Two or more independent cohorts or periods succeeded.
+  callsFor:
+  - S15
+  callsForText: S15 (transfer test)
+- axis: MP7
+  state: Transferable
+  showsWhen: A held-out new segment or region succeeded.
+  callsFor:
+  - S15
+  callsForText: S15
+- axis: MP7
+  state: Scaled
+  showsWhen: Staged scale passed Gate 5.
+  callsFor:
+  - S10
+  - S14
+  callsForText: S10 · S14
+- axis: MP7
+  state: Regressing
+  showsWhen: Scaled results decline in quality or margin.
+  callsFor:
+  - S12
+  - S16
+  callsForText: S12 · S16 (via P31)

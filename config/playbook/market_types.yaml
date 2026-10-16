@@ -1,0 +1,135 @@
+# Extracted from The Hipstraw Market Mastery Playbook - Case 01.pdf by scripts/extract_playbook.py (playbook.v0.1).
+# Reviewed; edit here, not in the PDF.
+version: playbook.v0.1
+marketTypes:
+- id: AR01
+  name: Unserved demand pocket
+  reality: Need exists but access, recognition or affordability fails
+  priorityPlays:
+  - P03
+  - P07
+  - P13
+  - P20
+  typicalTrap: A small visible sample does not represent the region
+- id: AR02
+  name: New category / behaviour
+  reality: The need must be named, understood and normalized
+  priorityPlays:
+  - P02
+  - P12
+  - P14
+  typicalTrap: Curiosity mistaken for adoption
+- id: AR03
+  name: Mature market displacement
+  reality: Customers already buy substitutes
+  priorityPlays:
+  - P10
+  - P15
+  - P17
+  typicalTrap: Switching cost underestimated
+- id: AR04
+  name: Horizontal product → vertical niche
+  reality: A generic product does not feel industry-specific
+  priorityPlays:
+  - P04
+  - P11
+  - P18
+  typicalTrap: Custom solution that cannot repeat
+- id: AR05
+  name: Regional or cross-border entry
+  reality: Context and institutions differ
+  priorityPlays:
+  - P05
+  - P13
+  - P21
+  - P27
+  typicalTrap: Localization and legal mismatch
+- id: AR06
+  name: Product adjacency expansion
+  reality: An existing base suggests new jobs or buyers
+  priorityPlays:
+  - P04
+  - P10
+  - P28
+  typicalTrap: Existing customers assumed to want the adjacency
+- id: AR07
+  name: Two-sided or multi-sided market
+  reality: Demand depends on complementary supply
+  priorityPlays:
+  - P08
+  - P19
+  - P22
+  typicalTrap: One-sided subsidy hides weak liquidity
+- id: AR08
+  name: Fragmented local services
+  reality: Scattered providers, low trust, uneven quality
+  priorityPlays:
+  - P07
+  - P19
+  - P20
+  typicalTrap: Provider verification and safety
+- id: AR09
+  name: Creator / community-led niche
+  reality: Trust and identity drive discovery
+  priorityPlays:
+  - P12
+  - P16
+  - P29
+  typicalTrap: Extractive participation or false advocacy
+- id: AR10
+  name: Enterprise design-partner market
+  reality: Complex roles and integration needs
+  priorityPlays:
+  - P11
+  - P17
+  - P24
+  typicalTrap: No economic buyer; hidden technical friction
+- id: AR11
+  name: Channel-led / embedded distribution
+  reality: Another principal owns access and attention
+  priorityPlays:
+  - P13
+  - P21
+  - P24
+  typicalTrap: Partner dependence and weak attribution
+- id: AR12
+  name: Distressed or disrupted market
+  reality: A shock changes choices quickly
+  priorityPlays:
+  - P01
+  - P06
+  - P32
+  typicalTrap: Exploiting the crisis or acting on stale conditions
+- id: AR13
+  name: Supply-constrained market
+  reality: Interest exists; fulfillment lags
+  priorityPlays:
+  - P19
+  - P22
+  - P23
+  typicalTrap: Generating demand that harms customers
+- id: AR14
+  name: Public / institutional ecosystem
+  reality: Regulation and procurement dominate
+  priorityPlays:
+  - P05
+  - P21
+  - P26
+  typicalTrap: Procurement and legal failure
+- id: AR15
+  name: Micro-market / neighborhood
+  reality: Dense local behavioural clusters
+  priorityPlays:
+  - P03
+  - P07
+  - P13
+  - P20
+  typicalTrap: One street taken for the city
+- id: AR16
+  name: Reactivation / second-life market
+  reality: Past users went dormant
+  priorityPlays:
+  - P02
+  - P15
+  - P18
+  typicalTrap: Wrong churn theory; nuisance outreach

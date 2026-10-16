@@ -1,0 +1,257 @@
+# Extracted from The Hipstraw Market Mastery Playbook - Case 01.pdf by scripts/extract_playbook.py (playbook.v0.1).
+# Reviewed; edit here, not in the PDF.
+version: playbook.v0.1
+gambits:
+- id: G01
+  name: Concierge service for learning
+  give: Free high-touch onboarding hours
+  get: Revealed activation barriers, first-value proof
+  maxLossIllustrative: 6 h × 10 users × $80/h = $4,800
+  fallback: Self-serve pilot
+  approver: Program sponsor
+  useWhen: activation fails for unknown reasons and the first users are few and valuable
+  dontUseWhen: the concierge would hide that the product cannot deliver, or hours are uncapped
+  mustBeTrue: a user cap, an hour cap, an end date and a plan to turn findings into M31 fixes
+  stance:
+    default: Build
+    allowed:
+    - Probe
+    - Co-create
+    never: []
+  usedWith:
+  - P11
+  - P24
+  - P30
+  netValueCheck: worth it only if the fixes it finds lift completion for the next, un- concierged cohort. Count
+    the hours in M43
+- id: G02
+  name: Paid design partner discount
+  give: Discounted first paid pilot
+  get: Adoption evidence and a permissioned reference
+  maxLossIllustrative: 40% of $20,000 = $8,000 per partner
+  fallback: Standard paid pilot
+  approver: Commercial sponsor
+  useWhen: an enterprise buyer needs proof and budget friction blocks a full-price pilot
+  dontUseWhen: the partner has no economic buyer, or the pilot would be free (no skin in the game)
+  mustBeTrue: written success criteria and agreed reference terms
+  stance:
+    default: Co-create
+    allowed:
+    - Activate
+    never: []
+  usedWith:
+  - P04
+  - P10
+  - P11
+  - P15
+  - P17
+  netValueCheck: the discount must be smaller than the value of a verified reference and the adoption evidence.
+    Never discount the renewal price
+- id: G03
+  name: Local community seed grant
+  give: Capped event or community budget
+  get: Authentic participation, market intelligence
+  maxLossIllustrative: ₹1,50,000 cash + 40 Architect hours
+  fallback: Independent research
+  approver: Community and finance owners
+  useWhen: community trust gates access
+  dontUseWhen: the grant would buy advocacy or disclosure is unclear
+  mustBeTrue: public disclosure and no strings on members' opinions
+  stance:
+    default: Co-create
+    allowed:
+    - Probe
+    never: []
+  usedWith:
+  - P07
+  - P14
+  - P16
+  - P29
+  netValueCheck: value = qualified introductions and insight, never attendance
+- id: G04
+  name: Limited reseller incentive
+  give: Short-term referral revenue share
+  get: Qualified, activated buyers
+  maxLossIllustrative: 15% of first-year revenue, capped at $10,000
+  fallback: Direct sales route
+  approver: Partner signatory
+  useWhen: the partner has passed M20 (proven qualified access)
+  dontUseWhen: it would pay on leads rather than activations, or is uncapped
+  mustBeTrue: commission paid only on verified activation; an end date
+  stance:
+    default: Activate
+    allowed:
+    - Probe
+    - Expand
+    never: []
+  usedWith:
+  - P13
+  - P21
+  netValueCheck: commission per activated buyer must be below direct acquisition cost for the same cohort
+- id: G05
+  name: Supply readiness guarantee
+  give: Paid reserved local capacity
+  get: Reliable matching and availability
+  maxLossIllustrative: 40 slots/week × ₹300 × 6 weeks = ₹72,000
+  fallback: Smaller service zones
+  approver: Operations and finance
+  useWhen: demand is proven and supply is unreliable
+  dontUseWhen: demand is unproven or providers are unverified
+  mustBeTrue: verified providers, defined slots, an end date
+  stance:
+    default: Build
+    allowed:
+    - Activate
+    never: []
+  usedWith:
+  - P08
+  - P19
+  - P22
+  netValueCheck: unused reserved slots are pure loss. Track utilization weekly; below 60% for two weeks, shrink
+    the reservation
+- id: G06
+  name: Introductory price staircase
+  give: Lower initial price
+  get: Learning on adoption and step-up willingness
+  maxLossIllustrative: Discount + churn at step-up
+  fallback: Fixed-price test
+  approver: Pricing owner
+  useWhen: price friction blocks trial of a valuable offer
+  dontUseWhen: the offer misfits (run P18 first) or the step-up is not disclosed
+  mustBeTrue: the full price and step dates disclosed upfront
+  stance:
+    default: Activate
+    allowed:
+    - Probe
+    never:
+    - Expand
+  usedWith:
+  - P02
+  - P15
+  - P18
+  netValueCheck: compare cohort revenue through the step-up with a fixed-price cohort. A staircase that loses more
+    at step-up than it gains in trial is negative
+- id: G07
+  name: One-neighborhood exclusivity
+  give: Temporary territory preference
+  get: A trusted partner's committed coverage
+  maxLossIllustrative: Foregone partners in that area for the term
+  fallback: Non-exclusive pilot (M42)
+  approver: Legal and partnership owner
+  useWhen: the partner's local trust is the access route and alternatives are weak
+  dontUseWhen: before M42 evidence; open-ended; any competition-law risk
+  mustBeTrue: one territory, at most 6 months, and a performance floor that ends exclusivity if missed
+  stance:
+    default: Co-create
+    allowed:
+    - Activate
+    - Build
+    never:
+    - Probe
+  usedWith:
+  - P05
+  - P07
+  - P21
+  netValueCheck: price the excluded partners' option value, not just the chosen partner's promise
+- id: G08
+  name: Partner co-marketing investment
+  give: Field, content or event resources
+  get: A productive co-created channel
+  maxLossIllustrative: Labour + media + cash cap
+  fallback: Single-company pilot
+  approver: Marketing sponsor
+  useWhen: the partner channel is validated (L08 done)
+  dontUseWhen: it is vanity co- branding
+  mustBeTrue: joint qualification and attribution rules
+  stance:
+    default: Activate
+    allowed:
+    - Co-create
+    - Expand
+    never: []
+  usedWith:
+  - P13
+  - P16
+  - P21
+  netValueCheck: incremental activated buyers from the joint cohort, net of the partner's own baseline
+- id: G09
+  name: Manual service bridge
+  give: Interim labour-intensive delivery
+  get: Demand proof while tooling matures
+  maxLossIllustrative: Labour deficit + service liability
+  fallback: Park onboarding
+  approver: Operational sponsor
+  useWhen: demand is real and tooling is not ready
+  dontUseWhen: it is unsafe, labour terms are unclear, or it is drifting into permanence
+  mustBeTrue: an end date, a cost cap, honestly set customer expectations
+  stance:
+    default: Build
+    allowed:
+    - Co-create
+    never:
+    - Expand
+  usedWith:
+  - P19
+  - P24
+  - P30
+  netValueCheck: include bridge labour in contribution. If the economics only work by hand at a loss, they do not
+    work
+- id: G10
+  name: Beta guarantee / risk reversal
+  give: A bounded remedy obligation
+  get: Lower justified buyer fear
+  maxLossIllustrative: ₹500 × 200 bookings = ₹1,00,000 reserve
+  fallback: Proof-first offer, no guarantee
+  approver: Finance and Legal
+  useWhen: buyer fear is justified by past market failures and operations can deliver
+  dontUseWhen: the guarantee is unfunded
+  mustBeTrue: a funded reserve and plain-language terms
+  stance:
+    default: Activate
+    allowed:
+    - Build
+    - Expand
+    never: []
+  usedWith:
+  - P10
+  - P20
+  netValueCheck: extra verified conversions × contribution must exceed claims paid plus reserve cost of capital
+- id: G11
+  name: Micro-market subsidy
+  give: Time-boxed provider or user incentive
+  get: Two-sided liquidity and learning
+  maxLossIllustrative: Total subsidy + adverse selection
+  fallback: Smaller matching market
+  approver: Marketplace sponsor
+  useWhen: a cold start in one dense micro-market
+  dontUseWhen: the subsidy would mask negative economics, or there is no end date
+  mustBeTrue: the reprice date announced at the start
+  stance:
+    default: Build
+    allowed:
+    - Probe
+    never:
+    - Expand
+  usedWith:
+  - P08
+  - P22
+  netValueCheck: the result is retention on both sides after the subsidy ends, not volume during it
+- id: G12
+  name: Open research / public benchmark
+  give: Selected anonymized method findings
+  get: Ecosystem trust and participation
+  maxLossIllustrative: Research and IP disclosure cost
+  fallback: Private cohort report
+  approver: Research / editorial board
+  useWhen: category education matters and Hipstraw has publishable method findings
+  dontUseWhen: findings include client data or are promotional
+  mustBeTrue: publication rights, methodology disclosure and a conflict review
+  stance:
+    default: Co-create
+    allowed:
+    - Build
+    - Expand
+    never: []
+  usedWith:
+  - P12
+  netValueCheck: inbound qualified participation attributable to the publication, against the IP given away

@@ -18,6 +18,7 @@ def intake(ctx: Context, program: str) -> CommandResult:
         sourceUrl=config.sourceUrl,
         experimentContexts=config.experimentContexts,
         primaryInterests=config.primaryInterests,
+        marketTypes=config.marketTypes,
         defaultConstraints={
             "maxEmployees": constraints.maxEmployees,
             "maxRevenueUsd": constraints.maxRevenueUsd,

@@ -11,6 +11,7 @@ from hipstraw_mm.market.position import commit_record, trajectory
 from hipstraw_mm.store.memory import MemoryStore
 from hipstraw_mm.viewer import api
 
+ORDER = ["STOP", "PARK", "REFRAME", "EXPLORE", "TEST", "ACTIVATE", "BUILD", "SCALE"]
 GOOD_EVIDENCE = {"sufficiency": "sufficient", "quality": "strong", "criticalUnknowns": "resolved"}
 ESTIMATE = {"valuePoolUsdLow": 1e6, "valuePoolUsdHigh": 3e6, "sensitivities": [{"factor": "x", "impact": "low"}]}
 
@@ -46,25 +47,29 @@ class TestTransitionRubric:
     def test_new_supported_candidate_recommends_transition(self) -> None:
         assert self.rec(packet()) == "Recommend Transition"
 
-    def test_prior_pursue_still_supported_is_maintain(self) -> None:
-        assert self.rec(packet(), prior={"status": "Pursue", "confidence": "High"}) == "Maintain"
-        assert self.rec(packet(), prior={"status": "Pursue", "confidence": "Low"}) == "Strengthen"
+    def test_prior_held_position_still_supported_is_maintain(self) -> None:
+        assert self.rec(packet(), prior={"disposition": "TEST", "confidence": "High"}) == "Maintain"
+        assert self.rec(packet(), prior={"disposition": "TEST", "confidence": "Low"}) == "Strengthen"
+        assert self.rec(packet(), prior={"disposition": "EXPLORE", "confidence": "Low"}) == "Strengthen"
 
     def test_failed_or_empty_research_is_investigate_never_retire(self) -> None:
         assert self.rec(packet(error="discover: boom")) == "Investigate Further"
         assert self.rec(packet(found=0, included=0, needsVerification=0)) == "Investigate Further"
 
-    def test_all_excluded_retires_and_weakens_an_old_pursue(self) -> None:
+    def test_all_excluded_retires_and_weakens_a_held_position(self) -> None:
         excluded = packet(included=0, needsVerification=0, excluded=3)
         assert self.rec(excluded) == "Recommend Retirement"
-        assert self.rec(excluded, prior={"status": "Pursue", "confidence": "High"}) == "Weaken"
+        assert self.rec(excluded, prior={"disposition": "ACTIVATE", "confidence": "High"}) == "Weaken"
 
     def test_contradiction_or_thin_evidence_validates(self) -> None:
         assert self.rec(packet(contradictions=["Acme"])) == "Validate"
         assert self.rec(packet(), evidence={**GOOD_EVIDENCE, "sufficiency": "partial"}) == "Validate"
 
-    def test_every_recommendation_maps_to_a_manager_decision(self) -> None:
-        assert set(ev.RECOMMENDATION_SUPPORTS.values()) == {"pursue", "needs more evidence", "drop"}
+    def test_every_recommendation_maps_to_a_playbook_disposition(self) -> None:
+        from hipstraw_mm.market.playbook import load_playbook
+
+        assert set(ev.RECOMMENDATION_SUPPORTS.values()) <= set(load_playbook().dispositions)
+        assert ev.RECOMMENDATION_SUPPORTS["Recommend Transition"] == "TEST"
 
 
 class TestResearchRequirements:
@@ -100,23 +105,25 @@ class TestComparison:
 class TestCanonicalPosition:
     def test_match_prior_and_versioning(self) -> None:
         prior = {"positionKey": "prog__mm_x", "version": 1, "labels": ["Atlanta SaaS", "Mid-market"],
-                 "status": "Needs more evidence", "confidence": "Low"}
+                 "disposition": "EXPLORE", "confidence": "Low"}
         assert ev.match_prior(["Atlanta SaaS", "mid market"], [prior]) is not None
         assert ev.match_prior(["Denver mining"], [prior]) is None
         run = {"programId": "prog", "marketRunId": "mrun_2"}
         path = {"pathId": "p", "nodeLabels": ["Atlanta SaaS", "Mid-market"], "researchPacket": {}}
         case = {"caseId": "c", "confidence": {"band": "Medium", "limitingFactors": []},
-                "recommendation": {"recommendation": "Validate", "supportsDecision": "needs more evidence",
+                "recommendation": {"recommendation": "Validate", "supportsDisposition": "EXPLORE",
                                    "rationale": "r"}}
-        rec = commit_record(run, path, case, {"decision": "pursue", "reason": "r", "ruleFired": "x"}, prior, "now")
+        chain = {"disposition": "TEST", "attention": "Watch", "reason": "stance Probe", "pickerVersion": "picker.v1"}
+        rec = commit_record(run, path, case, chain, prior, "now", ORDER)
         assert rec["positionKey"] == "prog__mm_x" and rec["version"] == 2
         assert rec["trajectory"] == "up"
-        assert rec["recommendationAccepted"] is False and "not accepted" in rec["reviewNote"]
+        assert rec["recommendationAccepted"] is False and "was not taken" in rec["reviewNote"]
         assert rec["evidenceLineage"]["priorVersion"] == "prog__mm_x__v1"
 
     def test_trajectory(self) -> None:
-        assert trajectory(None, "Pursue", "High") == "new"
-        assert trajectory({"status": "Pursue", "confidence": "High"}, "Drop", "Low") == "down"
+        assert trajectory(None, "TEST", "High", ORDER) == "new"
+        assert trajectory({"disposition": "ACTIVATE", "confidence": "High"}, "STOP", "Low", ORDER) == "down"
+        assert trajectory({"disposition": "TEST", "confidence": "Low"}, "TEST", "Low", ORDER) == "flat"
 
 
 class TestAgentRegistry:

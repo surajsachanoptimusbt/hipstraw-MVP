@@ -1,0 +1,184 @@
+# Extracted from The Hipstraw Market Mastery Playbook - Case 01.pdf by scripts/extract_playbook.py (playbook.v0.1).
+# Reviewed; edit here, not in the PDF.
+version: playbook.v0.1
+situations:
+- whatYouSee: Many claim the need; none take a next step
+  play: P02
+  firstStep: M10 Behavioral Commitment Test
+  firstStepId: M10
+  axis: MP1
+- whatYouSee: Interviewees contradict the desk thesis
+  play: P02
+  firstStep: M03 Disconfirming Probe
+  firstStepId: M03
+  axis: MP1
+- whatYouSee: Customer workarounds are visible
+  play: P03
+  firstStep: M01 Contextual Observation
+  firstStepId: M01
+  axis: MP1
+- whatYouSee: A sudden event creates interest
+  play: P06
+  firstStep: M12 Trigger Verification
+  firstStepId: M12
+  axis: MP1
+- whatYouSee: The market looks large but the audience is diffuse
+  play: P01
+  firstStep: M06 Audience Source Mapping
+  firstStepId: M06
+  axis: MP2
+- whatYouSee: The same product attracts unrelated segments
+  play: P04
+  firstStep: M09 Archetype Segmentation
+  firstStepId: M09
+  axis: MP2
+- whatYouSee: Regional customer language differs
+  play: P05
+  firstStep: M08 Local Interpreter Mission
+  firstStepId: M08
+  axis: MP2
+- whatYouSee: Stores or partners refuse access
+  play: P07
+  firstStep: M18 Trusted Introduction
+  firstStepId: M18
+  axis: MP2
+- whatYouSee: The pipeline stalls on committee decisions
+  play: P17
+  firstStep: M24 Buying Committee Map
+  firstStepId: M24
+  axis: MP2
+- whatYouSee: The offer is too hard to explain
+  play: P09
+  firstStep: M22 Proposition Comprehension Test
+  firstStepId: M22
+  axis: MP3
+- whatYouSee: Incumbent's customers are dissatisfied but stay
+  play: P10
+  firstStep: M15 Alternative Mapping
+  firstStepId: M15
+  axis: MP3
+- whatYouSee: Enterprise buyer cannot see the ROI
+  play: P11
+  firstStep: M28 Outcome Prototype
+  firstStepId: M28
+  axis: MP3
+- whatYouSee: Educational content is admired but unused
+  play: P12
+  firstStep: M10 Behavioral Commitment Test
+  firstStepId: M10
+  axis: MP3
+- whatYouSee: Trial users do not pay
+  play: P15
+  firstStep: M33 Price / Value Exchange Probe
+  firstStepId: M33
+  axis: MP3
+- whatYouSee: The same objection recurs across qualified prospects
+  play: P18
+  firstStep: M29 Objection Taxonomy
+  firstStepId: M29
+  axis: MP3
+- whatYouSee: Strong sign-ups, no activation
+  play: P24
+  firstStep: M30 Friction Observation
+  firstStepId: M30
+  axis: MP3
+- whatYouSee: Existing buyers ask for an adjacent use case
+  play: P28
+  firstStep: M13 Adjacent Job Probe
+  firstStepId: M13
+  axis: MP7
+- whatYouSee: Resellers promise distribution but deliver no access
+  play: P13
+  firstStep: M20 Channel Qualification Audit
+  firstStepId: M20
+  axis: MP4
+- whatYouSee: A partner introduces many unqualified leads
+  play: P13
+  firstStep: M20 Channel Qualification Audit
+  firstStepId: M20
+  axis: MP4
+- whatYouSee: A local event draws a crowd but few buyers
+  play: P14
+  firstStep: M35 Post-Event Qualification
+  firstStepId: M35
+  axis: MP4
+- whatYouSee: Influencer traffic is large but not qualified
+  play: P29
+  firstStep: M26 Creator Audience Fit Test
+  firstStepId: M26
+  axis: MP4
+- whatYouSee: A channel partner asks for an exclusive territory
+  play: P21
+  firstStep: M42 Nonexclusive Channel Test
+  firstStepId: M42
+  axis: MP4
+- whatYouSee: Growing spend brings declining returns
+  play: P25
+  firstStep: M47 Marginal Return Test
+  firstStepId: M47
+  axis: MP4
+- whatYouSee: The community pays attention but won't transact
+  play: P16
+  firstStep: M27 Authentic Partner Mission
+  firstStepId: M27
+  axis: MP2
+- whatYouSee: Supply and demand each wait for the other
+  play: P08
+  firstStep: M39 Liquidity Seeding
+  firstStepId: M39
+  axis: MP5
+- whatYouSee: High demand, unreliable providers
+  play: P19
+  firstStep: M40 Capacity / Service Reliability Gate
+  firstStepId: M40
+  axis: MP5
+- whatYouSee: Bookings fail for lack of supply
+  play: P22
+  firstStep: M38 Provider Readiness Audit
+  firstStepId: M38
+  axis: MP5
+- whatYouSee: People fear local-service quality
+  play: P20
+  firstStep: M41 Assured Pilot
+  firstStepId: M41
+  axis: MP5
+- whatYouSee: Fast acquisition, severe early churn
+  play: P20
+  firstStep: M45 Retention / Trust Diagnosis
+  firstStepId: M45
+  axis: MP5
+- whatYouSee: High-value accounts need a hand-built solution
+  play: P30
+  firstStep: M36 Manual Fulfillment Proof
+  firstStepId: M36
+  axis: MP5
+- whatYouSee: Conversions inflated by incentives; CAC masked by promotions
+  play: P23
+  firstStep: M43 True Contribution Rebuild
+  firstStepId: M43
+  axis: MP6
+- whatYouSee: The market repeats but margin deteriorates
+  play: P31
+  firstStep: M43 True Contribution Rebuild
+  firstStepId: M43
+  axis: MP6
+- whatYouSee: One city strong, the next one collapses
+  play: P27
+  firstStep: M50 Transferability Test
+  firstStepId: M50
+  axis: MP7
+- whatYouSee: The user group requires regulated acquisition
+  play: P26
+  firstStep: Legal review A22 (M55 if the activity is live)
+  firstStepId: A22
+  axis: All
+- whatYouSee: Sensitive audience or unsafe practice
+  play: P26
+  firstStep: M55 Pause / Remediate Intervention
+  firstStepId: M55
+  axis: All
+- whatYouSee: The hypothesis keeps failing or the environment changed
+  play: P32
+  firstStep: M54 Pivot Hypothesis Draft (M55 if harm is live)
+  firstStepId: M54
+  axis: MP1

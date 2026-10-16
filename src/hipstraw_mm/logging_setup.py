@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal, TextIO
 
-SECRET_ENV_VARS = ("OPENAI_API_KEY", "BRAVE_API_KEY")
+SECRET_ENV_VARS = ("OPENAI_API_KEY", "BRAVE_API_KEY", "OPEN_WEIGHT_API_KEY")
 REDACTED = "[redacted]"
 
 

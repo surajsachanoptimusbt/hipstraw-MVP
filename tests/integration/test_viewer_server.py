@@ -230,3 +230,43 @@ class TestStaticPage:
         port, _, _ = viewer_server
         status, _, _ = _get(port, path)
         assert status == 404
+
+
+class TestClientDisconnect:
+    def test_dropped_connection_is_not_reported_but_other_errors_are(self, capsys):
+        from hipstraw_mm.viewer.server import ViewerServer, as_read_store
+
+        server = ViewerServer(as_read_store(MemoryStore()), port=0)
+        try:
+            try:
+                raise ConnectionAbortedError(10053, "aborted by the software in your host machine")
+            except ConnectionError:
+                server.handle_error(None, ("127.0.0.1", 1))
+            assert capsys.readouterr().err == ""
+            try:
+                raise ValueError("real bug")
+            except ValueError:
+                server.handle_error(None, ("127.0.0.1", 1))
+            assert "real bug" in capsys.readouterr().err
+        finally:
+            server.server_close()
+
+
+class TestRoutingReplay:
+    def test_viewer_has_a_routing_tab_reading_the_routing_api(self) -> None:
+        from pathlib import Path
+
+        content = Path("src/hipstraw_mm/viewer/static/index.html").read_text(encoding="utf-8")
+        assert '{ k: "routing", label: "Routing" }' in content
+        assert "/routing`" in content and "function RoutingView" in content
+
+    def test_routing_api_reads_the_run(self, viewer_server) -> None:
+        port, run_id, _ = viewer_server
+        status, data, _ = _get(port, f"/api/runs/{run_id}/routing")
+        assert status == 200
+        assert data["runId"] == run_id and data["walkthrough"] == [] and len(data["rubric"]) == 15
+
+    def test_routing_api_unknown_run_is_404(self, viewer_server) -> None:
+        port, _, _ = viewer_server
+        status, _, _ = _get(port, "/api/runs/mrun_nope/routing")
+        assert status == 404

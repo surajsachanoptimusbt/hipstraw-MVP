@@ -33,6 +33,16 @@ class ProgramConfig(_Strict):
     objective: str
     experimentContexts: list[IdLabel]
     primaryInterests: list[IdLabel]
+    # Playbook market types (AR01-AR16), in priority order; the Review's play choice follows this order.
+    marketTypes: list[str] = []
+
+    @field_validator("marketTypes")
+    @classmethod
+    def _market_types(cls, v: list[str]) -> list[str]:
+        bad = [t for t in v if not (len(t) == 4 and t.startswith("AR") and t[2:].isdigit() and 1 <= int(t[2:]) <= 16)]
+        if bad:
+            raise ValueError(f"market types must be AR01-AR16, got {bad}")
+        return v
 
     @field_validator("experimentContexts", "primaryInterests")
     @classmethod

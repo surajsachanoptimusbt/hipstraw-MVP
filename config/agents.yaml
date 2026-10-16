@@ -24,10 +24,10 @@ agents:
   - id: market_manager
     name: "Market Manager Agent"
     title: "Market Manager"
-    role: "Decides which market units to pursue and keeps the official position on each."
+    role: "Reviews each market unit with the playbook, decides its Disposition and next step, and keeps the official Position."
     layer: market_manager
     centralQuestion: "Where should Hipstraw direct market-development attention and resources?"
-    knowledge: []
+    knowledge: ["The Hipstraw Market Mastery Playbook v0.1 (config/playbook)"]
     innateCapabilities:
       - id: run_lifecycle
         name: "Run lifecycle"
@@ -47,13 +47,14 @@ agents:
         plain: "Writes the market report, with every decision and the reason for it."
         operations: [write_report]
     skills:
-      - id: path_decision
-        name: "Path decision"
+      - id: quick_picker
+        name: "Quick picker (Market Review)"
         kind: rule
-        version: "decide.v1"
-        purpose: "Pursue, needs more evidence, or drop, from included companies and evidence sufficiency."
-        plain: "Decides each market unit: pursue when a company is included and the evidence is sufficient; drop when nothing is verified and more research cannot help; otherwise gather more evidence."
-        operations: [decide_path]
+        version: "playbook.v0.1 + picker.v1"
+        purpose: "Playbook §6: seven axes, binding constraint, blocks, stance (§7.1), Strategy (§2.2, §7.2), Play (§7.3, §7.7), Line (§7.4, §7.5), next step, Gambit options (§7.6), Disposition."
+        plain: "Reads each market unit's seven axes, names the binding constraint, then picks the stance, strategy, play, line and next step from the playbook and ends with a Disposition."
+        playbook: ["§6 Quick picker"]
+        operations: [market_review]
       - id: company_review
         name: "Company Review"
         kind: mixed
@@ -330,11 +331,11 @@ glossary:
     source: "Playbook §2"
   - term: "Market Position"
     playbookTerm: "Position"
-    meaning: "The evidence-backed, uncertainty-qualified state of one market unit on seven axes (MP1–MP7). Ours still has one status."
+    meaning: "The evidence-backed, uncertainty-qualified state of one market unit on seven axes (MP1–MP7)."
     source: "Playbook glossary"
-  - term: "Path decision (pursue / more evidence / drop)"
+  - term: "Path decision"
     playbookTerm: "Disposition"
-    meaning: "How a Review ends: EXPLORE, TEST, ACTIVATE, BUILD, SCALE, REFRAME, PARK or STOP. Ours uses three simpler values for now."
+    meaning: "How a Review ends: EXPLORE, TEST, ACTIVATE, BUILD, SCALE, REFRAME, PARK or STOP, chosen by the quick picker."
     source: "Playbook §2.4"
   - term: "Seed graph"
     playbookTerm: "Territory map"

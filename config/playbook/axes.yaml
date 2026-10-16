@@ -1,0 +1,76 @@
+# The seven Market Position axes (The Hipstraw Market Mastery Playbook v0.1, §2.1).
+# Screen names are what people see; registry names are the stored values.
+version: playbook.v0.1
+axes:
+  - id: MP1
+    screenName: "Need"
+    registryName: "Opportunity Position"
+    manages: "Problem intensity, unmet job, substitutes, timing, willingness to change"
+    states:
+      - {screen: "Not mapped", registry: UNMAPPED}
+      - {screen: "Hypothesis", registry: HYPOTHESIZED}
+      - {screen: "Supported", registry: SUPPORTED}
+      - {screen: "Contested", registry: DISPUTED}
+      - {screen: "Rejected", registry: REJECTED}
+  - id: MP2
+    screenName: "Buyers & access"
+    registryName: "Audience Position"
+    manages: "Who buys, who influences, how to reach them with permission and trust"
+    states:
+      - {screen: "Unknown", registry: UNKNOWN}
+      - {screen: "Reachable", registry: ACCESSIBLE}
+      - {screen: "Engaged", registry: ENGAGED}
+      - {screen: "Converting", registry: CONVERTING}
+      - {screen: "Can't reach", registry: INACCESSIBLE}
+  - id: MP3
+    screenName: "Offer"
+    registryName: "Offer Position"
+    manages: "Proposition, differentiation, real value, risk and purchase friction"
+    states:
+      - {screen: "Concept", registry: CONCEPT}
+      - {screen: "Prototype", registry: PROTOTYPE}
+      - {screen: "Tested", registry: TESTED}
+      - {screen: "Fits", registry: FITTING}
+      - {screen: "Misfits", registry: MISFITTING}
+  - id: MP4
+    screenName: "Route to market"
+    registryName: "Route-to-Market Position"
+    manages: "Channels, partners, creators, sales motions and distribution agreements"
+    states:
+      - {screen: "Untested", registry: UNTESTED}
+      - {screen: "Piloting", registry: PILOTING}
+      - {screen: "Repeatable", registry: REPEATABLE}
+      - {screen: "Saturated", registry: SATURATED}
+      - {screen: "Blocked", registry: BLOCKED}
+  - id: MP5
+    screenName: "Delivery system"
+    registryName: "Market System Position"
+    manages: "Supply, fulfillment, liquidity, incentives, regulation, community"
+    states:
+      - {screen: "Fragile", registry: FRAGILE}
+      - {screen: "Working", registry: FUNCTIONAL}
+      - {screen: "Reliable", registry: RELIABLE}
+      - {screen: "Resilient", registry: RESILIENT}
+      - {screen: "Broken", registry: BROKEN}
+  - id: MP6
+    screenName: "Economics"
+    registryName: "Economic Position"
+    manages: "Contribution margin, acquisition cost, payback, capacity, retention, cash"
+    states:
+      - {screen: "Not modeled", registry: UNMODELED}
+      - {screen: "Assumed", registry: ASSUMPTION}
+      - {screen: "Observed", registry: OBSERVED}
+      - {screen: "Viable", registry: VIABLE}
+      - {screen: "Negative", registry: NEGATIVE}
+  - id: MP7
+    screenName: "Repeatability & scale"
+    registryName: "Scale and Institutional Position"
+    manages: "Transferability, repeatable repertoire, portfolio options"
+    states:
+      - {screen: "First of its kind", registry: NOVEL}
+      - {screen: "Repeatable", registry: REPEATABLE}
+      - {screen: "Transferable", registry: TRANSFERABLE}
+      - {screen: "Scaled", registry: SCALED}
+      - {screen: "Regressing", registry: REGRESSING}
+dispositions: [EXPLORE, TEST, ACTIVATE, BUILD, SCALE, REFRAME, PARK, STOP]
+attentionTiers: [Ambient, Brief, Watch, Prompt, Alert, Request]

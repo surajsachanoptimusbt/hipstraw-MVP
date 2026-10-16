@@ -71,6 +71,7 @@ class Program(Doc):
     experimentContexts: list[IdLabel]
     primaryInterests: list[IdLabel]
     defaultConstraints: dict[str, int | list[str]]
+    marketTypes: list[str] = []
 
 
 class MarketCandidate(Doc):

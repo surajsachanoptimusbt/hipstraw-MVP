@@ -1,0 +1,28 @@
+# Extracted from The Hipstraw Market Mastery Playbook - Case 01.pdf by scripts/extract_playbook.py (playbook.v0.1).
+# Reviewed; edit here, not in the PDF.
+version: playbook.v0.1
+gates:
+- gate: Gate 0 · Opportunity
+  discipline: Explore
+  requiredEvidence: Traceable need signals plus contrary cases
+  ifNotMet: Reframe or park
+- gate: Gate 1 · Behavioural demand
+  discipline: Develop
+  requiredEvidence: Commitment beyond declared intent, in a sample fit for the decision
+  ifNotMet: Broaden the sample or change the offer
+- gate: Gate 2 · Delivery
+  discipline: Build
+  requiredEvidence: Paid, completed customer value and safe supply
+  ifNotMet: Fix fulfillment before promotion
+- gate: Gate 3 · Repeatability
+  discipline: Build
+  requiredEvidence: Two or more independent cohort or period checks, credible contribution
+  ifNotMet: Limit spend; diagnose the channel mix
+- gate: Gate 4 · Transfer
+  discipline: Scale
+  requiredEvidence: Held-out test in a new segment or region, local compliance, a named owner
+  ifNotMet: Pilot the new market; no mass launch
+- gate: Gate 5 · Scaled operation
+  discipline: Scale
+  requiredEvidence: Capacity, quality, incremental economics, retention and a counterfactual
+  ifNotMet: Throttle; return to Gate 2 or 3

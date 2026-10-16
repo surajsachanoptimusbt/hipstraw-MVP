@@ -287,7 +287,7 @@ def test_run_reaches_reported_and_progresses(pipeline: tuple[Context, str]) -> N
     run = ctx.store.get_market_run(run_id)
     assert run is not None
     assert run["status"] == "reported"
-    assert run["marketStatus"]["state"] == "progressing"
+    assert run["marketStatus"]["state"] == "awaiting-evidence"
     assert run["counts"]["modelCalls"] == ctx.llm.calls
     assert run["counts"]["fetches"] == 14
 
@@ -350,9 +350,20 @@ def test_real_companies_are_mapped_with_dispositions(pipeline: tuple[Context, st
     assert p1["researchPacket"]["included"] == 1 and p1["researchPacket"]["excluded"] == 1
 
 
-def test_decisions_pursue_paths_with_included_companies(pipeline: tuple[Context, str]) -> None:
+def test_review_follows_the_playbook_chain(pipeline: tuple[Context, str]) -> None:
+    """Desk research leaves MP1 at Hypothesis, so the playbook gives Probe -> S03 -> P04 -> L03 and TEST."""
     ctx, run_id = pipeline
-    assert {d["decision"] for d in ctx.store.list_path_decisions(run_id)} == {"pursue"}
+    decisions = ctx.store.list_path_decisions(run_id)
+    assert {d["disposition"] for d in decisions} == {"TEST"}
+    pos = decisions[0]["marketPosition"]
+    assert [a["axis"] for a in pos["axes"]] == ["MP1", "MP2", "MP3", "MP4", "MP5", "MP6", "MP7"]
+    assert pos["bindingConstraint"]["axis"] == "MP1" and pos["stance"]["stance"] == "Probe"
+    assert (pos["strategy"], pos["play"], pos["line"]["current"]) == ("S03", "P04", "L03")
+    assert [s["status"] for s in pos["line"]["steps"]] == ["done", "done", "done", "done", "to do"]
+    assert pos["nextStep"]["id"] == "A16" and pos["nextStep"]["allowedInMode"]
+    assert pos["gambits"][0]["id"] == "G02" and pos["gambits"][0]["needsStance"] == "Co-create"
+    review = next(s for s in ctx.store.list_trace_steps_after(run_id, 0) if s["operation"] == "market_review")
+    assert review["decision"] == "TEST"
 
 
 def test_market_position_is_built_for_each_final_path(pipeline: tuple[Context, str]) -> None:
@@ -360,14 +371,14 @@ def test_market_position_is_built_for_each_final_path(pipeline: tuple[Context, s
     decisions = ctx.store.list_path_decisions(run_id)
     assert decisions and all("marketPosition" in d for d in decisions)
     pos = decisions[0]["marketPosition"]
-    assert pos["disposition"] == "Pursue"
-    assert pos["pathLabels"] and pos["headline"]
+    assert pos["disposition"] == "TEST"
+    assert pos["pathLabels"] and pos["headline"].startswith("TEST:")
     assert len(pos["narrative"]) == 7
     assert pos["evidence"]["sufficiency"] == "sufficient"
     assert any(c["disposition"] == "include" for c in pos["targetCompanies"])
     # the stored path carries the same position, so the viewer can read it from either place
     path = next(p for p in ctx.store.list_paths(run_id) if p["pathId"] == decisions[0]["pathId"])
-    assert path["marketPosition"]["disposition"] == "Pursue"
+    assert path["marketPosition"]["disposition"] == "TEST"
 
 
 def test_buyer_roles_cite_the_company_own_evidence(pipeline: tuple[Context, str]) -> None:
@@ -383,7 +394,8 @@ def test_buyer_roles_cite_the_company_own_evidence(pipeline: tuple[Context, str]
 def test_report_names_target_companies(pipeline: tuple[Context, str]) -> None:
     _, run_id = pipeline
     report = Path("reports", f"{run_id}.md").read_text(encoding="utf-8")
-    assert "## Target Companies by Path" in report
+    assert "## Target Companies by Market Unit" in report
+    assert "**Recommended next step:** A16 Route decision or approval" in report
     assert "**Acme Ledger** (acme-ledger.com), Atlanta, GA" in report
     assert "Clearpay" in report
 
@@ -407,7 +419,7 @@ def test_viewer_shapes_read_the_run(pipeline: tuple[Context, str]) -> None:
     ctx, run_id = pipeline
     assert api.shape_documents(ctx.store, run_id)[0]["excerpt"].startswith(PDF_PHRASE)
     assert any(c["buyerRoles"] for c in api.shape_companies(ctx.store, run_id))
-    assert api.shape_decisions(ctx.store, run_id)["marketStatus"]["state"] == "progressing"
+    assert api.shape_decisions(ctx.store, run_id)["marketStatus"]["state"] == "awaiting-evidence"
 
 
 def test_position_and_evaluation_opens_a_case_per_final_path(pipeline: tuple[Context, str]) -> None:
@@ -444,7 +456,7 @@ def test_market_map_has_a_tile_per_screened_micro_market(pipeline: tuple[Context
     assert market_map is not None and market_map["tiles"]
     researched = [t for t in market_map["tiles"] if t["researched"]]
     assert len(researched) == len([p for p in ctx.store.list_paths(run_id) if p["isFinal"]])
-    assert all(t["position"]["status"] == "Pursue" and t["valueMid"] for t in researched)
+    assert all(t["position"]["disposition"] == "TEST" and t["valueMid"] for t in researched)
     assert all(t["change"]["direction"] == "new" for t in market_map["tiles"])
     assert {g["group"] for g in market_map["groups"]} == {t["group"] for t in market_map["tiles"]}
 
@@ -523,3 +535,71 @@ def test_a_failed_child_run_is_recorded_not_fatal(monkeypatch: pytest.MonkeyPatc
     assert run["marketStatus"]["state"] == "awaiting-evidence"
     failed = [u for u in run["unresolved"] if u["kind"] == "company_research"]
     assert failed and "search provider down" in failed[0]["reason"]
+
+
+def test_vichara_dark_routing_keeps_todays_frontier_calls(pipeline: tuple[Context, str]) -> None:
+    ctx, run_id = pipeline
+    llm: Any = ctx.llm
+    from hipstraw_mm.market.grammar import load_grammar
+
+    expected = [f"vichara:{d.key}" for d in load_grammar(CONFIG_DIR).dimensions]
+    assert llm.keys[: len(expected)] == expected
+    for d in ctx.store.list_deliberations(run_id):
+        assert d["deliberatedBy"]["servedBy"] == "frontier" and d["deliberatedBy"]["ruleId"] == "R4"
+
+
+def test_vichara_open_weight_tier_escalates_only_failing_dimensions(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """An open-weight tier answers well except on two dimensions: one cites text that is not in the
+    objective, one abstains although a PDF is attached. Only those two go to frontier."""
+    from hipstraw_mm.market.router import RoutingConfig, load_routing
+
+    raw = load_routing(CONFIG_DIR).model_dump(by_alias=True)
+    raw["openWeight"]["enabled"] = True
+    monkeypatch.setattr(stages, "load_routing", lambda _dir: RoutingConfig.model_validate(raw))
+    monkeypatch.setenv("LLM_MODEL", "gpt-4o")
+    monkeypatch.setattr(stages, "_child_steps", lambda: ())
+
+    class OpenWeight(ScriptedLLM):
+        model = "qwen-test"
+
+        def __init__(self) -> None:
+            super().__init__()
+            self.last_raw = {"model": "qwen-test-served"}
+
+        def _dimension_deliberation(self, p: dict[str, Any]) -> Any:
+            key = p["dimensionKey"]
+            if key == SILENT_DIMENSION:
+                item = schemas.DeliberationItem(
+                    question="q", status="unresolved", reason="no information in the objective"
+                )
+            else:
+                basis = "text that is not in the objective" if key == BAD_DIMENSION else PDF_PHRASE
+                item = schemas.DeliberationItem(question="q", status="answered", answer="a", basis=[basis])
+            return schemas.DimensionDeliberation(dimensionKey=key, items=[item])
+
+    pdf = tmp_path / "objective.pdf"
+    pdf.write_bytes(make_pdf(PDF_PHRASE))
+    ctx = _context(tmp_path)
+    ow = OpenWeight()
+    ctx.open_llm = ow  # type: ignore[assignment]
+    run_id = _run(ctx, [str(pdf)])
+    Path("reports", f"{run_id}.md").unlink(missing_ok=True)
+
+    llm: Any = ctx.llm
+    from hipstraw_mm.market.grammar import load_grammar
+
+    dims = [d.key for d in load_grammar(CONFIG_DIR).dimensions]
+    assert ow.keys == [f"ow:qwen-test:vichara:{k}" for k in dims]
+    assert sorted(k for k in llm.keys if k.startswith("vichara:")) == sorted(
+        [f"vichara:{BAD_DIMENSION}", f"vichara:{SILENT_DIMENSION}"]
+    )
+    assert "vichara_coverage" in llm.keys and "vichara_propose" in llm.keys
+    by_key = {d["dimensionKey"]: d["deliberatedBy"] for d in ctx.store.list_deliberations(run_id)}
+    assert by_key["segment_fit"] == {"routerVersion": "router.v1", "ruleId": "R8",
+                                     "servedBy": "open_weight", "model": "qwen-test"}
+    assert by_key[BAD_DIMENSION]["servedBy"] == "frontier" and by_key[SILENT_DIMENSION]["servedBy"] == "frontier"
+    run = ctx.store.get_market_run(run_id)
+    assert run["status"] == "reported"
+    assert run["counts"]["modelCalls"] == llm.calls + ow.calls

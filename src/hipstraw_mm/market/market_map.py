@@ -1,10 +1,10 @@
-"""The market map: every micro market the beam reached, sized by economics and coloured by position.
+"""The market map: every market unit opportunity ranking reached, sized by economics, coloured by Disposition.
 
-A tile is one micro market: a complete path (segment -> use case) scored at the deepest beam level,
-grouped by its segment. Final paths were researched and carry a committed Market Position; the rest
-were screened by search score and economics only, which the tile says. Size is the Position &
-Evaluation economic estimate (a hypothesis with its assumptions). Change is computed against the
-program's previous market map by label similarity.
+A tile is one market unit: a complete path (segment -> use case) scored at the deepest ranking level,
+grouped by its segment. Final market units were researched and carry a committed Market Position with
+a playbook Disposition; the rest were screened by search score and economics only, which the tile
+says. Size is the Position & Evaluation economic estimate (a hypothesis with its assumptions). Change
+is computed against the program's previous market map by label similarity.
 """
 
 from __future__ import annotations
@@ -24,6 +24,7 @@ def build_market_map(
     cases_by_path: dict[str, Doc],
     previous_map: Doc | None,
     at: str,
+    order: list[str],
 ) -> Doc:
     prior_tiles = (previous_map or {}).get("tiles", [])
     tiles: list[Doc] = []
@@ -53,14 +54,17 @@ def build_market_map(
             "assumptions": (est or {}).get("assumptions", []),
             "sensitivities": (est or {}).get("sensitivities", []),
             "position": {
-                "status": position["status"],
+                "disposition": position["disposition"],
+                "attention": position["attention"],
                 "confidence": position["confidence"],
                 "version": position["version"],
                 "trajectory": position["trajectory"],
+                "play": position.get("play"),
+                "nextStep": (position.get("nextStep") or {}).get("id"),
                 "recommendation": (case or {}).get("recommendation", {}).get("recommendation"),
             } if position else None,
             "includedCompanies": ((case or {}).get("packet") or {}).get("included", 0),
-            "change": _change(prior, score, position),
+            "change": _change(prior, score, position, order),
         }
         tiles.append(tile)
     groups: dict[str, Doc] = {}
@@ -77,20 +81,19 @@ def build_market_map(
         "groups": sorted(groups.values(), key=lambda g: -g["valueMid"]),
         "previousRunId": (previous_map or {}).get("marketRunId"),
         "sizeBasis": "Position & Evaluation economic estimate (annual value pool, USD midpoint) - a hypothesis",
-        "colorBasis": "Market Position status for researched micro markets; screened otherwise",
+        "colorBasis": "Disposition of the committed Market Position for researched market units; screened otherwise",
         "builtAt": at,
     }
 
 
-def _change(prior: Doc | None, score: float, position: Doc | None) -> Doc:
+def _change(prior: Doc | None, score: float, position: Doc | None, order: list[str]) -> Doc:
     if prior is None:
         return {"direction": "new", "matchedTileId": None}
     before = float(prior.get("searchScore") or 0.0)
-    prior_status = (prior.get("position") or {}).get("status")
-    status = (position or {}).get("status")
-    order = {"Drop": 0, "Needs more evidence": 1, "Pursue": 2}
-    if status and prior_status and order.get(status, 1) != order.get(prior_status, 1):
-        direction = "up" if order.get(status, 1) > order.get(prior_status, 1) else "down"
+    prior_status = (prior.get("position") or {}).get("disposition")
+    status = (position or {}).get("disposition")
+    if status in order and prior_status in order and status != prior_status:
+        direction = "up" if order.index(status) > order.index(prior_status) else "down"
     else:
         pp = (score - before) * 100
         direction = "up" if pp >= 1 else "down" if pp <= -1 else "flat"
@@ -99,5 +102,5 @@ def _change(prior: Doc | None, score: float, position: Doc | None) -> Doc:
         "matchedTileId": prior.get("tileId"),
         "similarity": prior.get("similarity"),
         "searchScorePp": round((score - before) * 100, 1),
-        "previousStatus": prior_status,
+        "previousDisposition": prior_status,
     }

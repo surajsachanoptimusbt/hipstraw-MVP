@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from hipstraw_mm.store.base import Doc
@@ -19,6 +20,7 @@ def shape_runs(store: Any) -> list[Doc]:
             "createdAt": r.get("createdAt"),
             "counts": r.get("counts", {}),
             "marketStatus": r.get("marketStatus"),
+            "simulation": r.get("simulation"),
         })
     return result
 
@@ -295,3 +297,10 @@ def plain_view(registry: Doc) -> Doc:
         })
     linked = sum(1 for a in agents for d in a["does"] if d["playbook"])
     return {"agents": agents, "counts": counts, "playbookLinked": linked, "glossary": registry.get("glossary", [])}
+
+
+def shape_routing(store: Any, run_id: str) -> Doc | None:
+    """The routing walk-through for the replay page: router decisions, attempts, checks, lineage."""
+    from hipstraw_mm.market.routing_report import build_simulation
+
+    return build_simulation(store, run_id, Path("config"))

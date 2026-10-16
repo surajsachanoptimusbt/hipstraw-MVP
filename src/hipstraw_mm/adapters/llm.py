@@ -1,11 +1,12 @@
 """OpenAI Structured Outputs client (research R1, Constitution VII).
 
 One request per call, with explicit inputs and a strict-schema response. No tools and no multi-turn
-loop. A response that fails schema validation is retried once, then LLMSchemaError is raised.
+loop. A response that fails schema validation is retried (once by default), then LLMSchemaError is raised.
 """
 
 from __future__ import annotations
 
+import os
 from collections.abc import Callable
 from typing import Any, TypeVar
 
@@ -28,6 +29,28 @@ def _default_client() -> Any:
     return OpenAI()
 
 
+def open_weight_client(
+    replay: ReplayStore, log: EventLog | None, timeout_seconds: float
+) -> LLMClient | None:
+    """The open-weight tier from OPEN_WEIGHT_BASE_URL and OPEN_WEIGHT_MODEL, or None if either is unset.
+
+    Any OpenAI-compatible endpoint works. The SDK's own retries are off and the timeout is short, so a
+    slow or cold endpoint escalates to frontier instead of stalling; one schema attempt for the same reason.
+    """
+    base_url = os.environ.get("OPEN_WEIGHT_BASE_URL")
+    model = os.environ.get("OPEN_WEIGHT_MODEL")
+    if not (base_url and model):
+        return None
+
+    def factory() -> Any:
+        from openai import OpenAI
+
+        return OpenAI(base_url=base_url, api_key=os.environ.get("OPEN_WEIGHT_API_KEY") or "not-needed",
+                      max_retries=0, timeout=timeout_seconds)
+
+    return LLMClient(model=model, replay=replay, log=log, client_factory=factory, schema_attempts=1)
+
+
 class LLMClient:
     def __init__(
         self,
@@ -35,14 +58,18 @@ class LLMClient:
         replay: ReplayStore,
         log: EventLog | None = None,
         client_factory: Callable[[], Any] = _default_client,
+        schema_attempts: int = 2,
     ) -> None:
         self.model = model
+        self.schema_attempts = schema_attempts
         self.replay = replay
         self.log = log
         self._client_factory = client_factory
         self._client: Any | None = None
         self.calls = 0
         self.last_usage: dict[str, int] | None = None
+        # The last response as received, so a schema-failed attempt can still be traced.
+        self.last_raw: dict[str, Any] | None = None
 
     def parse(
         self,
@@ -63,9 +90,10 @@ class LLMClient:
             "messages": messages,
         }
         problem = ""
-        for attempt in (1, 2):
+        for attempt in range(1, self.schema_attempts + 1):
             self.calls += 1
             raw = self.replay.call("model", key, request, lambda: self._live(schema, messages))
+            self.last_raw = raw
             self.last_usage = raw.get("usage")
             self._log(run_id, step, company_record_id, schema, prompt_version, attempt, raw)
             content = raw.get("content")

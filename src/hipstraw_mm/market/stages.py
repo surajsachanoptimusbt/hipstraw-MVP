@@ -16,6 +16,7 @@ from typing import Any, TypeVar
 from pydantic import BaseModel
 
 from hipstraw_mm import prompts
+from hipstraw_mm.adapters.llm import LLMClient, LLMSchemaError
 from hipstraw_mm.context import Context
 from hipstraw_mm.errors import ExternalServiceError, PreconditionError, TransientServiceError
 from hipstraw_mm.market.assess import LAYER as ASSESS_LAYER
@@ -36,6 +37,7 @@ from hipstraw_mm.market.links import check_link_coverage, chunk_links, link_reco
 from hipstraw_mm.market.meaning import load_graph_meaning
 from hipstraw_mm.market.paths import path_id, paths_below
 from hipstraw_mm.market.repair import bounded_repair
+from hipstraw_mm.market.router import RoutingConfig, TaskRouter, load_routing
 from hipstraw_mm.market.schemas import (
     GRAPH_LEVELS,
     BeamScoring,
@@ -51,7 +53,7 @@ from hipstraw_mm.market.schemas import (
 )
 from hipstraw_mm.market.settings import load_pipeline_settings
 from hipstraw_mm.market.trace import ModelCallCeilingError, Tracer
-from hipstraw_mm.market.vichara import check_item_grounding
+from hipstraw_mm.market.vichara import check_item_grounding, vichara_checks
 
 T = TypeVar("T", bound=BaseModel)
 Doc = dict[str, Any]
@@ -113,39 +115,54 @@ def model_call(
     match_key: str,
     prompt_version: str,
     run_id: str,
+    client: LLMClient | None = None,
+    route: str = "frontier",
+    max_attempts: int = MAX_MODEL_RETRIES,
 ) -> T:
-    """One traced model call with retry on transient failures (timeout, rate-limit, connection)."""
+    """One traced model call with retry on transient failures (timeout, rate-limit, connection).
+
+    `client` defaults to the frontier client; the task router passes the open-weight client with one
+    attempt. A schema-failed response is still traced with its raw content before the error is raised.
+    """
+    llm = client or ctx.llm
     last_exc: Exception | None = None
-    for attempt in range(1, MAX_MODEL_RETRIES + 1):
+    for attempt in range(1, max_attempts + 1):
         try:
             with tracer.step("workers", "llm_worker", "call_model", right="call_model") as worker:
                 worker.set_inputs({
                     "schema": schema.__name__, "promptVersion": prompt_version,
-                    "matchKey": match_key, "attempt": attempt,
+                    "matchKey": match_key, "attempt": attempt, "route": route, "model": llm.model,
                 })
                 tracer.observe_model_call()
-                result = ctx.llm.parse(
-                    schema, messages, match_key=match_key, prompt_version=prompt_version,
-                    run_id=run_id, step=match_key,
-                )
-                worker.record_model_call(
-                    name=ctx.llm.model or "",
-                    prompt_version=prompt_version,
-                    schema=schema.__name__,
-                    attempt=attempt,
-                    prompt_content=json.dumps(messages, ensure_ascii=False),
-                    response_content=result.model_dump_json(),
-                    usage=getattr(ctx.llm, "last_usage", None),
-                )
-                worker.set_outputs({"ok": True, "attempt": attempt})
+
+                def record(response: str, usage: dict[str, Any] | None, _attempt: int = attempt) -> None:
+                    worker.record_model_call(
+                        name=llm.model or "", prompt_version=prompt_version, schema=schema.__name__,
+                        attempt=_attempt, prompt_content=json.dumps(messages, ensure_ascii=False),
+                        response_content=response, usage=usage,
+                    )
+
+                try:
+                    result = llm.parse(
+                        schema, messages, match_key=match_key, prompt_version=prompt_version,
+                        run_id=run_id, step=match_key,
+                    )
+                except LLMSchemaError:
+                    raw = getattr(llm, "last_raw", None) or {}
+                    record(str(raw.get("content") or raw.get("error") or ""), raw.get("usage"))
+                    worker.set_outputs({"ok": False, "attempt": attempt, "servedModel": raw.get("model")})
+                    raise
+                record(result.model_dump_json(), getattr(llm, "last_usage", None))
+                served = (getattr(llm, "last_raw", None) or {}).get("model")
+                worker.set_outputs({"ok": True, "attempt": attempt, "servedModel": served})
             return result
         except TransientServiceError as exc:
             last_exc = exc
-            if attempt < MAX_MODEL_RETRIES:
+            if attempt < max_attempts:
                 wait = RETRY_BACKOFF[attempt - 1] if attempt - 1 < len(RETRY_BACKOFF) else RETRY_BACKOFF[-1]
                 import sys
 
-                print(f"  retry {attempt}/{MAX_MODEL_RETRIES}: {exc} — waiting {wait}s", file=sys.stderr)
+                print(f"  retry {attempt}/{max_attempts}: {exc} — waiting {wait}s", file=sys.stderr)
                 time.sleep(wait)
     raise last_exc  # type: ignore[misc]
 
@@ -186,25 +203,38 @@ def _latest_graph(ctx: Context, run_id: str) -> Doc:
 # --------------------------------------------------------------------------------------------------
 
 
-def stage_vichara(ctx: Context, run_id: str, config_dir: Path) -> Doc:
+def stage_vichara(
+    ctx: Context, run_id: str, config_dir: Path, routing_config: RoutingConfig | None = None
+) -> Doc:
     run = load_run(ctx, run_id, "opened")
     tracer = make_tracer(ctx, run_id, config_dir)
     settings = load_pipeline_settings(config_dir)
     grammar = load_grammar(config_dir)
     text = objective_text(ctx, run)
     max_items = settings.vichara.maxItemsPerDimension
+    router = TaskRouter(ctx, tracer, routing_config or load_routing(config_dir), run_id=run_id)
+    has_documents = bool(ctx.store.list_objective_documents(run_id))
 
     items_by_dim: dict[str, Any] = {}
+    deliberated_by: dict[str, Doc] = {}
     for dim in grammar.dimensions:
         payload = {"dimensionKey": dim.key, "question": dim.question, "objectiveText": text}
         with tracer.step("search_research", "vichara", "deliberate_dimension", right="ask_dimension") as step:
             step.set_inputs({"dimensionKey": dim.key})
-            result = model_call(
-                ctx, tracer, DimensionDeliberation, prompts.messages(prompts.VICHARA, payload),
-                match_key=f"vichara:{dim.key}", prompt_version=prompts.VICHARA, run_id=run_id,
+            result, routing = router.call(
+                step, DimensionDeliberation, prompts.messages(prompts.VICHARA, payload),
+                task=prompts.VICHARA, match_key=f"vichara:{dim.key}",
+                validate=lambda r, tier, key=dim.key: vichara_checks(  # type: ignore[misc]
+                    r, tier, dimension_key=key, objective_text=text, max_items=max_items,
+                    has_documents=has_documents,
+                ),
             )
             items_by_dim[dim.key] = [i.model_dump() for i in result.items][:max_items]
-            step.set_outputs({"items": len(items_by_dim[dim.key])})
+            deliberated_by[dim.key] = {
+                "routerVersion": routing["routerVersion"], "ruleId": routing["ruleId"],
+                "servedBy": routing["servedBy"], "model": routing["attempts"][-1]["model"],
+            }
+            step.set_outputs({"items": len(items_by_dim[dim.key]), "routing": routing})
 
     def check(current: Doc) -> list[Doc]:
         failures: list[Doc] = []
@@ -254,13 +284,13 @@ def stage_vichara(ctx: Context, run_id: str, config_dir: Path) -> Doc:
     }
     with tracer.step("search_research", "vichara", "judge_coverage", right="ask_dimension") as step:
         step.set_inputs({"dimensions": len(items_by_dim)})
-        coverage = model_call(
-            ctx, tracer, CoverageJudgement, prompts.messages(prompts.VICHARA_COVERAGE, coverage_payload),
-            match_key="vichara_coverage", prompt_version=prompts.VICHARA_COVERAGE, run_id=run_id,
+        coverage, routing = router.call(
+            step, CoverageJudgement, prompts.messages(prompts.VICHARA_COVERAGE, coverage_payload),
+            task=prompts.VICHARA_COVERAGE, match_key="vichara_coverage",
         )
         gaps = [d for d in coverage.dimensions if not d.addressesDimension]
         unresolved.extend({"kind": "coverage", "ref": g.dimensionKey, "reason": g.reason} for g in gaps)
-        step.set_outputs({"gaps": [g.dimensionKey for g in gaps]})
+        step.set_outputs({"gaps": [g.dimensionKey for g in gaps], "routing": routing})
 
     exhausted = {u["key"] for u in outcome.unresolved}
     for key in exhausted:
@@ -291,9 +321,9 @@ def stage_vichara(ctx: Context, run_id: str, config_dir: Path) -> Doc:
         }
         with tracer.step("search_research", "vichara", "propose_hypotheses", right="ask_dimension") as step:
             step.set_inputs({"dimensions": [d.key for d in to_propose]})
-            proposals = model_call(
-                ctx, tracer, VicharaProposals, prompts.messages(prompts.VICHARA_PROPOSE, propose_payload),
-                match_key="vichara_propose", prompt_version=prompts.VICHARA_PROPOSE, run_id=run_id,
+            proposals, routing = router.call(
+                step, VicharaProposals, prompts.messages(prompts.VICHARA_PROPOSE, propose_payload),
+                task=prompts.VICHARA_PROPOSE, match_key="vichara_propose",
             )
             wanted = {d.key for d in to_propose}
             proposed_keys: list[str] = []
@@ -314,7 +344,7 @@ def stage_vichara(ctx: Context, run_id: str, config_dir: Path) -> Doc:
                  "reason": "the objective gives no information; a model-proposed hypothesis is recorded instead"}
                 for key in proposed_keys
             )
-            step.set_outputs({"proposed": proposed_keys})
+            step.set_outputs({"proposed": proposed_keys, "routing": routing})
 
     for key, items in items_by_dim.items():
         for i, item in enumerate(items):
@@ -326,6 +356,7 @@ def stage_vichara(ctx: Context, run_id: str, config_dir: Path) -> Doc:
             "items": items,
             "repairAttempts": outcome.attempts,
             "repairExhausted": key in exhausted,
+            "deliberatedBy": deliberated_by.get(key),
         })
     ctx.store.transition_market_run(
         run_id, "opened", "deliberated", {"unresolved": [*run.get("unresolved", []), *unresolved]}

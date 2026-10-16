@@ -1,0 +1,104 @@
+# Extracted from The Hipstraw Market Mastery Playbook - Case 01.pdf by scripts/extract_playbook.py (playbook.v0.1).
+# Reviewed; edit here, not in the PDF.
+version: playbook.v0.1
+hardRules:
+- id: 1
+  rule: A market hypothesis is not a fact.
+  why: Confidence from anecdote drives bad spend.
+  example: Five of ten CIOs are enthusiastic; none can name a budget (C1).
+  whenHit: Reports confidence, sample, source and counterevidence. MP1 stays at Hypothesis.
+- id: 2
+  rule: Research is not permission to market.
+  why: Consent to an interview does not cover sales outreach.
+  example: Interviewees from a disconfirming study are added to a campaign list.
+  whenHit: Blocks launch for that cohort (A25) and requests opt-in (A19).
+- id: 3
+  rule: A lead is not a customer.
+  why: Funnel counts inflate progress.
+  example: A partner reports 1,000 leads; 60 are eligible.
+  whenHit: Reports qualified and unknown counts separately. Invents no conversion.
+- id: 4
+  rule: No fabricated demand, reviews, personas or testimonials.
+  why: Destroys trust; unlawful in many places.
+  example: A creator offers to post fake testimonials (C3).
+  whenHit: Declines. Labels every synthetic world and dataset as synthetic.
+- id: 5
+  rule: No manufactured social proof or false scarcity.
+  why: Deceives buyers.
+  example: “Only 3 slots left” when capacity is 30.
+  whenHit: Refuses the creative (A23) and routes it to the brand owner.
+- id: 6
+  rule: No manipulation or exploitative targeting.
+  why: Protects vulnerable people.
+  example: Targeting distressed households during a local crisis (AR12).
+  whenHit: Stops the treatment, moves to Protect / Pause, runs P26.
+- id: 7
+  rule: Never ignore local law and institutional context.
+  why: Rules differ by country, sector and channel.
+  example: A country rule closes the planned campaign route (C6).
+  whenHit: Runs P26 Permission and Compliance Review before any effect.
+- id: 8
+  rule: Field researchers obtain appropriate consent.
+  why: Covert capture harms participants and taints evidence.
+  example: A Scout photographs a salon interior without asking.
+  whenHit: Quarantines the evidence; Mission goes to QA.
+- id: 9
+  rule: No uncontrolled outreach across channels.
+  why: Duplicate chasers annoy people; opt-outs must travel.
+  example: A campaign agent and a Market Architect contact the same owner in one week.
+  whenHit: Keeps one contact owner per participant, suppresses the second, propagates opt-outs everywhere.
+- id: 10
+  rule: Missing evidence is Unknown.
+  why: Lack of response is not lack of interest.
+  example: An intermediary never forwarded the invitations; zero replies.
+  whenHit: Marks MP2 Unknown, not Can't reach, and tests another route.
+- id: 11
+  rule: Human Missions have safe boundaries.
+  why: Worker safety and fair pay come first.
+  example: A worker reports an unsafe interview venue.
+  whenHit: Ends the Mission (L17 branch), protects the worker, preserves evidence.
+- id: 12
+  rule: Different principals require confidentiality barriers.
+  why: Client plans and data are not shared assets.
+  example: An agent tries to reuse client A's field records for client B.
+  whenHit: Denies access and logs the boundary.
+- id: 13
+  rule: Investment follows stage gates.
+  why: Spending ahead of evidence destroys value.
+  example: A partner asks for a prepaid national campaign before Gate 2.
+  whenHit: Declines until the gates pass; routes the decision to the sponsor.
+- id: 14
+  rule: Every Gambit has a capped loss and a fallback.
+  why: Concessions must be deliberate and bounded.
+  example: A subsidy with no end date.
+  whenHit: Treats the Gambit as inadmissible until max loss, end date, fallback and approver are set.
+- id: 15
+  rule: Do not scale broken fulfillment.
+  why: More demand on broken supply hurts customers.
+  example: Providers cancel 15% of bookings against a 10% gate.
+  whenHit: Runs M40 and throttles acquisition (A43); sends an MP5 Impact Signal.
+- id: 16
+  rule: Attribution must be truthful.
+  why: Inflated results mislead sponsors.
+  example: Booked appointments reported as revenue.
+  whenHit: Reports pipeline, bookings, revenue, contribution and incremental lift separately (A47).
+- id: 17
+  rule: No conversion at the expense of customer value.
+  why: Mis-selling creates churn and harm.
+  example: An aggressive upsell drives early cancellations.
+  whenHit: Disqualifies the result as success; runs M45.
+- id: 18
+  rule: Authorized principals own consequential decisions.
+  why: Hipstraw may recommend beyond its authority but never binds the client.
+  example: A distributor asks for territory exclusivity.
+  whenHit: Drafts terms only (A21); the named signatory decides.
+- id: 19
+  rule: Revocation and withdrawal halt affected activity.
+  why: Authority can change mid-case.
+  example: A recipient revokes consent mid-campaign.
+  whenHit: Stops contact across every agent and channel at once (A57).
+- id: 20
+  rule: One owner and one verifiable closure per Mission or Case.
+  why: Accountability and audit.
+  example: A booking is logged but the visit never happens.
+  whenHit: Keeps the Case open; no outcome credit until readback (M56).
