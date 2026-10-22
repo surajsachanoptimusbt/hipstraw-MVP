@@ -26,6 +26,33 @@ _TASK_BY_OPERATION = {
     "propose_hypotheses": prompts.VICHARA_PROPOSE,
 }
 
+# The pipeline stage (CLI name) each traced business operation belongs to.
+STAGE_BY_OPERATION = {
+    "deliberate_dimension": "vichara", "repair_deliberation": "vichara", "judge_coverage": "vichara",
+    "propose_hypotheses": "vichara", "build_level": "graph", "verify_links": "links",
+    "score_candidates": "beam", "assess_path": "assess", "identify_buyer_roles": "buyers",
+    "screen_economics": "evaluate", "plan_queries": "companies", "extract_listing": "companies",
+    "read_homepage": "companies", "extract_evidence": "companies", "judge_company": "companies",
+}
+
+# What each task asks, in plain words, for tasks that have no grammar question of their own.
+TASK_PURPOSE = {
+    prompts.VICHARA_REPAIR: "Fix or withdraw the quotes that are not word for word in the objective.",
+    prompts.VICHARA_COVERAGE: "Do the deliberation items together answer each dimension?",
+    prompts.VICHARA_PROPOSE: "Propose labelled hypotheses for the dimensions the objective does not answer.",
+    prompts.GRAPH_LEVEL: "Propose the nodes for this level of the territory map.",
+    prompts.LINK_VERIFICATION: "Does each parent-child link in the territory map hold, and how strongly?",
+    prompts.BEAM_SCORING: "Score these candidate paths on relevance, feasibility, timing and cost.",
+    prompts.PATH_ASSESSMENT: "Assess this market unit on the seven per-path dimensions.",
+    prompts.BUYER_ROLES: "Which buying functions at these companies own the problem, with cited evidence?",
+    prompts.ECONOMIC_ASSESSMENT: "Size the value pool of each candidate market unit (a hypothesis).",
+    prompts.QUERY_PLAN: "Which web searches will find local companies in this market unit?",
+    prompts.LISTING_EXTRACTION: "Which companies does this page list, each quoted from the page?",
+    prompts.HOMEPAGE_IDENTITY: "Is this page one company's own homepage, and which company?",
+    prompts.COMPANY_EVIDENCE: "What do this company's pages say about its HQ, size, fit and signals, with quotes?",
+    prompts.REVIEW_JUDGEMENT: "Does this company's passing evidence meet the falsifier, and does the fit hold?",
+}
+
 
 def build_simulation(store: Any, run_id: str, config_dir: Path = Path("config")) -> Doc | None:
     run = store.get_market_run(run_id)
@@ -85,25 +112,30 @@ def walkthrough(store: Any, run_id: str, config_dir: Path) -> list[Doc]:
             children[s["parentStepId"]].append(s)
     questions = {d.key: d.question for d in load_grammar(config_dir).dimensions}
     saved = {d["dimensionKey"]: d for d in store.list_deliberations(run_id)}
+    path_labels = {p["pathId"]: p.get("nodeLabels") or [] for p in store.list_paths(run_id)}
 
     entries: list[Doc] = []
     for s in steps:
-        if s.get("actor") != "vichara":
-            continue
         inputs, outputs = s.get("inputs") or {}, s.get("outputs") or {}
         routing = outputs.get("routing")
+        if s.get("actor") != "vichara" and not routing:
+            continue
         op = s["operation"]
+        task = routing["task"] if routing else _TASK_BY_OPERATION.get(op, op)
         attempts = [_attempt(w, store) for w in children[s["stepId"]] if w.get("operation") == "call_model"]
         entries.append({
             "seq": s["seq"],
-            "task": routing["task"] if routing else _TASK_BY_OPERATION.get(op, op),
+            "stage": STAGE_BY_OPERATION.get(op, "other"),
+            "task": task,
             "routed": routing is not None,
             "routerVersion": routing.get("routerVersion") if routing else None,
             "operation": op,
-            "subject": _subject(inputs),
-            "question": questions.get(inputs.get("dimensionKey", "")),
+            "subject": _subject(inputs, op, path_labels),
+            "question": questions.get(inputs.get("dimensionKey", "")) or TASK_PURPOSE.get(task),
             "inputChars": attempts[0]["promptChars"] if attempts else None,
             "router": {k: routing[k] for k in ("ruleId", "why", "route", "class")} if routing else None,
+            "rule": next((a.get("rule") for a in (routing or {}).get("attempts", []) if a.get("route") == "rules"),
+                         None),
             "attempts": attempts,
             "checks": s.get("checks") or [],
             "validation": (routing or {}).get("validation") or {},
@@ -113,10 +145,28 @@ def walkthrough(store: Any, run_id: str, config_dir: Path) -> list[Doc]:
     return entries
 
 
-def _subject(inputs: Doc) -> str:
+def _subject(inputs: Doc, op: str = "", path_labels: dict[str, list[str]] | None = None) -> str:
     dims = inputs.get("dimensions")
     if inputs.get("dimensionKey"):
         return str(inputs["dimensionKey"])
+    if op == "build_level":
+        return f"{inputs.get('level')} level"
+    if op == "verify_links":
+        return f"links chunk {inputs.get('chunk', 0) + 1} ({inputs.get('links')} links)"
+    if op == "score_candidates":
+        return f"{inputs.get('level')} level, {inputs.get('candidates')} paths"
+    if op == "screen_economics":
+        return f"{inputs.get('candidates')} candidate units"
+    if op == "plan_queries":
+        return f"query plan ({inputs.get('metros')} metros)"
+    if op in ("extract_listing", "read_homepage"):
+        url = str(inputs.get("url") or "")
+        return url.split("://", 1)[-1][:70]
+    if op in ("extract_evidence", "judge_company"):
+        return str(inputs.get("company") or inputs.get("domain") or "company")
+    if inputs.get("pathId"):
+        labels = (path_labels or {}).get(inputs["pathId"]) or []
+        return " > ".join(labels[-2:]) if labels else str(inputs["pathId"])
     if isinstance(dims, list):
         return ", ".join(dims)
     return f"{dims} dimensions" if dims else "all dimensions"
@@ -179,7 +229,36 @@ def _saved(op: str, inputs: Doc, outputs: Doc, saved: dict[str, Doc]) -> Doc:
         return {"record": "coverage gaps", "items": {"gaps": len(outputs.get("gaps") or [])}}
     if op == "propose_hypotheses":
         return {"record": "proposed hypotheses (labelled)", "items": {"dimensions": len(outputs.get("proposed") or [])}}
-    return {"record": "repaired dimensions", "items": {"repaired": len(outputs.get("repaired") or [])}}
+    if op == "repair_deliberation":
+        return {"record": "repaired dimensions", "items": {"repaired": len(outputs.get("repaired") or [])}}
+    if op == "build_level":
+        return {"record": f"{inputs.get('level')} level of the territory map",
+                "items": {"proposed": outputs.get("proposed", 0), "kept": outputs.get("kept", 0)}}
+    if op == "verify_links":
+        return {"record": "link checks", "items": {"verified": outputs.get("verified", 0)}}
+    if op == "score_candidates":
+        return {"record": "beam scores", "items": {"scored": outputs.get("scored", 0)}}
+    if op == "assess_path":
+        return {"record": "path assessment (hypothesis)", "items": {"dimensions": outputs.get("dimensions", 0)}}
+    if op == "identify_buyer_roles":
+        return {"record": "buyer roles", "items": {"roles kept": outputs.get("rolesKept", 0),
+                                                   "companies": outputs.get("companies", 0)}}
+    if op == "screen_economics":
+        return {"record": "economic estimates (hypotheses)", "items": {"estimated": outputs.get("estimated", 0)}}
+    if op == "plan_queries":
+        return {"record": "search queries", "items": {"queries": outputs.get("queries", 0)}}
+    if op == "extract_listing":
+        return {"record": "companies listed on the page", "items": {"companies": outputs.get("companies", 0)}}
+    if op == "read_homepage":
+        home = outputs.get("isCompanyHomepage")
+        items = {"homepage": "yes" if home else "no"} if home is not None else {}
+        return {"record": "homepage verdict", "items": items}
+    if op == "extract_evidence":
+        return {"record": "cited claims", "items": {k: outputs.get(k, 0) for k in ("claims", "fitClaims")}}
+    if op == "judge_company":
+        return {"record": "review judgement",
+                "items": {"falsifier met": outputs.get("falsifierMet"), "fit holds": outputs.get("fitHolds")}}
+    return {"record": op.replace("_", " "), "items": {}}
 
 
 def _entry_costs(entry: Doc, settings: Any, frontier_model: str) -> tuple[float, float]:
@@ -214,8 +293,16 @@ def summarize(entries: list[Doc]) -> Doc:
                 usd[a["tier"]] += a["usd"]
     actual = usd["open_weight"] + usd["frontier"]
     all_frontier = sum(e.get("allFrontierUsd") or 0.0 for e in entries)
+    by_stage: dict[str, Counter[str]] = defaultdict(Counter)
+    for e in entries:
+        kind = ("not routed" if not e["routed"] else "rules" if e["outcome"]["servedBy"] == "rules"
+                else "escalated" if e["outcome"]["escalated"]
+                else "kept" if e["outcome"]["servedBy"] == "open_weight" else "frontier")
+        by_stage[e.get("stage", "other")][kind] += 1
     return {
         "routedCalls": len(routed),
+        "byRules": sum(1 for e in routed if e["outcome"]["servedBy"] == "rules"),
+        "byStage": {k: dict(v) for k, v in by_stage.items()},
         "keptOnOpenWeight": sum(1 for e in routed if e["outcome"]["servedBy"] == "open_weight"),
         "escalated": sum(1 for e in routed if e["outcome"]["escalated"]),
         "frontierDirect": sum(1 for e in routed if e["router"]["route"] == "frontier"),

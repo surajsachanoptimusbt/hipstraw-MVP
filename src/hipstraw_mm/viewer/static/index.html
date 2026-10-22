@@ -263,7 +263,11 @@ pre.json { background: var(--code); border: 1px solid var(--border); border-radi
 .rt-said .ans { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .rt-said .quote { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-style: italic; }
 .rt-pills { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
-.rt-figs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding: 0 16px 16px; }
+.rt-figs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; padding: 0 16px 16px; }
+.rt-tier.rules { color: var(--tier-rules); background: color-mix(in srgb, var(--tier-rules) 16%, transparent); }
+.rt-stage { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.rt-filter { display: flex; flex-wrap: wrap; gap: 6px; }
+.rt-list { margin: 4px 0 0 16px; font-size: 12px; }
 .rt-figs .rt-cost { grid-column: 1 / -1; }
 .rt-fig, .rt-cost { border: 1px solid var(--border); border-radius: 8px; background: var(--panel); }
 .rt-figs > * { min-width: 0; }
@@ -286,7 +290,7 @@ pre.json { background: var(--code); border: 1px solid var(--border); border-radi
 .rt-tier.x { text-decoration: line-through; opacity: .7; }
 .rt-path { display: inline-flex; align-items: center; gap: 4px; }
 @media (max-width: 1180px) { .rt-top { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 640px) { .rt-figs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .rt-figs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .rt-vlog { display: grid; gap: 8px; }
 .rt-vcheck { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; min-width: 0; }
 .rt-vcheck.fail { border-color: color-mix(in srgb, var(--fail) 40%, var(--border)); background: color-mix(in srgb, var(--fail-bg) 40%, transparent); }
@@ -620,7 +624,7 @@ function RunView({ runId, tab, seq }) {
       <div className="title-row">
         <h1>${run.marketRunId}</h1>
         ${run.simulation
-          ? html`<${Pill} value="next">Routing simulation · ${run.simulation.stage} stage only<//>`
+          ? html`<${Pill} value="next">Routing simulation · through ${STAGE_LABEL[COMMAND_STATUS[run.simulation.stage]] || run.simulation.stage}<//>`
           : isLive
           ? html`<${Pill} value="live"><span className="dot info"></span>Running · ${STAGE_LABEL[run.status] || run.status}<//>`
           : html`<${Pill} value=${run.status} />`}
@@ -1420,6 +1424,15 @@ const RT_TRACKS = {
 };
 const RT_RULES = ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"];
 const RT_CHECKS = [["schema", "FORM"], ["echo_key", "ECHO"], ["grounding", "GROUND"], ["abstention", "ABSTAIN"]];
+const RT_LAMP = { schema: "FORM", echo_key: "ECHO", grounding: "GROUND", abstention: "ABSTAIN", coverage: "COVER",
+  rationale: "REASON", path_echo: "UNIT", evidence_ids: "EVID", one_company: "1 CO.", queries: "QUERIES",
+  metros: "METROS", link_ids: "LINKS", excerpts: "QUOTES", consistency: "CONSIST", homepage_excerpt: "QUOTE" };
+function rtLamps(e, rubric) {
+  const spec = rubric && rubric.tasks && rubric.tasks[e.task];
+  if (!spec) return e.task === "vichara.v1" ? RT_CHECKS : [];
+  const tiers = Object.fromEntries((rubric.checks || []).map(c => [c.id, c.tiers]));
+  return spec.checks.filter(id => (tiers[id] || []).includes("open_weight")).map(id => [id, RT_LAMP[id] || id.toUpperCase()]);
+}
 const RT_VERDICT = { near_miss: ["partial", "near miss"], partial: ["partial", "partial match"], not_found: ["fail", "not found"] };
 const rtVal = (e, tier) => (e.validation && e.validation[tier]) || null;
 const RT_MS = { enter: 350, move: 650, router: 500, node: 650, checks: 750, escalate: 450, save: 700 };
@@ -1429,6 +1442,7 @@ const rtShort = e => ({ repair_deliberation: "repair", judge_coverage: "coverage
   || String(e.subject || "").replace(/_/g, " "));
 const rtSecs = ms => ms != null && ms < 50 ? "replayed" : fmt.ms(ms);
 const rtTier = t => t === "open_weight" ? "open-weight" : t;
+const rtStage = st => STAGE_LABEL[COMMAND_STATUS[st]] || st || "";
 
 function rtBeats(e) {
   const b = [{ k: "enter" }, { k: "move", t: "in-router", c: "esc" }, { k: "router" }];
@@ -1458,6 +1472,7 @@ function rtBeats(e) {
 
 function rtOutcome(e) {
   if (!e.routed) return "nr";
+  if (e.outcome.servedBy === "rules") return "rules";
   if (e.outcome.escalated) return "esc";
   return e.outcome.servedBy === "open_weight" ? "kept" : "dir";
 }
@@ -1485,6 +1500,7 @@ function RoutingReplay({ sim, runId }) {
   const [pos, setPos] = useState({ idx: featured, upto: n, beat: Infinity });
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(2);
+  const [stageFilter, setStageFilter] = useState("all");
   const tokRef = useRef(null);
   const animRef = useRef(null);
   const idx = Math.min(pos.idx, n - 1);
@@ -1561,6 +1577,7 @@ function RoutingReplay({ sim, runId }) {
   const saved = allUsd - owUsd - frUsd;
 
   const docs = (sim.objective && sim.objective.documents) || [];
+  const stages = [...new Set(entries.map(x => x.stage))];
   const controls = html`<div className="rt-controls">
     <button className="chip" onClick=${() => jump(0)} title="First task" aria-label="First task">⏮</button>
     <button className="chip" onClick=${() => jump(idx - 1)} title="Previous task" aria-label="Previous task">◀</button>
@@ -1573,7 +1590,7 @@ function RoutingReplay({ sim, runId }) {
 
   return html`<div className="stack">
     <${Card} title="Task routing" right=${controls}
-      hint=${html`<div>Vichara stage · ${n} tasks read back from this run's trace · ${sim.routerVersion}. The route is chosen by rules in config/routing.yaml, never by a model.</div>
+      hint=${html`<div>${n} tasks in ${stages.length} stage(s) (${stages.map(rtStage).join(", ")}) read back from this run's trace · ${sim.routerVersion}. The route is chosen by rules in config/routing.yaml, never by a model.</div>
         <div className="rt-chips">
           <span className="rt-chip"><i style=${{ background: "var(--tier-ow)" }}></i>open-weight <b>${(sim.openWeight && sim.openWeight.model) || "none configured"}</b></span>
           <span className="rt-chip"><i style=${{ background: "var(--tier-fr)" }}></i>frontier <b>${(sim.frontier && sim.frontier.model) || "—"}</b></span>
@@ -1591,10 +1608,11 @@ function RoutingReplay({ sim, runId }) {
           </div>
         <div className="rt-figs">
           ${[["kept", "Kept on open-weight", "var(--tier-ow)"], ["esc", "Escalated to frontier", "var(--tier-esc)"],
-             ["dir", "Straight to frontier", "var(--tier-fr)"], ["nr", "Not routed yet", "var(--faint)"]].map(([k, label, color]) => html`
+             ["dir", "Straight to frontier", "var(--tier-fr)"], ["rules", "Answered by rules", "var(--tier-rules)"],
+             ["nr", "Not routed yet", "var(--faint)"]].map(([k, label, color]) => html`
             <section key=${k} className="rt-fig stat"><div className="label"><span className="dot" style=${{ background: color }}></span>${label}</div><div className="value">${count(k)}</div></section>`)}
           <section className="rt-cost">
-            <div className="stat"><div className="label">Cost of this stage</div></div>
+            <div className="stat"><div className="label">Cost of the routed tasks</div></div>
             <div className="rt-mrow"><span>With routing</span><span className="rt-meter"><span style=${{ width: pct(owUsd), background: "var(--tier-ow)" }}></span><span style=${{ width: pct(frUsd), background: "var(--tier-fr)" }}></span></span><span className="rt-mval">$${(owUsd + frUsd).toFixed(3)}</span></div>
             <div className="rt-mrow"><span>All on frontier</span><span className="rt-meter"><span style=${{ width: pct(allUsd), background: "var(--faint)" }}></span></span><span className="rt-mval">$${allUsd.toFixed(3)}</span></div>
             <div className="muted">${allUsd > 0 ? html`${saved >= 0 ? "Saved" : "Extra"} <b style=${{ color: "var(--fg)" }}>$${Math.abs(saved).toFixed(3)}</b> (${Math.abs(Math.round(100 * saved / allUsd))}%) so far · open-weight $${owUsd.toFixed(3)} · frontier $${frUsd.toFixed(3)}` : "Nothing routed yet."}</div>
@@ -1605,12 +1623,14 @@ function RoutingReplay({ sim, runId }) {
       </div>
     <//>
 
-    <${RtRubric} rubric=${sim.validationRubric} />
+    <${RtRubric} rubric=${sim.validationRubric} current=${e.task} />
 
-    <${Card} title="Tasks" hint="Click a task to see its route and validation log; the step numbers open each model call in Activity." flush>
+    <${Card} title="Tasks" hint="Click a task to see its route and validation log; the step numbers open each model call in Activity."
+      right=${stages.length > 1 ? html`<div className="rt-filter">${["all", ...stages].map(st => html`<button key=${st} className=${`chip ${stageFilter === st ? "on" : ""}`} onClick=${() => setStageFilter(st)}>${st === "all" ? "All stages" : rtStage(st)}</button>`)}</div>` : null} flush>
       <div style=${{ overflowX: "auto" }}><table>
-        <thead><tr><th className="num">#</th><th>Task</th><th>Prompt</th><th>Rule</th><th>Route taken</th><th>Validation</th><th>Saved</th><th className="num">Cost</th><th className="num">All frontier</th><th>Steps</th></tr></thead>
+        <thead><tr><th className="num">#</th><th>Stage</th><th>Task</th><th>Prompt</th><th>Rule</th><th>Route taken</th><th>Validation</th><th>Saved</th><th className="num">Cost</th><th className="num">All frontier</th><th>Steps</th></tr></thead>
         <tbody>${entries.map((x, i) => {
+          if (stageFilter !== "all" && x.stage !== stageFilter) return null;
           const ow = x.attempts.find(a => a.tier === "open_weight");
           const fr = x.attempts.find(a => a.tier === "frontier");
           const failed = rtFailSummary(x);
@@ -1618,6 +1638,7 @@ function RoutingReplay({ sim, runId }) {
           const items = Object.entries(x.saved.items || {}).map(([k, v]) => `${v} ${k}`).join(", ");
           return html`<tr key=${i} className=${`rt-row ${i === idx ? "cur" : ""} ${i >= pos.upto && i !== idx ? "pending" : ""}`} onClick=${() => jump(i)}>
             <td className="num">${i + 1}</td>
+            <td className="rt-stage">${rtStage(x.stage)}</td>
             <td><div style=${{ fontWeight: 550 }}>${rtShort(x)}</div><div className="mono muted">${x.task}</div></td>
             <td className="num muted">${x.inputChars ? fmt.num(x.inputChars) : "—"}</td>
             <td className="mono">${x.router ? x.router.ruleId : "—"}</td>
@@ -1625,9 +1646,11 @@ function RoutingReplay({ sim, runId }) {
               ${ow ? html`<span className=${`rt-tier ow ${kind === "esc" ? "x" : ""}`}>open-weight</span>` : null}
               ${ow && fr ? html`<span className="muted">→</span>` : null}
               ${fr ? html`<span className="rt-tier fr">frontier</span>` : null}
+              ${kind === "rules" ? html`<span className="rt-tier rules">rules</span>` : null}
               ${!x.routed ? html`<span className="muted">not routed</span>` : null}
             </span></td>
-            <td>${ow && ow.status !== "ok" && !failed.length ? html`<${Pill} value="fail">call failed<//>`
+            <td>${kind === "rules" ? html`<span className="muted">rule ${x.rule || ""}</span>`
+              : ow && ow.status !== "ok" && !failed.length ? html`<${Pill} value="fail">call failed<//>`
               : failed.length ? failed.map(f => html`<${Pill} key=${f} value="fail">${f}<//>`)
               : ow ? html`<${Pill} value="pass">pass<//>` : html`<span className="muted">—</span>`}</td>
             <td className="muted">${items}</td>
@@ -1689,12 +1712,12 @@ function RtDiagram({ e, shown, sim, tokRef, animRef }) {
         return html`<g key=${r}><circle className=${`rt-lamp ${ruleOn === r ? "on" : ""}`} cx=${x} cy=${y} r="8" /><text className="rt-lt" x=${x - 7} y=${y + 21}>${r}</text></g>`;
       })}
     </g>
-    ${node("rules", 410, 24, 150, 56, "RULES", "no task wired yet", true)}
+    ${node("rules", 410, 24, 150, 56, "RULES", "code answers, no model", !(e.router && e.router.route === "rules"))}
     ${node("ow", 410, 125, 150, 70, "OPEN-WEIGHT", (sim.openWeight && sim.openWeight.model) || "none")}
     <g className=${`rt-node ${active === "val" ? "on" : ""}`}>
       <rect x="610" y="125" width="180" height="70" rx="7" />
       <text className="rt-nl" x="624" y="149">VALIDATION</text>
-      ${RT_CHECKS.map(([k, label], i) => {
+      ${rtLamps(e, sim.validationRubric).map(([k, label], i) => {
         const x = 634 + i * 44, y = 166;
         return html`<g key=${k}><circle className=${`rt-lamp ${checks[k] || ""}`} cx=${x} cy=${y} r="7" /><text className="rt-lt" x=${x} y=${y + 20} textAnchor="middle">${label}</text></g>`;
       })}
@@ -1786,37 +1809,73 @@ function RtValidationLog({ e, tier, rubric }) {
       </div>`;
     } else if (c.id === "abstention") {
       body = html`<div className="rt-small">${d.unresolved} of ${d.itemsKept} kept item(s) say there is no information${(d.reasons || []).length ? html`: “${d.reasons[0]}”` : ""} · documents attached: ${d.documentsAttached ? "yes" : "no"}</div>`;
+    } else if (c.id === "coverage") {
+      body = html`<div className="rt-small">${d.returned} verdict(s) for ${d.expected} link(s) sent
+        ${[["missing", "Missing"], ["repeated", "Answered twice"], ["unknown", "Not asked about"]].map(([k, label]) => (d[k] || []).length
+          ? html`<div key=${k}><b>${label}:</b><ul className="rt-list">${d[k].slice(0, 8).map((x, i) => html`<li key=${i}>${x}</li>`)}</ul></div>` : null)}</div>`;
+    } else if (c.id === "rationale") {
+      body = html`<div className="rt-small">${d.short ? html`${d.short} verdict(s) with fewer than ${d.minWords} words of reason:<ul className="rt-list">${(d.links || []).map((x, i) => html`<li key=${i}>${x}</li>`)}</ul>` : `every verdict has at least ${d.minWords || 3} words of reason`}</div>`;
+    } else if (c.id === "path_echo") {
+      body = html`<div className="rt-small">Asked <code>${d.asked}</code>${(d.other || []).length ? html`; roles also name <code>${d.other.join(", ")}</code>` : ", every role matches"}</div>`;
+    } else if (c.id === "evidence_ids") {
+      body = html`<div className="rt-small">${d.roles} role(s) checked against ${d.sent} evidence document(s) sent${(d.unknown || []).length ? html`; not sent: <code>${d.unknown.join(", ")}</code>` : ""}</div>`;
+    } else if (c.id === "one_company") {
+      body = html`<div className="rt-small">${(d.mixed || []).length ? `Role(s) ${d.mixed.join(", ")} cite evidence from more than one company` : `each of the ${d.roles} role(s) cites one company`}</div>`;
+    } else if (c.id === "queries") {
+      body = html`<div className="rt-small">${d.returned} quer${d.returned === 1 ? "y" : "ies"} (limit ${d.max})${d.empty ? `, ${d.empty} blank` : ""}${(d.duplicates || []).length ? html`; repeated: <code>${d.duplicates.join(" | ")}</code>` : ""}</div>`;
+    } else if (c.id === "metros") {
+      body = html`<div className="rt-small">${(d.missing || []).length ? html`Not named by any query:<ul className="rt-list">${d.missing.map((m, i) => html`<li key=${i}>${m}</li>`)}</ul>` : `all ${d.metros} metros named`}</div>`;
+    } else if (c.id === "link_ids") {
+      body = html`<div className="rt-small">${d.companies} compan${d.companies === 1 ? "y" : "ies"} listed${(d.unknown || []).length ? html`; linkIds not on the page: <code>${d.unknown.join(", ")}</code>` : ", every linkId is on the page"}</div>`;
+    } else if (c.id === "excerpts") {
+      body = html`<div className="rt-small">${d.quoted} of ${d.companies} quoted from the page${(d.notFound || []).length ? html`; not quoted: ${d.notFound.join(", ")}` : ""}</div>`;
+    } else if (c.id === "consistency") {
+      body = html`<div className="rt-small">Verdict: ${d.isCompanyHomepage ? "a company homepage" : "not a homepage"} · name ${d.name ? html`<code>${d.name}</code>` : "none"} · excerpt ${d.hasExcerpt ? "given" : "none"}</div>`;
+    } else if (c.id === "homepage_excerpt") {
+      body = html`<div className="rt-small">${c.reason}${d.excerpt ? html`<div className="quote">“${d.excerpt}”</div>` : null}</div>`;
     } else if (!c.passed) body = html`<div className="rt-small">${c.reason}</div>`;
     return html`<div key=${c.id} className=${`rt-vcheck ${c.passed ? "pass" : "fail"}`}>
       <div className="rt-vhead"><span className=${c.passed ? "ico-ok" : "ico-fail"}>${c.passed ? "✓" : "✕"}</span>
         <b>${r.name || c.id}</b><span className="mono muted">${c.id}</span>
-        ${c.passed ? null : html`<${Pill} value="fail">${tier === "frontier" ? "failed · recorded only" : "failed · escalate"}<//>`}</div>
+        ${c.passed ? null : c.blocking === false ? html`<${Pill} value="partial">warning · kept<//>`
+          : html`<${Pill} value="fail">${tier === "frontier" ? "failed · recorded only" : "failed · escalate"}<//>`}</div>
       ${r.question ? html`<div className="rt-small muted">${r.question}${!c.passed && r.method ? html` <span className="rt-method">How: ${r.method}.</span>` : null}</div>` : null}
       ${body}
     </div>`;
   })}</div>`;
 }
 
-function RtRubric({ rubric }) {
-  if (!rubric) return null;
-  return html`<${Card} title="Validation rubric" hint=${`${rubric.version} · checks on every ${rubric.task} answer · rules only (string, schema and status matching), never a model call · config/validation.yaml`} flush>
+function RtRubric({ rubric, current }) {
+  const tasks = Object.keys((rubric && rubric.tasks) || {});
+  const [chosen, setChosen] = useState(null);
+  if (!rubric || !tasks.length) return null;
+  const task = chosen || (tasks.includes(current) ? current : tasks[0]);
+  const byId = Object.fromEntries(rubric.checks.map(c => [c.id, c]));
+  const rules = Object.fromEntries(rubric.rules.map(r => [r.id, r]));
+  const spec = rubric.tasks[task];
+  return html`<${Card} title="Validation rubric" hint=${`${rubric.version} · rules only (string, schema, set and status matching), never a model call · config/validation.yaml`}
+    right=${html`<div className="rt-filter">${tasks.map(t => html`<button key=${t} className=${`chip ${t === task ? "on" : ""}`} onClick=${() => setChosen(t)}>${t}</button>`)}</div>`} flush>
     <div className="card-body"><div className="quote" style=${{ fontSize: 13, marginTop: 0 }}>${rubric.analogy}</div></div>
+    ${spec.rules.length ? html`<div className="card-body tight" style=${{ paddingTop: 0 }}>${spec.rules.map(id => html`<div key=${id}>
+      <span className="rt-tier rules">rule</span> <b>${(rules[id] || {}).name || id}</b> <span className="mono muted">${id}</span>
+      <div className="rt-small"><b>When:</b> ${(rules[id] || {}).when}</div>
+      <div className="rt-small"><b>Then:</b> ${(rules[id] || {}).result}</div></div>`)}</div>` : null}
     <div style=${{ overflowX: "auto" }}><table className="rt-rubric">
       <thead><tr><th>Check</th><th>Question it asks</th><th>How it is tested</th><th>Passes when</th><th>If it fails</th><th>Applies to</th></tr></thead>
-      <tbody>${rubric.checks.map(c => html`<tr key=${c.id}>
+      <tbody>${spec.checks.map(id => byId[id]).filter(Boolean).map(c => html`<tr key=${c.id}>
         <td style=${{ whiteSpace: "nowrap" }}><b>${c.name}</b><div className="mono muted">${c.id}</div></td>
         <td className="wrap">${c.question}</td>
         <td className="wrap muted">${c.method}</td>
         <td className="wrap">${c.passWhen}</td>
         <td className="wrap">${c.onFail}</td>
-        <td style=${{ whiteSpace: "nowrap" }}>${c.tiers.map(rtTier).join(", ")}</td>
+        <td style=${{ whiteSpace: "nowrap" }}>${c.tiers.map(rtTier).join(", ")}${c.blocking === false ? html`<div><${Pill} value="partial">warning only<//></div>` : null}</td>
       </tr>`)}</tbody>
     </table></div>
     <div className="card-body tight">
       <div><b>After a failure.</b> ${rubric.escalation}</div>
-      <div><b>Grounding verdicts</b> (shown for every quote that is not found):
+      ${spec.checks.includes("grounding") ? html`<div><b>Grounding verdicts</b> (shown for every quote that is not found):
         ${Object.entries(rubric.groundingVerdicts).map(([k, v]) => html`<div key=${k} className="rt-small"><${Pill} value=${(RT_VERDICT[k] || ["", k])[0]}>${(RT_VERDICT[k] || ["", k])[1]}<//> ${v}</div>`)}
-      </div>
+      </div>` : null}
     </div>
   <//>`;
 }
@@ -1832,11 +1891,20 @@ function RtNow({ e, idx, shown, runId, rubric }) {
       out.push(sec("router", "Router", "esc", e.router
         ? html`<div><b className="mono">${e.router.ruleId}</b> ${e.router.why} → ${rtTier(e.router.route)}</div>`
         : html`<div>Not wired to the router yet: stays on frontier, as before.</div>`));
+      if (e.router && e.router.route === "rules") {
+        const id = e.rule;
+        const r = ((rubric && rubric.rules) || []).find(x => x.id === id) || {};
+        out.push(sec("rules", "Rules", "", html`<div>
+          <div><span className="rt-tier rules">rule</span> <b>${r.name || id}</b> <span className="mono muted">${id}</span></div>
+          ${r.when ? html`<div className="rt-small"><b>When:</b> ${r.when}</div>` : null}
+          ${r.result ? html`<div className="rt-small"><b>Then:</b> ${r.result}</div>` : null}
+          <div className="rt-small muted">No model was called.</div></div>`));
+      }
     } else if (b.k === "node") {
       out.push(sec(`node-${b.n}`, b.n === "ow" ? "Open-weight" : "Frontier", b.n === "ow" ? "ow" : "fr", html`<${RtAttempt} a=${b.a} runId=${runId} />`));
       if (b.n === "fr" && e.outcome && e.outcome.escalated && (rtVal(e, "frontier") || e.checks.some(c => rtCheck(c)[0] === "frontier"))) {
         out.push(sec("frcheck", "Frontier validation (recorded only)", "fr", html`<div>
-          <div className="muted rt-small" style=${{ marginTop: 0, marginBottom: 6 }}>Frontier is the last tier, so its answer is kept; failed quotes go to the repair step.</div>
+          <div className="muted rt-small" style=${{ marginTop: 0, marginBottom: 6 }}>Frontier is the last tier, so its answer is kept; the stage's own handling (repair, a second ask, dropping a role) follows.</div>
           <${RtValidationLog} e=${e} tier="frontier" rubric=${rubric} /></div>`));
       }
     } else if (b.k === "checks") {
@@ -1848,13 +1916,13 @@ function RtNow({ e, idx, shown, runId, rubric }) {
         : `the open-weight call failed: ${e.outcome.escalationReason || "no response"}.`;
       out.push(sec("esc", "Escalate", "esc", html`<div>
         <div><b>Why:</b> ${why}</div>
-        <div className="rt-small"><b>What frontier received:</b> the same instructions, question and objective text${e.inputChars ? ` (${fmt.num(e.inputChars)} characters)` : ""}, sent once.</div>
+        <div className="rt-small"><b>What frontier received:</b> the same prompt${e.inputChars ? ` (${fmt.num(e.inputChars)} characters)` : ""}, sent once.</div>
         <div className="rt-small muted">${ow && ow.seq != null ? html`open-weight <a href=${href(runId, "trace", ow.seq)}>step #${ow.seq}</a>` : null}${fr && fr.seq != null ? html` → frontier <a href=${href(runId, "trace", fr.seq)}>step #${fr.seq}</a>` : null}</div>
       </div>`));
     } else if (b.k === "save") {
       const sv = e.saved, lin = sv.lineage;
       const items = Object.entries(sv.items || {}).map(([k, v]) => `${v} ${k}`).join(", ") || "nothing";
-      out.push(sec("save", "Saved", (e.outcome && e.outcome.servedBy === "open_weight") ? "ow" : "fr", html`<div>
+      out.push(sec("save", "Saved", (e.outcome && e.outcome.servedBy === "open_weight") ? "ow" : (e.outcome && e.outcome.servedBy === "rules") ? "" : "fr", html`<div>
         <div><b>${sv.record}</b>: ${items}</div>
         ${lin ? html`<div className="pb-links">${[lin.routerVersion, lin.ruleId, `served by ${rtTier(lin.servedBy)}`, lin.model].map(t => html`<span key=${t} className="pb-link">${t}</span>`)}</div>` : null}
         <div className="muted" style=${{ marginTop: 4 }}>cost ${fmt.usd(e.costUsd)} · all on frontier ${fmt.usd(e.allFrontierUsd)}</div>
@@ -1863,7 +1931,7 @@ function RtNow({ e, idx, shown, runId, rubric }) {
   }
   return html`<section className="rt-now" style=${{ borderLeft: "1px solid var(--border)", minHeight: "100%" }} aria-live="off">
     <div className="dhead"><div>
-      <div className="eyebrow">Now routing · #${idx + 1}</div>
+      <div className="eyebrow">Now routing · #${idx + 1} · ${rtStage(e.stage)}</div>
       <h2 style=${{ marginTop: 2 }}>${rtShort(e)} <span className="pb-link">${e.task}</span></h2>
       ${e.question ? html`<div className="rt-q">${e.question}</div>` : null}
       ${e.inputChars ? html`<div className="muted mono" style=${{ marginTop: 4 }}>prompt ${fmt.num(e.inputChars)} characters</div>` : null}

@@ -1,28 +1,37 @@
-# Validation rubric (validation.v1) for answers routed to the open-weight tier. Every check is code:
-# string, schema and status matching, never a model call. The viewer shows this rubric next to the
-# validation log of each task, and a test keeps it in step with the checks the code runs.
-version: validation.v1
-source: Hipstraw proposal, 2026-10-16 review
-task: vichara.v1
+# Validation rubric (validation.v3) for the tasks the router may send to the open-weight tier. Every
+# check and rule is code (string, schema, set and status matching), never a model call. The viewer
+# shows this rubric next to each task's validation log, and tests keep it in step with the code.
+version: validation.v3
+source: Hipstraw proposal, 2026-10-16 review; links and buyer roles added 2026-10-20; child runs 2026-10-21
 analogy: >-
   Like a manager checking a junior's answer before it goes into the file: is it in the form I asked
-  for, did you answer my question, show me where the document says that, and did you actually read
-  the document before saying there is nothing in it?
+  for, did you answer my question, show me where the evidence says that, and did you actually read it
+  before saying there is nothing in it? And when there is nothing to read, the manager does not ask.
 escalation: >-
-  If any check fails, the same prompt (same instructions, same question, same objective text) goes
-  once to the frontier model. Its answer is checked the same way and the results are logged, but it
-  is kept either way, because frontier is the last tier. Quotes that still fail go to the existing
-  repair step, and an item that cannot be repaired is saved as unresolved.
+  If any blocking check fails, the same prompt (same instructions, same input) goes once to the
+  frontier model. Its answer is checked the same way and the results are logged, but it is kept
+  either way, because frontier is the last tier. Each stage then applies its own existing handling
+  (vichara repairs failed quotes, links asks frontier once more if a link is still missing, buyer
+  roles drops a role whose evidence does not hold up).
+
+rules:
+  - id: no_passing_evidence
+    name: Nothing to read
+    when: No company on the market unit has evidence that passed its checks.
+    result: >-
+      Every company is saved with "unknown: no stored evidence names a buying function", which is what
+      the model call produces in that case (a role must cite passing evidence), without calling a model.
+
 checks:
   - id: schema
     name: Right form
     question: Is the answer in the form we asked for?
-    method: Schema match (strict Pydantic model DimensionDeliberation)
+    method: Schema match (the strict Pydantic model for the task)
     passWhen: >-
-      It has the dimension key and at least one item; an answered item has an answer and at least
-      one quote; an unresolved item has a reason and no quote; no unknown fields.
+      Every required field is there with the right type, no unknown fields, and the model's own rules
+      hold (for vichara: an answered item has an answer and a quote, an unresolved item has a reason).
     onFail: Escalate to frontier. The open-weight model gets one attempt.
-    catches: Broken output, an answer with no evidence, a quote attached to "no information".
+    catches: Broken output, missing fields, an answer with no evidence.
     tiers: [open_weight, frontier]
   - id: echo_key
     name: Right question
@@ -41,7 +50,7 @@ checks:
     passWhen: Every quote is found.
     onFail: >-
       Escalate to frontier. The log shows each quote, the closest passage in the objective, how many
-      words match, the first word that differs, and any unusual characters in the document.
+      words match, the first difference, and any unusual characters in the document.
     catches: Paraphrased or invented evidence.
     tiers: [open_weight, frontier]
   - id: abstention
@@ -54,6 +63,113 @@ checks:
       accepted.
     catches: A cheap model giving up on a long document.
     tiers: [open_weight]
+  - id: coverage
+    name: Every link answered once
+    question: Did the model give exactly one verdict for every link we asked about, and none we did not?
+    method: Set match of the (from node, to node) pairs in the answer against the links sent
+    passWhen: Every link sent appears once; no link is repeated or unknown.
+    onFail: >-
+      Escalate to frontier. The log names the missing, repeated and unknown links. If frontier's answer
+      is also incomplete, frontier is asked once more and a second failure stops the stage, as before.
+    catches: Skipped, repeated or invented links.
+    tiers: [open_weight, frontier]
+  - id: rationale
+    name: Reasons given
+    question: Does every link verdict come with a reason?
+    method: Word count of each rationale (at least 3 words)
+    passWhen: Every verdict has a rationale of 3 words or more.
+    onFail: Escalate to frontier.
+    catches: Empty or one-word verdicts that a reviewer cannot check.
+    tiers: [open_weight, frontier]
+  - id: path_echo
+    name: Right market unit
+    question: Are all roles for the market unit we asked about?
+    method: Exact string match of each role's pathId against the one asked
+    passWhen: Every role carries the pathId asked.
+    onFail: Escalate to frontier.
+    catches: Roles attributed to a different market unit.
+    tiers: [open_weight, frontier]
+  - id: evidence_ids
+    name: Real evidence
+    question: Does every role cite only evidence we sent?
+    method: Set match of each cited evidenceId against the passing evidence sent in the prompt
+    passWhen: Every cited evidenceId was sent.
+    onFail: Escalate to frontier. The log names the unknown evidenceIds.
+    catches: Invented or mistyped evidence references.
+    tiers: [open_weight, frontier]
+  - id: one_company
+    name: One company per role
+    question: Does each role's evidence come from a single company?
+    method: Lookup of the company that owns each cited evidenceId
+    passWhen: Every role's evidence belongs to one company.
+    onFail: Escalate to frontier. A role that still mixes companies is dropped, as before.
+    catches: A role stitched together from two companies' pages.
+    tiers: [open_weight, frontier]
+  - id: queries
+    name: Usable queries
+    question: Did the model return between 1 and the allowed number of distinct, non-empty search queries?
+    method: Count, blank and duplicate check (case and spacing ignored)
+    passWhen: 1 to maxQueries queries, none blank, none repeated.
+    onFail: Escalate to frontier.
+    catches: Empty plans, padding with repeats, ignoring the query budget.
+    tiers: [open_weight, frontier]
+  - id: metros
+    name: Every metro searched
+    question: Does at least one query name each metro area in force?
+    method: String match of each metro's city names (from its CSA name) in the queries
+    passWhen: Every metro is named by at least one query.
+    onFail: Logged as a warning only; the queries are kept. Some metros may simply have fewer local lists.
+    catches: A plan that searches only one city.
+    tiers: [open_weight, frontier]
+    blocking: false
+  - id: link_ids
+    name: Real links
+    question: Does every company's linkId refer to a link that is on the page?
+    method: Set match of each linkId against the links extracted from the page
+    passWhen: Every linkId given is one of the page's links (an empty linkId is allowed).
+    onFail: Escalate to frontier. The log names the unknown linkIds.
+    catches: Invented links, so a company cannot be followed to its website.
+    tiers: [open_weight, frontier]
+  - id: excerpts
+    name: Names quoted from the page
+    question: Is each listed company backed by an excerpt copied from the page that names it?
+    method: The citation check used for every excerpt (exact match after normalising), with the company name
+    passWhen: At least half of the listed companies have such an excerpt (companies without one are dropped later, as before).
+    onFail: Escalate to frontier. The log names the companies whose excerpt is not on the page.
+    catches: Companies made up or remembered rather than read from the page.
+    tiers: [open_weight, frontier]
+  - id: consistency
+    name: Consistent verdict
+    question: Does the homepage verdict agree with its fields?
+    method: Field rule. A homepage has a name and an excerpt; "not a homepage" has neither
+    passWhen: The fields match the verdict.
+    onFail: Escalate to frontier.
+    catches: Half-filled answers that the discovery step cannot use.
+    tiers: [open_weight, frontier]
+  - id: homepage_excerpt
+    name: Name quoted from the homepage
+    question: When the page is a company homepage, is the excerpt on the page and does it contain the name?
+    method: The citation check used for every excerpt, with the company name
+    passWhen: Not a homepage, or the excerpt is on the page and names the company.
+    onFail: Escalate to frontier (the company would be dropped otherwise).
+    catches: A company name that the page does not support.
+    tiers: [open_weight, frontier]
+
+tasks:
+  vichara.v1:
+    checks: [schema, echo_key, grounding, abstention]
+  link_verification.v1:
+    checks: [schema, coverage, rationale]
+  buyer_roles.v2:
+    rules: [no_passing_evidence]
+    checks: [schema, path_echo, evidence_ids, one_company]
+  query_plan.v2:
+    checks: [schema, queries, metros]
+  listing_extraction.v2:
+    checks: [schema, link_ids, excerpts]
+  homepage_identity.v2:
+    checks: [schema, consistency, homepage_excerpt]
+
 groundingVerdicts:
   near_miss: >-
     Every word matches in order; only punctuation or special characters differ. Usually the PDF's

@@ -30,6 +30,7 @@ from hipstraw_mm.evidence.existence import find_existence, name_matches_domain, 
 from hipstraw_mm.evidence.location import evaluate_hq
 from hipstraw_mm.evidence.size import evaluate_parent, evaluate_size
 from hipstraw_mm.llm_schemas import CompanyEvidence
+from hipstraw_mm.market.child_routing import routed_parse
 from hipstraw_mm.models import CompanyRecord, Evidence, SourceType, is_denylisted, same_company_or_subdomain
 from hipstraw_mm.steps.common import (
     UNKNOWN_FIELD_FOR_CLAIM,
@@ -106,7 +107,7 @@ class _Verification:
         self.fetcher = ctx.new_fetcher()
         self.ids = EvidenceIds(ctx.store, self.run_id)
         self.counts: Counter[str] = Counter()
-        self.model_calls_before = ctx.llm.calls
+        self.model_calls_before = ctx.model_calls()
         self.searches_before = ctx.search.calls
         self.evidence: dict[str, Doc] = {}  # evidence written by this step, for confidence
         in_force = {m["id"] for m in run["constraintsInForce"]["metros"]}
@@ -120,7 +121,7 @@ class _Verification:
         return self.budgets["verifyFetchesPerRun"] - self.fetcher.fetches
 
     def _model_calls_left(self) -> int:
-        return self.budgets["verifyModelCallsPerRun"] - (self.ctx.llm.calls - self.model_calls_before)
+        return self.budgets["verifyModelCallsPerRun"] - (self.ctx.model_calls() - self.model_calls_before)
 
     # -- orchestration -------------------------------------------------------------
 
@@ -141,7 +142,7 @@ class _Verification:
 
         step_counts = {
             "fetches": self.fetcher.fetches,
-            "modelCalls": ctx.llm.calls - self.model_calls_before,
+            "modelCalls": ctx.model_calls() - self.model_calls_before,
             "signalSearches": ctx.search.calls - self.searches_before,
             "thirdPartyPages": self.counts["thirdPartyPages"],
             "companiesVerified": self.counts["companiesVerified"],
@@ -392,14 +393,12 @@ class _Verification:
             ],
         }
         try:
-            result = self.ctx.llm.parse(
-                CompanyEvidence,
-                prompts.messages(prompts.COMPANY_EVIDENCE, payload),
-                domain,
-                prompts.COMPANY_EVIDENCE,
-                run_id=self.run_id,
-                step=STEP,
-                company_record_id=record_id,
+            result = routed_parse(
+                self.ctx, CompanyEvidence, prompts.COMPANY_EVIDENCE, payload, match_key=domain,
+                operation="extract_evidence", run_id=self.run_id, step_label=STEP,
+                inputs={"company": name, "domain": domain, "pages": len(by_source)},
+                outputs=lambda r: {"claims": len(r.claims), "fitClaims": len(r.fitClaims),
+                                   "interestSignals": len(r.interestSignals)},
             )
         except LLMSchemaError as exc:
             self.ctx.log.event(

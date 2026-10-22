@@ -17,14 +17,17 @@ def new_market_run_id(ctx: Context) -> str:
     return f"mrun_{ctx.now():%Y%m%dT%H%M%S}"
 
 
-def market_start(ctx: Context, program_id: str, objective_pdfs: list[Path] | None = None) -> str:
+def market_start(
+    ctx: Context, program_id: str, objective_pdfs: list[Path] | None = None, run_id: str | None = None
+) -> str:
+    """Open a market run. `run_id` is for replaying a recorded run, whose path IDs embed its run ID."""
     program = ctx.store.get_program(program_id)
     if program is None:
         raise PreconditionError(f"program {program_id!r} not loaded (run intake first)")
 
     settings = load_pipeline_settings()
     layers = load_layers()
-    run_id = new_market_run_id(ctx)
+    run_id = run_id or new_market_run_id(ctx)
 
     objective = {
         "text": program.get("objective", ""),

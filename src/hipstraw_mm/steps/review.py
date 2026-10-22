@@ -17,6 +17,7 @@ from hipstraw_mm.adapters.llm import LLMSchemaError
 from hipstraw_mm.context import CommandResult, Context
 from hipstraw_mm.errors import PreconditionError
 from hipstraw_mm.llm_schemas import ReviewJudgement
+from hipstraw_mm.market.child_routing import routed_parse
 from hipstraw_mm.models import Disposition, PositionBaseline, ReviewDecision
 from hipstraw_mm.steps.common import require_run, run_step, website_problem
 from hipstraw_mm.store.base import Doc
@@ -203,14 +204,11 @@ def _review(ctx: Context, run: Doc) -> CommandResult:
                 ],
             }
             try:
-                judgement = ctx.llm.parse(
-                    ReviewJudgement,
-                    prompts.messages(prompts.REVIEW_JUDGEMENT, payload),
-                    record_id,
-                    prompts.REVIEW_JUDGEMENT,
-                    run_id=run_id,
-                    step=STEP,
-                    company_record_id=record_id,
+                judgement = routed_parse(
+                    ctx, ReviewJudgement, prompts.REVIEW_JUDGEMENT, payload, match_key=record_id,
+                    operation="judge_company", run_id=run_id, step_label=STEP,
+                    inputs={"company": record["name"], "evidence": len(passing)},
+                    outputs=lambda r: {"falsifierMet": r.falsifierMet, "fitHolds": r.fitHolds},
                 )
             except LLMSchemaError:
                 disposition, reason = "needs_verification", "Needs verification: the judgement call failed twice."

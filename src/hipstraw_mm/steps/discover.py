@@ -27,6 +27,7 @@ from hipstraw_mm.config import Metro
 from hipstraw_mm.context import CommandResult, Context
 from hipstraw_mm.evidence.excerpt_check import check_excerpt
 from hipstraw_mm.llm_schemas import HomepageIdentity, ListedCompany, ListingExtraction, QueryPlan
+from hipstraw_mm.market.child_routing import homepage_checks, listing_checks, query_plan_checks, routed_parse
 from hipstraw_mm.models import (
     CompanyRecord,
     Evidence,
@@ -112,7 +113,7 @@ class _Discovery:
 
     def execute(self) -> CommandResult:
         ctx, budgets = self.ctx, self.budgets
-        searches_before, model_calls_before = ctx.search.calls, ctx.llm.calls
+        searches_before, model_calls_before = ctx.search.calls, ctx.model_calls()
 
         queries = self._plan_queries()
         results_per_query: list[list[str]] = []
@@ -148,7 +149,7 @@ class _Discovery:
         step_counts = {
             "searches": ctx.search.calls - searches_before,
             "fetches": self.fetcher.fetches,
-            "modelCalls": ctx.llm.calls - model_calls_before,
+            "modelCalls": ctx.model_calls() - model_calls_before,
             "candidatesFound": self.counts["candidatesFound"],
             "kept": len(kept),
             **{k: v for k, v in sorted(self.counts.items()) if k != "candidatesFound"},
@@ -195,13 +196,13 @@ class _Discovery:
             },
             "maxQueries": budgets["discoveryQueries"],
         }
-        plan = self.ctx.llm.parse(
-            QueryPlan,
-            prompts.messages(prompts.QUERY_PLAN, payload),
-            run["candidateId"],
-            prompts.QUERY_PLAN,
-            run_id=self.run_id,
-            step=STEP,
+        plan = routed_parse(
+            self.ctx, QueryPlan, prompts.QUERY_PLAN, payload,
+            match_key=run["candidateId"], operation="plan_queries", run_id=self.run_id, step_label=STEP,
+            inputs={"metros": len(self.metro_names), "maxQueries": budgets["discoveryQueries"]},
+            validate=lambda r, tier: query_plan_checks(
+                r, tier, max_queries=budgets["discoveryQueries"], metros=self.metro_names),
+            outputs=lambda r: {"queries": len(r.queries)},
         )
         queries: list[str] = []
         for planned in plan.queries:
@@ -226,7 +227,11 @@ class _Discovery:
             return
         text = page.text or ""
         payload = {"url": url, "text": text[: self.max_chars], "position": self.position, "metros": self.metro_names}
-        identity = self._parse(HomepageIdentity, prompts.HOMEPAGE_IDENTITY, payload, url)
+        identity = self._parse(
+            HomepageIdentity, prompts.HOMEPAGE_IDENTITY, payload, url, operation="read_homepage",
+            validate=lambda r, tier: homepage_checks(r, tier, page_text=text),
+            outputs=lambda r: {"isCompanyHomepage": r.isCompanyHomepage, "name": r.name},
+        )
         if identity is None or not identity.isCompanyHomepage:
             return
         self.counts["candidatesFound"] += 1
@@ -395,12 +400,21 @@ class _Discovery:
             "position": self.position,
             "metros": self.metro_names,
         }
-        return self._parse(ListingExtraction, prompts.LISTING_EXTRACTION, payload, page.url)
+        link_ids = {link["linkId"] for link in page.links or []}
+        return self._parse(
+            ListingExtraction, prompts.LISTING_EXTRACTION, payload, page.url, operation="extract_listing",
+            validate=lambda r, tier: listing_checks(r, tier, page_text=page.text or "", link_ids=link_ids),
+            outputs=lambda r: {"companies": len(r.companies)},
+        )
 
-    def _parse(self, schema: type[M], version: str, payload: dict[str, Any], match_key: str) -> M | None:
+    def _parse(
+        self, schema: type[M], version: str, payload: dict[str, Any], match_key: str, *, operation: str,
+        validate: Any = None, outputs: Any = None,
+    ) -> M | None:
         try:
-            return self.ctx.llm.parse(
-                schema, prompts.messages(version, payload), match_key, version, run_id=self.run_id, step=STEP
+            return routed_parse(
+                self.ctx, schema, version, payload, match_key=match_key, operation=operation, run_id=self.run_id,
+                step_label=STEP, inputs={"url": match_key}, validate=validate, outputs=outputs,
             )
         except LLMSchemaError as exc:
             # A second schema failure leaves that page unread (contracts/llm-outputs.md).

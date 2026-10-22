@@ -67,12 +67,29 @@ frontier is the last tier. Each attempt is a normal `call_model` worker step wit
 the route, rule and escalation are in the business step's checks and `outputs.routing`, and each
 deliberation stores `deliberatedBy`.
 
-Only the vichara stage is wired so far (`vichara.v1` simple; coverage and propose complex). The
+Every main-run model call goes through the router. Simple, open-weight first: `vichara.v1`,
+`link_verification.v1` (checks: every link answered once, every verdict with a reason) and
+`buyer_roles.v2` (checks: right market unit, only evidence that was sent, one company per role).
+Complex, frontier: vichara coverage and propose, `graph_level.v2`, `beam_scoring.v1`,
+`path_assessment.v1`, `economic_assessment.v1`.
+
+The company-research child runs are routed too (`hipstraw_mm.market.child_routing`). Inside a market
+run each child model call is its own traced step (plan_queries, extract_listing, read_homepage,
+extract_evidence, judge_company) with its worker steps beneath it. Simple, open-weight first:
+`query_plan.v2` (usable queries; every metro named is a warning only), `listing_extraction.v2` (real
+link IDs; at least half the companies quoted from the page), `homepage_identity.v2` (consistent verdict;
+name quoted from the page). Complex, frontier: `company_evidence.v2`, `review_judgement.v1`. Feature 002
+run on its own, outside a market run, calls the model directly as before. Child-run budgets count calls
+on both tiers. Only vichara repair (a rules candidate) is still outside the router.
+
+**Rules route.** A rule listed for a task in `routing.yaml` may answer a call before any model (R2), in
+any mode. The first is `no_passing_evidence` on buyer roles: when no company on the market unit has
+passing evidence, no role could be kept, so every company is saved as unknown without a model call. The
 open-weight route is off in `routing.yaml` and needs `OPEN_WEIGHT_BASE_URL` and `OPEN_WEIGHT_MODEL`
 (any OpenAI-compatible endpoint), so runs go to frontier exactly as before until both are turned on.
 
-`hipstraw-mm market --memory simulate --program <id> [--objective-pdf PATH] --serve` runs the vichara
-stage with the open-weight route on for that run only and opens the viewer's **Routing** tab: the routing
+`hipstraw-mm market --memory simulate --program <id> [--objective-pdf PATH] [--through STAGE] --serve`
+runs the pipeline up to STAGE (default vichara) with the open-weight route on for that run only and opens the viewer's **Routing** tab: the routing
 diagram replayed task by task from the trace (router rule, open-weight answer, validator lamps,
 escalation, frontier answer, saved lineage), kept/escalated counts, cost against an all-frontier
 estimate, and a task table linking each model call to Activity. The run is marked as a simulation.

@@ -220,6 +220,9 @@ def build_parser() -> argparse.ArgumentParser:
         "--objective-pdf", action="append", default=[], metavar="PATH",
         help="objective document (PDF) to add to the run's objective; repeat for several",
     )
+    p.add_argument("--through", default="vichara", metavar="STAGE",
+                   help="run the pipeline up to this stage (default: vichara; e.g. links, buyers, report)")
+    p.add_argument("--run-id", default=None, help="reuse a recorded run's ID when replaying past the ranking stage")
     p.add_argument("--out", default=None, help="simulation JSON path (default: reports/<run>_routing.json)")
     p.add_argument("--serve", action="store_true", help="serve the viewer afterwards to inspect the trace")
     p.add_argument("--port", type=int, default=8765, help="viewer port for --serve")
@@ -539,8 +542,8 @@ def _start_viewer(ctx: Context, port: int) -> Any:
 
 
 def _market_simulate(ctx: Context, args: argparse.Namespace) -> CommandResult:
-    """The vichara stage on a program with the open-weight route on for this run only, then the trace read
-    back as a walk-through: rubric, each task from router to saved result, and a summary."""
+    """The pipeline up to --through (default vichara) with the open-weight route on for this run only, then
+    the trace read back as a walk-through: rubric, each task from router to saved result, and a summary."""
     import time
 
     from hipstraw_mm.market.objective import resolve_pdf_paths
@@ -550,7 +553,7 @@ def _market_simulate(ctx: Context, args: argparse.Namespace) -> CommandResult:
     config_dir = Path(args.config_dir)
     if ctx.open_llm is None:
         ctx.open_llm = open_weight_client(ctx.llm.replay, ctx.log, load_routing(config_dir).openWeight.timeoutSeconds)
-    sim = simulate(ctx, args.program, resolve_pdf_paths(args.objective_pdf), config_dir)
+    sim = simulate(ctx, args.program, resolve_pdf_paths(args.objective_pdf), config_dir, args.through, args.run_id)
     out_path = Path(args.out) if args.out else ctx.reports_dir / f"{sim['runId']}_routing.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(sim, indent=2, ensure_ascii=False), encoding="utf-8")

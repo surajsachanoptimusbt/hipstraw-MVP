@@ -2,7 +2,8 @@
 # the call (is an open-weight endpoint configured, how large is the input, how many open-weight
 # calls in a row have failed in this stage) and picks rules, open_weight or frontier.
 # class: rules (code answers it), simple (open-weight first, escalate to frontier when a validator
-# fails), complex (frontier). wired: the call site goes through the router today.
+# fails), complex (frontier). wired: the call site goes through the router today. rules: rules that
+# may answer a call before any model (rubric in config/validation.yaml); listing one switches it on.
 version: router.v1
 source: Hipstraw proposal, 2026-10-15 meeting direction
 
@@ -10,7 +11,7 @@ openWeight:
   # Policy switch. The endpoint itself comes from OPEN_WEIGHT_BASE_URL, OPEN_WEIGHT_MODEL and
   # OPEN_WEIGHT_API_KEY; with either switch off, every simple task goes to frontier.
   enabled: false
-  maxInputChars: 60000
+  maxInputChars: 100000        # about 25K tokens: fits a 32K-context open-weight model with room to answer
   maxConsecutiveFailures: 3   # call failures (errors, timeouts, unparseable output), not rejected answers
   timeoutSeconds: 60
 
@@ -19,17 +20,17 @@ tasks:
   vichara_coverage.v1: {class: complex, wired: true}     # rules candidate, needs sign-off
   vichara_propose.v1: {class: complex, wired: true}
   vichara_repair.v1: {class: complex, wired: false}      # rules candidate, next increment
-  graph_level.v2: {class: complex, wired: false}         # labels become Position identity: pinned
-  link_verification.v1: {class: simple, wired: false}
-  beam_scoring.v1: {class: complex, wired: false}
-  path_assessment.v1: {class: complex, wired: false}
-  buyer_roles.v2: {class: simple, wired: false}
-  economic_assessment.v1: {class: complex, wired: false}
-  query_plan.v2: {class: simple, wired: false}
-  listing_extraction.v2: {class: simple, wired: false}
-  homepage_identity.v2: {class: simple, wired: false}
-  company_evidence.v2: {class: complex, wired: false}
-  review_judgement.v1: {class: complex, wired: false}
+  graph_level.v2: {class: complex, wired: true}          # labels become Position identity: pinned
+  link_verification.v1: {class: simple, wired: true}
+  beam_scoring.v1: {class: complex, wired: true}
+  path_assessment.v1: {class: complex, wired: true}
+  buyer_roles.v2: {class: simple, wired: true, rules: [no_passing_evidence]}
+  economic_assessment.v1: {class: complex, wired: true}
+  query_plan.v2: {class: simple, wired: true}           # child run (company research)
+  listing_extraction.v2: {class: simple, wired: true}
+  homepage_identity.v2: {class: simple, wired: true}
+  company_evidence.v2: {class: complex, wired: true}
+  review_judgement.v1: {class: complex, wired: true}
 
 # Prompt files with no call site.
 unused: [graph_coverage.v1, graph_repair.v1]

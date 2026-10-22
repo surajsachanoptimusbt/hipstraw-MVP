@@ -17,6 +17,7 @@ from hipstraw_mm.store.base import Store
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from hipstraw_mm.market.router import TaskRouter
     from hipstraw_mm.market.trace import Tracer
 
 
@@ -38,9 +39,15 @@ class Context:
     now: Callable[[], datetime] = _utc_now
     tracer: Tracer | None = None
     open_llm: LLMClient | None = None
+    # Set by the companies stage so the child runs' model calls are routed and traced.
+    router: TaskRouter | None = None
 
     def now_iso(self) -> str:
         return self.now().isoformat()
+
+    def model_calls(self) -> int:
+        """Model calls made so far on both tiers (child-run budgets count both)."""
+        return self.llm.calls + (self.open_llm.calls if self.open_llm is not None else 0)
 
 
 @dataclass

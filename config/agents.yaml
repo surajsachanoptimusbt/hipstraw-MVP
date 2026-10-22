@@ -61,7 +61,7 @@ agents:
         version: "review.v1"
         purpose: "Feature 002 rule gate, then a model judgement on records that pass, into include, exclude, or needs_verification."
         plain: "Checks each company found against the mandate's limits, then keeps it, rejects it, or flags it for checking."
-        operations: [review_companies]
+        operations: [review_companies, judge_company]
         promptVersions: [review_judgement.v1]
       - id: market_status
         name: "Market status"
@@ -194,6 +194,7 @@ agents:
         purpose: "Query planning, listing extraction, homepage identity, and cited evidence (feature 002)."
         plain: "Finds up to 5 real companies in each shortlisted market unit and checks their websites for cited evidence."
         playbook: ["M06 Audience Source Mapping", "A03 Store source and provenance"]
+        operations: [plan_queries, extract_listing, read_homepage, extract_evidence]
         promptVersions: [query_plan.v2, listing_extraction.v2, homepage_identity.v2, company_evidence.v2]
     tools:
       - id: web_search

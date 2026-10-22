@@ -75,7 +75,7 @@ def test_rubric_covers_every_task_without_a_model_call(sim: tuple[dict[str, Any]
     assert len(rows) == 15
     assert (rows["vichara.v1"]["route"], rows["vichara.v1"]["ruleId"]) == ("open_weight", "R8")
     assert (rows["graph_level.v2"]["route"], rows["graph_level.v2"]["ruleId"]) == ("frontier", "R3")
-    assert rows["listing_extraction.v2"]["wired"] is False
+    assert rows["listing_extraction.v2"]["wired"] is True and rows["vichara_repair.v1"]["wired"] is False
 
 
 def test_walkthrough_follows_each_task_to_its_saved_result(sim: tuple[dict[str, Any], Any, Any]) -> None:
@@ -88,7 +88,7 @@ def test_walkthrough_follows_each_task_to_its_saved_result(sim: tuple[dict[str, 
     assert kept["saved"]["lineage"]["servedBy"] == "open_weight"
 
     assert {c["id"] for c in kept["validation"]["open_weight"]} == {"schema", "echo_key", "grounding", "abstention"}
-    assert result["validationRubric"]["version"] == "validation.v1"
+    assert result["validationRubric"]["version"] == "validation.v3"
 
     bad = by_subject[BAD_DIMENSION]
     ground = next(c for c in bad["validation"]["open_weight"] if c["id"] == "grounding")
@@ -141,3 +141,12 @@ def test_text_walkthrough_reads_in_diagram_order(sim: tuple[dict[str, Any], Any,
     order = ["Incoming task", "Router", "Open-weight", "Validation", "Frontier", "Saved"]
     positions = [block.index(word) for word in order]
     assert positions == sorted(positions)
+
+
+def test_a_replay_can_reuse_the_recorded_run_id(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("LLM_MODEL", "gpt-4o")
+    ctx = _context(tmp_path)
+    ctx.open_llm = OpenWeight()  # type: ignore[assignment]
+    intake(ctx, "invoice_alpha")
+    result = simulate(ctx, "invoice_alpha_genesis", [], CONFIG_DIR, run_id="mrun_20261020T123316")
+    assert result["runId"] == "mrun_20261020T123316"

@@ -207,7 +207,7 @@ def fake_discover(ctx: Context, child_id: str) -> CommandResult:
     return CommandResult("discover", message="found", runId=child_id, counts={"returned": 2})
 
 
-def fake_verify(ctx: Context, child_id: str) -> CommandResult:
+def fake_verify(ctx: Context, child_id: str, evidence_status: str = "pass") -> CommandResult:
     for rec in ctx.store.list_company_records(child_id):
         rid = rec["companyRecordId"]
         disposition = _disposition(child_id, rid)
@@ -215,7 +215,7 @@ def fake_verify(ctx: Context, child_id: str) -> CommandResult:
             ctx.store.create_evidence({
                 "evidenceId": f"ev_{rid}_{i}", "runId": child_id, "companyRecordId": rid, "claimField": claim,
                 "claimValue": "Atlanta, GA" if claim == "hq" else "yes", "url": f"https://{rec['domain']}/",
-                "excerpt": f"{rec['name']} {claim} excerpt", "check": {"status": "pass"},
+                "excerpt": f"{rec['name']} {claim} excerpt", "check": {"status": evidence_status},
             })
         rec.update({
             "hq": {"city": "Atlanta", "state": "GA", "status": "met"},
@@ -591,7 +591,9 @@ def test_vichara_open_weight_tier_escalates_only_failing_dimensions(
     from hipstraw_mm.market.grammar import load_grammar
 
     dims = [d.key for d in load_grammar(CONFIG_DIR).dimensions]
-    assert ow.keys == [f"ow:qwen-test:vichara:{k}" for k in dims]
+    assert [k for k in ow.keys if k.startswith("ow:qwen-test:vichara:")] == [f"ow:qwen-test:vichara:{k}" for k in dims]
+    # links go open-weight first too; the scripted one-word reasons ("holds") fail the reason check
+    assert "ow:qwen-test:links:0:1" in ow.keys and "links:0:1" in llm.keys
     assert sorted(k for k in llm.keys if k.startswith("vichara:")) == sorted(
         [f"vichara:{BAD_DIMENSION}", f"vichara:{SILENT_DIMENSION}"]
     )
@@ -600,6 +602,83 @@ def test_vichara_open_weight_tier_escalates_only_failing_dimensions(
     assert by_key["segment_fit"] == {"routerVersion": "router.v1", "ruleId": "R8",
                                      "servedBy": "open_weight", "model": "qwen-test"}
     assert by_key[BAD_DIMENSION]["servedBy"] == "frontier" and by_key[SILENT_DIMENSION]["servedBy"] == "frontier"
+    run = ctx.store.get_market_run(run_id)
+    assert run["status"] == "reported"
+    assert run["counts"]["modelCalls"] == llm.calls + ow.calls
+
+
+def test_slice2_routes_links_buyers_and_complex_tasks(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """With the open-weight route on: links are kept on open-weight, buyer roles go open-weight where
+    there is passing evidence and to the no-evidence rule where there is none, and every complex task
+    goes to frontier through the router with its lineage."""
+    from hipstraw_mm.market.router import RoutingConfig, load_routing
+
+    raw = load_routing(CONFIG_DIR).model_dump(by_alias=True)
+    raw["openWeight"]["enabled"] = True
+    monkeypatch.setattr(stages, "load_routing", lambda _dir: RoutingConfig.model_validate(raw))
+    monkeypatch.setenv("LLM_MODEL", "gpt-4o")
+
+    def verify_p2_fails(ctx: Context, child_id: str) -> CommandResult:
+        return fake_verify(ctx, child_id, "fail" if child_id.endswith("_p2") else "pass")
+
+    monkeypatch.setattr(stages, "_child_steps", lambda: (
+        ("discover_companies", "search_research", "company_search", "discover_companies", fake_discover),
+        ("verify_companies", "search_research", "company_search", "discover_companies", verify_p2_fails),
+        ("review_companies", "market_manager", "review", "record_disposition", fake_review),
+    ))
+
+    class OpenWeight(ScriptedLLM):
+        model = "qwen-test"
+
+        def __init__(self) -> None:
+            super().__init__()
+            self.last_raw = {"model": "qwen-test-served"}
+
+        def _link_verification(self, p: dict[str, Any]) -> Any:
+            return schemas.LinkVerification(links=[
+                schemas.LinkEntry(fromNodeId=x["fromNodeId"], toNodeId=x["toNodeId"],
+                                  rationale="the segment has this buyer", linkConfidence=0.8)
+                for x in p["links"]
+            ])
+
+    pdf = tmp_path / "objective.pdf"
+    pdf.write_bytes(make_pdf(PDF_PHRASE))
+    ctx = _context(tmp_path)
+    ow = OpenWeight()
+    ctx.open_llm = ow  # type: ignore[assignment]
+    run_id = _run(ctx, [str(pdf)])
+    Path("reports", f"{run_id}.md").unlink(missing_ok=True)
+    llm: Any = ctx.llm
+
+    assert not [k for k in llm.keys if k.startswith("links:")]
+    assert len(ctx.store.list_link_checks(run_id)) == 10
+
+    paths = {p["childRunId"][-3:]: p["pathId"] for p in ctx.store.list_paths(run_id) if p.get("childRunId")}
+    assert f"ow:qwen-test:buyers:{paths['_p1']}" in ow.keys and f"buyers:{paths['_p1']}" not in llm.keys
+    assert not [k for k in [*ow.keys, *llm.keys] if k.endswith(f"buyers:{paths['_p2']}")]
+    p2_roles = [r for r in ctx.store.list_buyer_roles(run_id) if r["pathId"] == paths["_p2"]]
+    assert p2_roles and all(r["unknown"]["reason"] == "no stored evidence names a buying function" for r in p2_roles)
+
+    steps = ctx.store.list_trace_steps_after(run_id, 0)
+    routing = {(s["operation"], s["inputs"].get("pathId")): s["outputs"]["routing"]
+               for s in steps if (s.get("outputs") or {}).get("routing")}
+    rule = routing[("identify_buyer_roles", paths["_p2"])]
+    assert (rule["route"], rule["ruleId"], rule["servedBy"]) == ("rules", "R2", "rules")
+    assert routing[("identify_buyer_roles", paths["_p1"])]["servedBy"] == "open_weight"
+    for op in ("build_level", "score_candidates", "assess_path", "screen_economics"):
+        found = [r for (o, _), r in routing.items() if o == op]
+        assert found and all((r["ruleId"], r["servedBy"]) == ("R3", "frontier") for r in found), op
+
+    from hipstraw_mm.market.routing_report import build_simulation
+
+    sim = build_simulation(ctx.store, run_id, CONFIG_DIR)
+    assert sim is not None
+    by_stage = sim["summary"]["byStage"]
+    assert set(by_stage) == {"vichara", "graph", "links", "beam", "assess", "buyers", "evaluate"}
+    assert by_stage["buyers"] == {"kept": 1, "rules": 1} and sim["summary"]["byRules"] == 1
+    ruled = [e for e in sim["walkthrough"] if e["router"] and e["router"]["route"] == "rules"]
+    assert [e["rule"] for e in ruled] == ["no_passing_evidence"] and ruled[0]["attempts"] == []
+
     run = ctx.store.get_market_run(run_id)
     assert run["status"] == "reported"
     assert run["counts"]["modelCalls"] == llm.calls + ow.calls

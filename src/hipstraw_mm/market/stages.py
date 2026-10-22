@@ -29,15 +29,15 @@ from hipstraw_mm.market.beam import (
     keep_top,
     select_final,
 )
-from hipstraw_mm.market.buyers import validate_buyer_role
+from hipstraw_mm.market.buyers import buyer_role_checks, no_passing_evidence_rule, validate_buyer_role
 from hipstraw_mm.market.grammar import load_grammar
 from hipstraw_mm.market.graph import apply_caps, apply_filters, apply_parent_cap, assign_node_ids
 from hipstraw_mm.market.layers import load_layers
-from hipstraw_mm.market.links import check_link_coverage, chunk_links, link_record
+from hipstraw_mm.market.links import check_link_coverage, chunk_links, link_checks, link_record
 from hipstraw_mm.market.meaning import load_graph_meaning
 from hipstraw_mm.market.paths import path_id, paths_below
 from hipstraw_mm.market.repair import bounded_repair
-from hipstraw_mm.market.router import RoutingConfig, TaskRouter, load_routing
+from hipstraw_mm.market.router import TaskRouter, load_routing
 from hipstraw_mm.market.schemas import (
     GRAPH_LEVELS,
     BeamScoring,
@@ -203,16 +203,14 @@ def _latest_graph(ctx: Context, run_id: str) -> Doc:
 # --------------------------------------------------------------------------------------------------
 
 
-def stage_vichara(
-    ctx: Context, run_id: str, config_dir: Path, routing_config: RoutingConfig | None = None
-) -> Doc:
+def stage_vichara(ctx: Context, run_id: str, config_dir: Path) -> Doc:
     run = load_run(ctx, run_id, "opened")
     tracer = make_tracer(ctx, run_id, config_dir)
     settings = load_pipeline_settings(config_dir)
     grammar = load_grammar(config_dir)
     text = objective_text(ctx, run)
     max_items = settings.vichara.maxItemsPerDimension
-    router = TaskRouter(ctx, tracer, routing_config or load_routing(config_dir), run_id=run_id)
+    router = TaskRouter(ctx, tracer, load_routing(config_dir), run_id=run_id)
     has_documents = bool(ctx.store.list_objective_documents(run_id))
 
     items_by_dim: dict[str, Any] = {}
@@ -386,6 +384,7 @@ def stage_graph(ctx: Context, run_id: str, config_dir: Path) -> Doc:
     nodes_by_level: dict[str, list[Doc]] = {}
     excluded: list[Doc] = []
     counter = 0
+    router = TaskRouter(ctx, tracer, load_routing(config_dir), run_id=run_id)
 
     for idx, level in enumerate(GRAPH_LEVELS):
         lv = level_defs[level]
@@ -416,9 +415,9 @@ def stage_graph(ctx: Context, run_id: str, config_dir: Path) -> Doc:
         with tracer.step("search_research", "graph_builder", "build_level", right="build_graph") as step:
             step.set_inputs({"level": level, "maxNodes": lv.maxNodes, "maxParents": lv.maxParents})
             for attempt in (1, 2):
-                proposal = model_call(
-                    ctx, tracer, GraphLevelProposal, prompts.messages(prompts.GRAPH_LEVEL, payload),
-                    match_key=f"graph:{level}:{attempt}", prompt_version=prompts.GRAPH_LEVEL, run_id=run_id,
+                proposal, routing = router.call(
+                    step, GraphLevelProposal, prompts.messages(prompts.GRAPH_LEVEL, payload),
+                    task=prompts.GRAPH_LEVEL, match_key=f"graph:{level}:{attempt}",
                 )
                 nodes = [{**n.model_dump(), "level": level} for n in proposal.nodes]
                 kept, dropped = apply_filters(nodes, level, metros)
@@ -455,7 +454,7 @@ def stage_graph(ctx: Context, run_id: str, config_dir: Path) -> Doc:
             kept = assign_node_ids(kept, level, counter)
             counter += len(kept)
             nodes_by_level[level] = kept
-            step.set_outputs({"proposed": len(nodes), "kept": len(kept)})
+            step.set_outputs({"proposed": len(nodes), "kept": len(kept), "attempts": attempt, "routing": routing})
 
     edges: list[Doc] = []
     seen_edges: set[tuple[str, str]] = set()
@@ -529,17 +528,28 @@ def stage_links(ctx: Context, run_id: str, config_dir: Path) -> Doc:
     ]
 
     flagged = 0
+    router = TaskRouter(ctx, tracer, load_routing(config_dir), run_id=run_id)
     for i, chunk in enumerate(chunk_links(links, settings.links.linksPerCall)):
         payload = {"links": chunk, "objectiveText": text, "deliberations": digest}
         with tracer.step("search_research", "link_verifier", "verify_links", right="verify_link") as step:
             step.set_inputs({"chunk": i, "links": len(chunk)})
             problem = ""
             returned: list[Doc] = []
+            messages = prompts.messages(prompts.LINK_VERIFICATION, payload)
             for attempt in (1, 2):
-                result = model_call(
-                    ctx, tracer, LinkVerification, prompts.messages(prompts.LINK_VERIFICATION, payload),
-                    match_key=f"links:{i}:{attempt}", prompt_version=prompts.LINK_VERIFICATION, run_id=run_id,
-                )
+                if attempt == 1:
+                    result, routing = router.call(
+                        step, LinkVerification, messages, task=prompts.LINK_VERIFICATION,
+                        match_key=f"links:{i}:1",
+                        validate=lambda r, tier, sent=chunk: link_checks(r, tier, chunk=sent),  # type: ignore[misc]
+                    )
+                else:
+                    result = model_call(
+                        ctx, tracer, LinkVerification, messages,
+                        match_key=f"links:{i}:2", prompt_version=prompts.LINK_VERIFICATION, run_id=run_id,
+                    )
+                    routing["attempts"].append({"route": "frontier", "model": ctx.llm.model,
+                                                "outcome": f"asked again: {problem}"})
                 returned = [e.model_dump() for e in result.links]
                 try:
                     check_link_coverage(chunk, returned)
@@ -558,7 +568,7 @@ def stage_links(ctx: Context, run_id: str, config_dir: Path) -> Doc:
                     "fromLabel": nodes[link["fromNodeId"]]["label"],
                     "toLabel": nodes[link["toNodeId"]]["label"],
                 })
-            step.set_outputs({"verified": len(returned), "flaggedSoFar": flagged})
+            step.set_outputs({"verified": len(returned), "flaggedSoFar": flagged, "routing": routing})
 
     ctx.store.transition_market_run(run_id, "validated", "linked")
     return {"links": len(links), "flagged": flagged}
@@ -609,6 +619,7 @@ def stage_beam(ctx: Context, run_id: str, config_dir: Path) -> Doc:
     weights = settings.factorWeights
 
     current: list[Doc] = []
+    router = TaskRouter(ctx, tracer, load_routing(config_dir), run_id=run_id)
     for level_no, level in enumerate(levels, start=1):
         if level_no == 1:
             candidates = [
@@ -637,9 +648,9 @@ def stage_beam(ctx: Context, run_id: str, config_dir: Path) -> Doc:
             }
             with tracer.step("search_research", "beam_search", "score_candidates", right="keep_path") as step:
                 step.set_inputs({"level": level, "candidates": len(chunk)})
-                result = model_call(
-                    ctx, tracer, BeamScoring, prompts.messages(prompts.BEAM_SCORING, payload),
-                    match_key=f"beam:{level}:{start}", prompt_version=prompts.BEAM_SCORING, run_id=run_id,
+                result, routing = router.call(
+                    step, BeamScoring, prompts.messages(prompts.BEAM_SCORING, payload),
+                    task=prompts.BEAM_SCORING, match_key=f"beam:{level}:{start}",
                 )
                 by_id = {s.pathId: s for s in result.candidates}
                 for c in chunk:
@@ -661,7 +672,8 @@ def stage_beam(ctx: Context, run_id: str, config_dir: Path) -> Doc:
                         **c, **record,
                         "pathsBelow": paths_below(edges, levels, node_levels, {c["nodeId"]}),
                     })
-                step.set_outputs({"scored": len(chunk) - sum(1 for c in chunk if c["pathId"] not in by_id)})
+                step.set_outputs({"scored": len(chunk) - sum(1 for c in chunk if c["pathId"] not in by_id),
+                                  "routing": routing})
 
         with tracer.step("search_research", "beam_search", "prune_level", right="prune_path") as step:
             step.set_inputs({"level": level, "scored": len(scored), "beamWidth": settings.beam.width})
@@ -738,6 +750,7 @@ def stage_assess(ctx: Context, run_id: str, config_dir: Path) -> Doc:
     allowed = {k: [] if (dim := grammar.by_key(k)) is None else dim.states for k in PER_PATH_KEYS}
 
     finals = [p for p in ctx.store.list_paths(run_id) if p.get("isFinal")]
+    router = TaskRouter(ctx, tracer, load_routing(config_dir), run_id=run_id)
     for path in finals:
         payload = {
             "path": path.get("nodeLabels", []),
@@ -750,10 +763,9 @@ def stage_assess(ctx: Context, run_id: str, config_dir: Path) -> Doc:
             problem = ""
             records: list[Doc] = []
             for attempt in (1, 2):
-                result = model_call(
-                    ctx, tracer, PathAssessment, prompts.messages(prompts.PATH_ASSESSMENT, payload),
-                    match_key=f"assess:{path['pathId']}:{attempt}", prompt_version=prompts.PATH_ASSESSMENT,
-                    run_id=run_id,
+                result, routing = router.call(
+                    step, PathAssessment, prompts.messages(prompts.PATH_ASSESSMENT, payload),
+                    task=prompts.PATH_ASSESSMENT, match_key=f"assess:{path['pathId']}:{attempt}",
                 )
                 try:
                     records = assess_records(grammar, [d.model_dump() for d in result.dimensions])
@@ -763,7 +775,7 @@ def stage_assess(ctx: Context, run_id: str, config_dir: Path) -> Doc:
             else:
                 raise ExternalServiceError(f"assessment of path {path['pathId']} is invalid after a retry: {problem}")
             ctx.store.upsert_path({"pathId": path["pathId"], "marketRunId": run_id, "assessment": records})
-            step.set_outputs({"dimensions": len(records)})
+            step.set_outputs({"dimensions": len(records), "attempts": attempt, "routing": routing})
 
     ctx.store.transition_market_run(run_id, "searched", "assessed")
     return {"assessedPaths": len(finals)}
@@ -794,7 +806,7 @@ def _research_path(ctx: Context, tracer: Tracer, child_id: str) -> str | None:
     recorded on the path and the other paths continue.
     """
     for operation, layer, actor, right, step_fn in _child_steps():
-        llm_before, search_before = ctx.llm.calls, ctx.search.calls
+        search_before = ctx.search.calls
         try:
             with tracer.step(layer, actor, operation, right=right) as step:
                 step.set_inputs({"childRunId": child_id})
@@ -810,7 +822,8 @@ def _research_path(ctx: Context, tracer: Tracer, child_id: str) -> str | None:
         except Exception as exc:  # noqa: BLE001 - recorded on the path; one path failing must not stop the others
             return f"{operation}: {type(exc).__name__}: {exc}"
         finally:
-            tracer.record_usage(model_calls=ctx.llm.calls - llm_before, searches=ctx.search.calls - search_before)
+            # Model calls are counted as traced worker steps (the companies stage routes them).
+            tracer.record_usage(searches=ctx.search.calls - search_before)
     child = ctx.store.get_run(child_id) or {}
     tracer.record_usage(fetches=int((child.get("counts") or {}).get("fetches") or 0))
     return None
@@ -818,7 +831,6 @@ def _research_path(ctx: Context, tracer: Tracer, child_id: str) -> str | None:
 
 def stage_companies(ctx: Context, run_id: str, config_dir: Path) -> Doc:
     from hipstraw_mm.market import companies as comp
-    from hipstraw_mm.steps.position import create_run
 
     run = load_run(ctx, run_id, "assessed")
     tracer = make_tracer(ctx, run_id, config_dir)
@@ -835,6 +847,22 @@ def stage_companies(ctx: Context, run_id: str, config_dir: Path) -> Doc:
     assessed_by = {d.key: d.assessedBy for d in grammar.dimensions}
 
     finals = [p for p in ctx.store.list_paths(run_id) if p.get("isFinal")]
+    ctx.router = TaskRouter(ctx, tracer, load_routing(config_dir), run_id=run_id)
+    try:
+        return _companies(ctx, run, run_id, tracer, settings, program, nodes, interests, metro_names,
+                          evidence_settings, assessed_by, finals)
+    finally:
+        ctx.router = None
+
+
+def _companies(
+    ctx: Context, run: Doc, run_id: str, tracer: Tracer, settings: Any, program: Doc, nodes: dict[str, Doc],
+    interests: list[str], metro_names: list[str], evidence_settings: Doc, assessed_by: dict[str, str],
+    finals: list[Doc],
+) -> Doc:
+    from hipstraw_mm.market import companies as comp
+    from hipstraw_mm.steps.position import create_run
+
     per_path: list[tuple[str, str, list[Doc]]] = []
     unresolved: list[Doc] = []
     for n, path in enumerate(finals, start=1):
@@ -905,6 +933,7 @@ def stage_buyers(ctx: Context, run_id: str, config_dir: Path) -> Doc:
     finals = [p for p in ctx.store.list_paths(run_id) if p.get("isFinal") and p.get("childRunId")]
 
     kept_total = 0
+    router = TaskRouter(ctx, tracer, load_routing(config_dir), run_id=run_id)
     for path in finals:
         pid, child_id = path["pathId"], path["childRunId"]
         evidence = {e["evidenceId"]: e for e in ctx.store.list_evidence(child_id)}
@@ -935,9 +964,12 @@ def stage_buyers(ctx: Context, run_id: str, config_dir: Path) -> Doc:
             "position_evaluation", "buyer_role_finder", "identify_buyer_roles", right="identify_buyer_roles"
         ) as step:
             step.set_inputs({"pathId": pid, "companies": len(on_path)})
-            result = model_call(
-                ctx, tracer, BuyerRoles, prompts.messages(prompts.BUYER_ROLES, payload),
-                match_key=f"buyers:{pid}", prompt_version=prompts.BUYER_ROLES, run_id=run_id,
+            sent = {e["evidenceId"]: pc["companyRecordId"] for pc in payload_companies for e in pc["evidence"]}
+            result, routing = router.call(
+                step, BuyerRoles, prompts.messages(prompts.BUYER_ROLES, payload),
+                task=prompts.BUYER_ROLES, match_key=f"buyers:{pid}",
+                validate=lambda r, tier, p=pid, s=sent: buyer_role_checks(r, tier, path_id=p, sent=s),  # type: ignore[misc]
+                rule=no_passing_evidence_rule(payload_companies),
             )
             roles_by_record: dict[str, list[Doc]] = defaultdict(list)
             rejected: dict[str, str] = {}
@@ -970,7 +1002,7 @@ def stage_buyers(ctx: Context, run_id: str, config_dir: Path) -> Doc:
                     },
                 })
             kept_total += kept
-            step.set_outputs({"rolesKept": kept, "companies": len(on_path)})
+            step.set_outputs({"rolesKept": kept, "companies": len(on_path), "routing": routing})
 
     ctx.store.transition_market_run(run_id, "verified", "roled")
     return {"paths": len(finals), "roles": kept_total}
@@ -1008,6 +1040,7 @@ def stage_evaluate(ctx: Context, run_id: str, config_dir: Path) -> Doc:
             screened.append({"pathId": p["pathId"], "nodeLabels": p.get("nodeLabels", [])})
 
     economics: dict[str, Doc] = {}
+    router = TaskRouter(ctx, tracer, load_routing(config_dir), run_id=run_id)
     for start in range(0, len(screened), ECONOMICS_CHUNK):
         chunk = screened[start:start + ECONOMICS_CHUNK]
         payload = {
@@ -1020,9 +1053,9 @@ def stage_evaluate(ctx: Context, run_id: str, config_dir: Path) -> Doc:
             "position_evaluation", "position_evaluator", "screen_economics", right="assess_economics"
         ) as step:
             step.set_inputs({"candidates": len(chunk), "finals": sum(1 for c in chunk if c["pathId"] in final_ids)})
-            result = model_call(
-                ctx, tracer, EconomicScreening, prompts.messages(prompts.ECONOMIC_ASSESSMENT, payload),
-                match_key=f"economics:{start}", prompt_version=prompts.ECONOMIC_ASSESSMENT, run_id=run_id,
+            result, routing = router.call(
+                step, EconomicScreening, prompts.messages(prompts.ECONOMIC_ASSESSMENT, payload),
+                task=prompts.ECONOMIC_ASSESSMENT, match_key=f"economics:{start}",
             )
             wanted = {c["pathId"] for c in chunk}
             for est in result.estimates:
@@ -1031,7 +1064,7 @@ def stage_evaluate(ctx: Context, run_id: str, config_dir: Path) -> Doc:
             missing = sorted(wanted - set(economics))
             if missing:
                 step.add_check("economics_coverage", "fail", f"no estimate for {len(missing)} candidate(s)")
-            step.set_outputs({"estimated": len(wanted) - len(missing)})
+            step.set_outputs({"estimated": len(wanted) - len(missing), "routing": routing})
     ctx.store.create_evaluation_case({
         "caseId": f"{run_id}__economics", "marketRunId": run_id, "kind": "economic_screening",
         "estimates": list(economics.values()), "label": "hypothesis",

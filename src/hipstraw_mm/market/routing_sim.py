@@ -12,24 +12,38 @@ from pathlib import Path
 from typing import Any
 
 from hipstraw_mm.context import Context
-from hipstraw_mm.market.router import load_routing
+from hipstraw_mm.market.router import load_routing, routing_override
 from hipstraw_mm.market.routing_report import build_simulation
 
 Doc = dict[str, Any]
 
 
-def simulate(ctx: Context, program_id: str, objective_pdfs: list[Path], config_dir: Path) -> Doc:
-    """Open a market run for the program and run the vichara stage with the open-weight route on."""
-    from hipstraw_mm.market.stages import stage_vichara
+def simulate(
+    ctx: Context, program_id: str, objective_pdfs: list[Path], config_dir: Path, through: str = "vichara",
+    run_id: str | None = None,
+) -> Doc:
+    """Open a market run for the program and run the pipeline up to `through` with the open-weight
+    route on for this run only."""
+    import argparse
+
+    from hipstraw_mm.cli import MARKET_HANDLERS, PIPELINE_STAGES
+    from hipstraw_mm.errors import PreconditionError
     from hipstraw_mm.market.start import market_start
 
+    if through not in PIPELINE_STAGES:
+        raise PreconditionError(f"--through must be one of {', '.join(PIPELINE_STAGES)}")
     base = load_routing(config_dir)
     routing = base.model_copy(update={"openWeight": base.openWeight.model_copy(update={"enabled": True})})
-    run_id = market_start(ctx, program_id, objective_pdfs)
-    stage_vichara(ctx, run_id, config_dir, routing_config=routing)
+    run_id = market_start(ctx, program_id, objective_pdfs, run_id)
+    stage_args = argparse.Namespace(run=run_id, config_dir=str(config_dir), out=None)
+    with routing_override(routing):
+        for stage in PIPELINE_STAGES[: PIPELINE_STAGES.index(through) + 1]:
+            result = MARKET_HANDLERS[stage](ctx, stage_args)
+            if stage == "validate" and result.status != "validated":
+                raise PreconditionError("the seed graph failed validation: " + "; ".join(result.warnings[:5]))
     # The run stops after vichara on purpose; the viewer labels it instead of showing it as running.
     ctx.store.upsert_market_run({
-        "marketRunId": run_id, "simulation": {"stage": "vichara", "routerVersion": routing.version},
+        "marketRunId": run_id, "simulation": {"stage": through, "routerVersion": routing.version},
     })
     sim = build_simulation(ctx.store, run_id, config_dir)
     assert sim is not None
@@ -76,10 +90,10 @@ def render_text(sim: Doc) -> str:
     for r in sim["rubric"]:
         out.append(f"   {r['task']:24s} {r['class']:8s} {'yes' if r['wired'] else 'no':6s} "
                    f"{r['ruleId']:5s} {r['route']:12s} {r['why']}")
-    out += ["", "2. WALK-THROUGH: the vichara stage on this objective, read back from the trace"]
+    out += ["", "2. WALK-THROUGH: every routed task on this objective, read back from the trace"]
     for n, e in enumerate(sim["walkthrough"], start=1):
         out.append("")
-        out.append(f"[{n}] {e['task']} | {e['subject']}")
+        out.append(f"[{n}] {e.get('stage', '')} | {e['task']} | {e['subject']}")
         size = f"  [prompt {e['inputChars']:,} chars]" if e["inputChars"] else ""
         out.append(f"    Incoming task   {e['question'] or e['operation'].replace('_', ' ')}{size}")
         if not e["routed"]:
@@ -90,6 +104,8 @@ def render_text(sim: Doc) -> str:
             r = e["router"]
             target = {"open_weight": "open-weight", "frontier": "frontier", "rules": "rules"}[r["route"]]
             out.append(f"    Router          {r['ruleId']} {r['why']} -> {target}")
+            if r["route"] == "rules":
+                out.append("    Rules           answered by the rule, no model call")
             for a in e["attempts"]:
                 label = "Open-weight" if a["tier"] == "open_weight" else "Frontier"
                 if a["tier"] == "frontier" and e["outcome"]["escalated"]:
@@ -121,7 +137,10 @@ def render_text(sim: Doc) -> str:
         "",
         "3. SUMMARY",
         f"   routed calls {s['routedCalls']}: kept on open-weight {s['keptOnOpenWeight']}, "
-        f"escalated {s['escalated']}, sent straight to frontier {s['frontierDirect']}",
+        f"escalated {s['escalated']}, sent straight to frontier {s['frontierDirect']}, "
+        f"answered by rules {s['byRules']}",
+        "   by stage: " + "; ".join(f"{k} " + ", ".join(f"{n} {v}" for v, n in c.items())
+                                   for k, c in s["byStage"].items()),
         "   escalation reasons: " + (", ".join(f"{k} {v}" for k, v in s["escalationReasons"].items()) or "none"),
         f"   model calls: open-weight {s['modelCalls']['open_weight']}, frontier {s['modelCalls']['frontier']}"
         " (frontier includes repair, which is not routed yet)",

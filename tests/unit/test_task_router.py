@@ -44,11 +44,9 @@ def test_every_prompt_version_is_routed_or_listed_unused() -> None:
     assert not set(cfg.tasks) & set(cfg.unused)
 
 
-def test_slice_wires_only_the_vichara_stage_and_ships_dark() -> None:
+def test_router_ships_dark() -> None:
     cfg = load_routing()
     assert cfg.openWeight.enabled is False
-    wired = {k for k, t in cfg.tasks.items() if t.wired}
-    assert wired == {prompts.VICHARA, prompts.VICHARA_COVERAGE, prompts.VICHARA_PROPOSE}
     assert cfg.tasks[prompts.VICHARA].class_ == "simple"
 
 
@@ -75,7 +73,7 @@ def test_router_module_never_imports_a_model_client() -> None:
 ])
 def test_decide_route(task: str, enabled: bool, available: bool, chars: int, failures: int,
                       route: str, rule: str) -> None:
-    decision = decide_route(_config(enabled), task, open_weight_available=available,
+    decision = decide_route(_config(enabled, maxInputChars=60_000), task, open_weight_available=available,
                             input_chars=chars, consecutive_failures=failures)
     assert (decision.route, decision.ruleId) == (route, rule)
     assert decision.why

@@ -30,15 +30,14 @@ def _answer(*bases: str, key: str = "economics") -> DimensionDeliberation:
 
 def test_rubric_lists_exactly_the_checks_the_code_runs() -> None:
     rubric = load_validation_rubric()
-    assert rubric.version == "validation.v1" and rubric.task == "vichara.v1"
-    ids = {c.id for c in rubric.checks}
-    assert ids == {"schema", "echo_key", "grounding", "abstention"}
+    assert rubric.version == "validation.v3"
+    assert rubric.tasks["vichara.v1"].checks == ["schema", "echo_key", "grounding", "abstention"]
     silent = DimensionDeliberation(dimensionKey="economics", items=[
         DeliberationItem(question="q", status="unresolved", reason="no information in the objective")])
     for tier in ("open_weight", "frontier"):
         emitted = {c.name for c in vichara_checks(silent, tier, dimension_key="economics", objective_text=TEXT,
                                                   max_items=3, has_documents=True)}
-        expected = {c.id for c in rubric.checks if tier in c.tiers and c.id != "schema"}
+        expected = {c for c in rubric.task_checks("vichara.v1", tier) if c != "schema"}
         assert emitted == expected, tier
     assert set(rubric.groundingVerdicts) == {"near_miss", "partial", "not_found"}
     assert all(c.question.endswith("?") and c.method and c.passWhen and c.onFail for c in rubric.checks)

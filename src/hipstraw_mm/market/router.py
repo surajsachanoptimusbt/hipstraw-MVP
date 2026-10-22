@@ -10,7 +10,9 @@ worker step; the route and escalation go into the business step's checks and `ou
 
 from __future__ import annotations
 
-from collections.abc import Callable
+import contextlib
+from collections.abc import Callable, Iterator
+from contextvars import ContextVar
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
@@ -36,6 +38,7 @@ class TaskRoute(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
     class_: Literal["rules", "simple", "complex"] = Field(alias="class")
     wired: bool
+    rules: list[str] = Field(default_factory=list)
 
 
 class OpenWeightPolicy(BaseModel):
@@ -61,8 +64,21 @@ def _load(path: Path) -> RoutingConfig:
         return RoutingConfig.model_validate(yaml.safe_load(f))
 
 
+_OVERRIDE: ContextVar[RoutingConfig | None] = ContextVar("routing_override", default=None)
+
+
 def load_routing(config_dir: Path = Path("config")) -> RoutingConfig:
-    return _load(Path(config_dir) / "routing.yaml")
+    return _OVERRIDE.get() or _load(Path(config_dir) / "routing.yaml")
+
+
+@contextlib.contextmanager
+def routing_override(config: RoutingConfig) -> Iterator[None]:
+    """Use this routing policy for every stage run inside the block (the routing simulation)."""
+    token = _OVERRIDE.set(config)
+    try:
+        yield
+    finally:
+        _OVERRIDE.reset(token)
 
 
 @dataclass(frozen=True)
@@ -79,12 +95,15 @@ def decide_route(
     open_weight_available: bool,
     input_chars: int,
     consecutive_failures: int,
+    rule_hit: str | None = None,
 ) -> RouteDecision:
-    """The first rule that applies wins."""
+    """The first rule that applies wins. `rule_hit` names a rule listed for the task that answers this input."""
     entry = config.tasks.get(task)
     policy = config.openWeight
     if entry is None:
         return RouteDecision("frontier", "R1", "task is not in the routing table")
+    if rule_hit:
+        return RouteDecision("rules", "R2", f"rule {rule_hit} answers this input")
     if entry.class_ == "rules":
         return RouteDecision("rules", "R2", "rules are sufficient for this task")
     if entry.class_ == "complex":
@@ -118,6 +137,14 @@ class Check:
 Validator = Callable[[Any, Route], list[Check]]
 
 
+@dataclass(frozen=True)
+class Rule:
+    """A rule that may answer a call before any model: `answer()` returns the result, or None."""
+
+    id: str
+    answer: Callable[[], Any]
+
+
 class TaskRouter:
     """One per stage, so the count of open-weight call failures in a row covers the stage's calls."""
 
@@ -137,19 +164,25 @@ class TaskRouter:
         task: str,
         match_key: str,
         validate: Validator | None = None,
+        rule: Rule | None = None,
+        log_run_id: str | None = None,
     ) -> tuple[T, Doc]:
         from hipstraw_mm.market.stages import model_call
 
+        entry = self.config.tasks.get(task)
+        answered: Any = None
+        if rule is not None and entry is not None and rule.id in entry.rules:
+            answered = rule.answer()
         open_llm = getattr(self.ctx, "open_llm", None)
         decision = decide_route(
             self.config, task,
             open_weight_available=open_llm is not None,
             input_chars=sum(len(m.get("content", "")) for m in messages),
             consecutive_failures=self.consecutive_failures,
+            rule_hit=rule.id if answered is not None and rule is not None else None,
         )
-        if decision.route == "rules":
-            raise ValueError(f"{task} is a rules task; its rule handler answers it, not the router")
-        entry = self.config.tasks.get(task)
+        if decision.route == "rules" and answered is None:
+            raise ValueError(f"{task} is a rules task but no listed rule answered this input")
         routing: Doc = {
             "routerVersion": self.config.version, "task": task,
             "class": entry.class_ if entry else None,
@@ -159,13 +192,20 @@ class TaskRouter:
         }
         form_ok = Check("schema", True, True, f"parsed into {schema.__name__}")
 
+        if decision.route == "rules":
+            assert rule is not None
+            step.add_check(f"rules.{rule.id}", "pass", decision.why)
+            routing["servedBy"] = "rules"
+            routing["attempts"].append({"route": "rules", "model": None, "outcome": "kept", "rule": rule.id})
+            return answered, routing
+
         if decision.route == "open_weight":
             assert open_llm is not None
             reason: str | None = None
             try:
                 result = model_call(
                     self.ctx, self.tracer, schema, messages,
-                    match_key=f"ow:{open_llm.model}:{match_key}", prompt_version=task, run_id=self.run_id,
+                    match_key=f"ow:{open_llm.model}:{match_key}", prompt_version=task, run_id=log_run_id or self.run_id,
                     client=open_llm, route="open_weight", max_attempts=1,
                 )
             except LLMSchemaError as exc:
@@ -195,7 +235,7 @@ class TaskRouter:
 
         result = model_call(
             self.ctx, self.tracer, schema, messages,
-            match_key=match_key, prompt_version=task, run_id=self.run_id,
+            match_key=match_key, prompt_version=task, run_id=log_run_id or self.run_id,
         )
         checks = [form_ok, *validate(result, "frontier")] if validate else []
         self._record(step, checks, "frontier")
