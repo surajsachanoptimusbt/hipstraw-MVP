@@ -242,20 +242,36 @@ class Fetcher:
                 self._sleep(wait)
         self._last_request[host] = self._clock()
 
+    def _read_within(self, resp: httpx.Response, deadline: float, limit: int) -> bytearray | None:
+        """The body, or None once it passes `limit` bytes. httpx's timeout bounds each read only, so a server
+        that keeps sending a few bytes would hold the run forever; the deadline bounds the whole download."""
+        body = bytearray()
+        for chunk in resp.iter_bytes():
+            if self._clock() > deadline:
+                raise httpx.ReadTimeout("download took longer than the fetch timeout", request=resp.request)
+            body += chunk
+            if len(body) > limit:
+                return None
+        return body
+
     def _live_robots(self, robots_url: str) -> dict[str, Any]:
         self._throttle(robots_url)
+        deadline = self._clock() + self.timeout
         try:
-            resp = self._client().get(robots_url, follow_redirects=True)
+            with self._client().stream("GET", robots_url, follow_redirects=True) as resp:
+                body = self._read_within(resp, deadline, 500_000)
+                text = (body or bytearray()).decode(resp.encoding or "utf-8", errors="replace")
+                return {
+                    "status": resp.status_code,
+                    "text": text[:500_000],
+                    "headers": {"content-type": resp.headers.get("content-type", "")},
+                }
         except httpx.HTTPError as exc:
             return _transport_error(robots_url, exc)
-        return {
-            "status": resp.status_code,
-            "text": resp.text[:500_000],
-            "headers": {"content-type": resp.headers.get("content-type", "")},
-        }
 
     def _live_get(self, url: str) -> dict[str, Any]:
         self._throttle(url)
+        deadline = self._clock() + self.timeout
         try:
             with self._client().stream("GET", url, follow_redirects=False) as resp:
                 headers = {"content-type": resp.headers.get("content-type", "")}
@@ -270,12 +286,10 @@ class Fetcher:
                 is_html = headers["content-type"].lower().startswith(_HTML_TYPES)
                 if not 200 <= resp.status_code < 300 or not is_html:
                     return out
-                body = bytearray()
-                for chunk in resp.iter_bytes():
-                    body += chunk
-                    if len(body) > self.max_bytes:
-                        out["tooLarge"] = True
-                        return out
+                body = self._read_within(resp, deadline, self.max_bytes)
+                if body is None:
+                    out["tooLarge"] = True
+                    return out
                 try:
                     out["text"] = body.decode(resp.encoding or "utf-8", errors="replace")
                 except LookupError:

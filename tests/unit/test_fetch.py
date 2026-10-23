@@ -281,3 +281,40 @@ class TestDnsFailure:
     def test_live_connection_failure_on_a_resolvable_host_is_not_a_dns_failure(self, live_fetcher, monkeypatch):
         monkeypatch.setattr(socket, "getaddrinfo", lambda *args, **kwargs: [("fake",)])
         assert live_fetcher._live_get("https://refused.test/") == CONNECT_FAILED
+
+
+class TestDownloadDeadline:
+    """`timeout_seconds` bounds the whole download, not each read: a server that keeps sending a few bytes
+    must not hold the run forever (a live run on 2026-10-23 stalled for two hours in company verification)."""
+
+    @pytest.fixture
+    def dripping_fetcher(self, tmp_path, monkeypatch):
+        now = [0.0]
+
+        def clock() -> float:
+            now[0] += 5.0  # every read takes five seconds
+            return now[0]
+
+        def endless():
+            while True:
+                yield b"<p>still loading</p>"
+
+        def drip(request):
+            return httpx.Response(200, headers={"content-type": "text/html"}, content=endless())
+
+        fetcher = Fetcher(
+            replay_store=ReplayStore(tmp_path / "unused", mode="record"),
+            denylist_domains=[],
+            user_agent="TestBot/1.0",
+            timeout_seconds=15,
+            max_bytes=2_000_000_000,
+            clock=clock,
+        )
+        monkeypatch.setattr(fetcher, "_http", httpx.Client(transport=httpx.MockTransport(drip)))
+        return fetcher
+
+    def test_slow_page_download_times_out(self, dripping_fetcher):
+        assert dripping_fetcher._live_get("https://slow.test/") == {"status": None, "error": "ReadTimeout"}
+
+    def test_slow_robots_txt_download_times_out(self, dripping_fetcher):
+        assert dripping_fetcher._live_robots("https://slow.test/robots.txt") == {"status": None, "error": "ReadTimeout"}
