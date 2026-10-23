@@ -36,6 +36,8 @@ def open_weight_client(
 
     Any OpenAI-compatible endpoint works. The SDK's own retries are off and the timeout is short, so a
     slow or cold endpoint escalates to frontier instead of stalling; one schema attempt for the same reason.
+    OPEN_WEIGHT_REASONING_EFFORT, if set, is sent as `reasoning_effort` (for example "low" for GLM-5.3-Flash
+    on Fireworks, a thinking-only model that rejects "none").
     """
     base_url = os.environ.get("OPEN_WEIGHT_BASE_URL")
     model = os.environ.get("OPEN_WEIGHT_MODEL")
@@ -48,7 +50,10 @@ def open_weight_client(
         return OpenAI(base_url=base_url, api_key=os.environ.get("OPEN_WEIGHT_API_KEY") or "not-needed",
                       max_retries=0, timeout=timeout_seconds)
 
-    return LLMClient(model=model, replay=replay, log=log, client_factory=factory, schema_attempts=1)
+    effort = os.environ.get("OPEN_WEIGHT_REASONING_EFFORT", "").strip()
+    extra = {"reasoning_effort": effort} if effort else None
+    return LLMClient(model=model, replay=replay, log=log, client_factory=factory, schema_attempts=1,
+                     extra_params=extra)
 
 
 class LLMClient:
@@ -59,9 +64,12 @@ class LLMClient:
         log: EventLog | None = None,
         client_factory: Callable[[], Any] = _default_client,
         schema_attempts: int = 2,
+        extra_params: dict[str, Any] | None = None,
     ) -> None:
         self.model = model
         self.schema_attempts = schema_attempts
+        # Sent with every live request, e.g. the open-weight tier's reasoning_effort. Not part of the replay key.
+        self.extra_params = dict(extra_params or {})
         self.replay = replay
         self.log = log
         self._client_factory = client_factory
@@ -119,7 +127,7 @@ class LLMClient:
             self._client = self._client_factory()
         try:
             completion = self._client.chat.completions.parse(
-                model=self.model, messages=messages, response_format=schema
+                model=self.model, messages=messages, response_format=schema, **self.extra_params
             )
         except (ValidationError, openai.LengthFinishReasonError, openai.ContentFilterFinishReasonError) as exc:
             # Recorded as a failed response, so replay reproduces the same retry path.

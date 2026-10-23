@@ -87,6 +87,9 @@ any mode. The first is `no_passing_evidence` on buyer roles: when no company on 
 passing evidence, no role could be kept, so every company is saved as unknown without a model call. The
 open-weight route is off in `routing.yaml` and needs `OPEN_WEIGHT_BASE_URL` and `OPEN_WEIGHT_MODEL`
 (any OpenAI-compatible endpoint), so runs go to frontier exactly as before until both are turned on.
+`OPEN_WEIGHT_REASONING_EFFORT` (optional) is sent as `reasoning_effort` to the open-weight model only, for
+example `low` for GLM-5.3-Flash on Fireworks (a thinking-only model: `none` is rejected with HTTP 400, `low`
+returned no reasoning text in a check on 2026-10-23).
 
 `hipstraw-mm market --memory simulate --program <id> [--objective-pdf PATH] [--through STAGE] --serve`
 runs the pipeline up to STAGE (default vichara) with the open-weight route on for that run only and opens the viewer's **Routing** tab: the routing
