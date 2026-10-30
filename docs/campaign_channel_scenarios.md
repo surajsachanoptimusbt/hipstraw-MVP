@@ -1,6 +1,6 @@
 # Campaign strategy & readiness, channel by channel: scenarios
 
-From the 30 October 2026 internal meeting. A campaign starts from its channels, and each channel reaches a
+ A campaign starts from its channels, and each channel reaches a
 different audience: Instagram reaches small companies, not enterprise buyers. So Hipstraw's first answer is
 per channel: **is this message right for the audience this channel reaches, and is this channel ready to
 spend on?** This document has the two scenarios, how marketers test a campaign before they pay for it, and
