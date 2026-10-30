@@ -1,0 +1,146 @@
+# Hipstraw G0 first-release Moves (HA section 5). A starting proposal: the catalogue is to be drawn from
+# the campaign review repertoire workbook (HR08, HQ1). Move IDs stay stable across versions so tactic
+# records join cleanly when the compiler arrives at G3.
+version: campaign-repertoire.v0.2
+source: "HA section 5 candidate Moves; pending the repertoire workbook (HR08, HQ1)"
+moves:
+  - id: M01
+    version: 1
+    name: Capture customer asset
+    group: evidence
+    effectClasses: [E0]
+    inputs: [mandate]
+    transitions:
+      - {kind: claim, from: [null], to: [reported]}
+    risks: ["customer copy describes intent, not behaviour"]
+    handler: evidence.capture_assets
+  - id: M02
+    version: 1
+    name: Bounded source research
+    group: evidence
+    effectClasses: [E1, E2]
+    promptVersion: campaign_source_summary.v1
+    inputs: [mandate, position]
+    transitions:
+      - {kind: claim, from: [null, reported], to: [reported, contested]}
+      - {kind: unknown, from: [null], to: [open]}
+    risks: ["page may differ from what the audience sees", "synthesis never raises a claim above reported"]
+    handler: evidence.source_research
+  - id: M03
+    version: 1
+    name: Verify metric identity and freshness
+    group: evidence
+    effectClasses: [E1]
+    eligibility: {all: [{fact: hasMetrics, op: "==", value: true}]}
+    inputs: [mandate, evidence]
+    transitions:
+      - {kind: observation, from: [null], to: [observed, stale]}
+    risks: ["metric definitions differ across tools"]
+    handler: evidence.verify_metrics
+  - id: M04
+    version: 1
+    name: Completeness check against readiness criteria
+    group: readiness
+    effectClasses: [E0]
+    inputs: [mandate, position, criteria]
+    transitions:
+      - {kind: blocker, from: [null, open], to: [open, cleared]}
+    risks: ["criteria list incomplete for a channel"]
+    handler: readiness.completeness
+  - id: M05
+    version: 1
+    name: Day Zero dependency check
+    group: readiness
+    effectClasses: [E0]
+    inputs: [mandate, position, criteria]
+    transitions:
+      - {kind: blocker, from: [null, open], to: [open, cleared]}
+    risks: ["ready dates are the customer's own estimates"]
+    handler: readiness.day_zero_dependencies
+  - id: M06
+    version: 2
+    name: Synthesize strategic assumptions and gaps
+    group: strategy
+    effectClasses: [E2]
+    # v2 (Oct 30 meeting): judges the rubric channel by channel, starting with "Message fits the audience".
+    promptVersion: campaign_synthesis.v2
+    inputs: [position, evidence]
+    transitions: []
+    risks: ["proposals only: findings enter the Position only through Review"]
+    handler: strategy.synthesize
+  - id: M07
+    version: 1
+    name: Propose message or audience variants
+    group: strategy
+    effectClasses: [E2]
+    promptVersion: campaign_variants.v1
+    inputs: [mandate, position]
+    transitions:
+      - {kind: hypothesis, from: [null], to: [proposed]}
+    risks: ["variants are hypotheses, not recommendations to launch"]
+    handler: strategy.propose_variants
+  - id: M08
+    version: 1
+    name: Request evidence for an unverified assumption
+    group: strategy
+    effectClasses: [E0]
+    inputs: [position]
+    transitions:
+      - {kind: assumption, from: [open], to: [awaiting_evidence]}
+    risks: ["the Sponsor may not hold the evidence"]
+    handler: strategy.request_evidence
+  - id: M09
+    version: 1
+    name: Draft Test Plan
+    group: testing
+    effectClasses: [E0]
+    producesTestPlan: true
+    inputs: [position]
+    transitions:
+      - {kind: hypothesis, from: [proposed], to: [planned]}
+    risks: ["a draft is not an approval"]
+    handler: testing.draft_test_plan
+  - id: M10
+    version: 1
+    name: Dispatch approved test
+    group: testing
+    effectClasses: [E3]
+    requiresApproval: test_plan
+    eligibility: {all: [{fact: authorizedTestChannel, op: "==", value: true}, {fact: testPlanBudgetSet, op: "==", value: true}]}
+    inputs: [test_plan, mandate]
+    transitions:
+      - {kind: hypothesis, from: [planned], to: [running]}
+    risks: ["external effect: publishes, sends or spends"]
+    handler: testing.dispatch_blocked
+  - id: M11
+    version: 1
+    name: Record observation and Delta
+    group: testing
+    effectClasses: [E1]
+    inputs: [position, evidence]
+    transitions:
+      - {kind: observation, from: [null], to: [observed, stale]}
+      - {kind: hypothesis, from: [running], to: [supported, not_supported, inconclusive]}
+    risks: ["a Delta is never causal proof"]
+    handler: testing.record_delta
+  - id: M12
+    version: 1
+    name: Escalate to the Sponsor
+    group: escalation
+    effectClasses: [E0]
+    inputs: [position]
+    transitions: []
+    risks: []
+    handler: escalation.escalate
+  # Added 2026-10-30 (Oct 30 meeting: every channel serves a different audience and has its own rules).
+  - id: M13
+    version: 1
+    name: Check channel standards
+    group: readiness
+    effectClasses: [E0]
+    inputs: [mandate, position, channel_standards]
+    transitions:
+      - {kind: blocker, from: [null, open], to: [open, cleared]}
+      - {kind: unknown, from: [null, open], to: [open, resolved]}
+    risks: ["checks what the Sponsor stated, not the live platform setup"]
+    handler: readiness.channel_standards

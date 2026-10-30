@@ -58,6 +58,8 @@ class CommandResult:
     status: str | None = None
     counts: dict[str, int] | None = None
     warnings: list[str] = field(default_factory=list)
+    # Extra JSON fields a command's contract adds (the campaign commands use it); empty for the rest.
+    data: dict[str, Any] | None = None
 
     def to_json(self) -> dict[str, Any]:
         out: dict[str, Any] = {"command": self.command}
@@ -67,4 +69,6 @@ class CommandResult:
                 out[key] = value
         if self.warnings:
             out["warnings"] = self.warnings
+        if self.data:
+            out.update(self.data)
         return out

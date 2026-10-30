@@ -1,0 +1,7 @@
+# Who may take which campaign action (HA section 9). G0 is used internally from the command line, so a
+# role is declared with --as; every action is still checked here and audited.
+version: campaign-roles.v0.1
+roles:
+  sponsor: [submit_launch, amend_mandate, accept_review, reject_review]
+  campaign_manager: [submit_launch, choose_line, deviate, run_line, stop_line]
+  reviewer: [review_finding, validate_review]

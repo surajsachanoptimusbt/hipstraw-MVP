@@ -1,0 +1,280 @@
+# Channel standards (Oct 30 meeting): every campaign starts from its channels, and each channel reaches a different
+# audience. For each channel: who it reaches (M06 judges "Channel reaches the audience" against this, not against
+# the model's own beliefs), how it is read, the setup facts the Sponsor states, the parts of its asset that are
+# checked, and the checks themselves. Checks are named functions in src/hipstraw_mm/campaign/channels.py; M13
+# runs them.
+#
+# Levels: `must` is a platform rule, the law, or a fact the channel cannot be judged without; M13 opens a blocker
+# when it is not met and an unknown when the Sponsor has not stated it. `should` is established practice; a miss
+# is a fix for the Review. `mustWhen` raises a `should` to `must` past a size (Gmail's bulk-sender rules).
+# Every check names its source; sources were read on 2026-10-30 (docs/campaign_channel_scenarios.md lists them).
+# A proposal for domain-owner review, like criteria.yaml and rubric.yaml.
+version: channel-standards.v0.1
+status: "proposal for domain-owner review; sources read 2026-10-30"
+channels:
+  email:
+    name: Email
+    assetKind: email_copy
+    reach:
+      how: "Only the people on the sender's list. Who it reaches is decided by how the list was built, not by targeting."
+      fitsWell: "People who asked to hear from the sender: sign-ups, event registrants, trial users, customers. In B2B, named roles when the list was built from them."
+      fitsPoorly: "Cold audiences. Mail to people who never asked drives spam complaints, and Gmail stops delivering to senders whose complaint rate reaches 0.3%."
+    format: "Read in the inbox, often on a phone: the from name, subject line and preview text decide whether it is opened. One message, one call to action."
+    setup:
+      listSource: "List source (where the addresses came from)"
+      consent: "Consent basis (opt_in, existing_customers, legitimate_interest, purchased, rented)"
+      listSize: "List size (5,000 or more a day to Gmail makes a bulk sender)"
+      sendingDomain: "Sending domain"
+      authentication: "Authentication (which of SPF, DKIM and DMARC are in place)"
+      unsubscribe: "Unsubscribe (one_click, link, none)"
+      postalAddress: "Postal address (the sender's physical address)"
+      preSendTest: "Pre-send test (rendering, spam-filter and seed test)"
+    assetFields:
+      from: "From name"
+      subject: "Subject line"
+      preheader: "Preview text"
+      body: "Body"
+      cta: "Call to action"
+      ctaUrl: "Link"
+      footer: "Footer"
+    checks:
+      - id: EM01
+        text: "List source and consent stated"
+        level: must
+        check: setup_present
+        args: {fields: [listSource, consent]}
+        source: "Who is on the list is who the email reaches (rubric CR02); Gmail spam-rate limit: keep below 0.10%, never reach 0.30% (support.google.com/a/answer/14229414)"
+      - id: EM02
+        text: "Not a bought or rented list"
+        level: must
+        check: setup_not_in
+        args: {field: consent, values: [purchased, rented]}
+        source: "Email platforms' acceptable-use rules forbid purchased or rented lists (Mailchimp Acceptable Use Policy, mailchimp.com/legal/acceptable_use)"
+      - id: EM03
+        text: "Sending domain authenticated (SPF or DKIM)"
+        level: must
+        check: setup_includes
+        args: {field: authentication, values: [SPF, DKIM], any: true}
+        source: "Gmail sender requirements for all senders: SPF or DKIM (support.google.com/a/answer/81126)"
+      - id: EM04
+        text: "SPF, DKIM and DMARC all in place"
+        level: should
+        mustWhen: {field: listSize, atLeast: 5000}
+        check: setup_includes
+        args: {field: authentication, values: [SPF, DKIM, DMARC]}
+        source: "Gmail and Yahoo: required for bulk senders (about 5,000 or more messages a day to Gmail; DMARC p=none is enough), recommended for all (support.google.com/a/answer/81126; senders.yahooinc.com/best-practices)"
+      - id: EM05
+        text: "Unsubscribe link in the email"
+        level: must
+        check: asset_field_contains
+        args: {field: footer, any: [unsubscribe]}
+        source: "US CAN-SPAM Act: a clear opt-out in every commercial email, B2B included, honored within 10 business days (ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business)"
+      - id: EM06
+        text: "One-click unsubscribe (List-Unsubscribe-Post header)"
+        level: should
+        mustWhen: {field: listSize, atLeast: 5000}
+        check: setup_equals
+        args: {field: unsubscribe, value: one_click}
+        source: "Gmail: marketing mail from bulk senders must support one-click unsubscribe, RFC 8058 (support.google.com/a/answer/81126)"
+      - id: EM07
+        text: "Physical postal address in the email"
+        level: must
+        markets: [US]
+        check: asset_field_has_setup
+        args: {field: footer, setupField: postalAddress}
+        source: "US CAN-SPAM Act: a valid physical postal address in every commercial email (ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business)"
+      - id: EM08
+        text: "Each person consented to marketing email"
+        level: should
+        markets: [IN]
+        check: setup_equals
+        args: {field: consent, value: opt_in}
+        source: "India DPDP Act 2023: a work address that identifies a person is personal data and marketing needs consent; the Rules (notified 13 Nov 2025) apply notice and consent from 13 May 2027"
+      - id: EM09
+        text: "Subject line within 60 characters"
+        level: should
+        check: asset_field_max
+        args: {field: subject, max: 60}
+        source: "Mailchimp: no more than 9 words and 60 characters (mailchimp.com/help/best-practices-for-email-subject-lines); HubSpot suggests under 50"
+      - id: EM10
+        text: "Preview text written, within 90 characters"
+        level: should
+        check: asset_field_max
+        args: {field: preheader, max: 90}
+        source: "Litmus: preview text under 90 characters; without it the inbox shows the first line of the body (litmus.com/blog/the-ultimate-guide-to-preview-text-support)"
+      - id: EM11
+        text: "Call-to-action link tagged for tracking (UTM)"
+        level: should
+        check: asset_url_tagged
+        args: {field: ctaUrl, params: [utm_source, utm_medium, utm_campaign]}
+        source: "Litmus pre-send checklist: links work and carry UTM parameters (litmus.com/blog/ultimate-email-checklist)"
+      - id: EM12
+        text: "Rendering, spam-filter and seed test planned before the send"
+        level: should
+        check: setup_present
+        args: {fields: [preSendTest]}
+        source: "Litmus pre-send checklist (litmus.com/blog/ultimate-email-checklist); seed tests at Gmail, Yahoo and Microsoft (validity.com/blog/the-dos-and-donts-of-seed-testing)"
+      - id: EM13
+        text: "Success measured by clicks or applications, not opens"
+        level: should
+        check: measure_not
+        args: {terms: [open rate, opens, open-rate]}
+        source: "Apple Mail Privacy Protection loads images, tracking pixels included, whether or not the email is opened, so opens are inflated (litmus.com/blog/apple-mail-privacy-protection-for-marketers)"
+
+  linkedin_ads:
+    name: LinkedIn ads
+    assetKind: ad_copy
+    reach:
+      how: "Paid placement in the LinkedIn feed, targeted from members' profiles by job function, title, seniority, company size and industry, and location."
+      fitsWell: "B2B buyers named by role and company size, from small companies to enterprise: finance, procurement and operations leaders."
+      fitsPoorly: "Consumers, and audiences too narrow to deliver: LinkedIn will not run an ad to fewer than 300 members."
+    format: "Read in a professional feed: about the first 150 characters of the intro text show before 'see more', so the point and the offer must be there; a headline of up to about 70 characters; a fixed call-to-action button (Apply, Register, Sign Up, Learn More, Request Demo and others)."
+    setup:
+      targeting: "Targeting (job functions or titles, seniority, company size, industries, locations)"
+      audienceSize: "Audience size (as Campaign Manager forecasts it)"
+      dailyBudget: "Daily budget (USD)"
+      conversionTracking: "Conversion tracking (Insight Tag and/or Conversions API)"
+      leadGenForm: "Lead Gen Form (instead of a landing page)"
+    assetFields:
+      introText: "Intro text"
+      headline: "Headline"
+      image: "Image (size and what it shows)"
+      cta: "Call-to-action button"
+      destination: "Destination URL"
+    checks:
+      - id: LI01
+        text: "Targeting stated by role and company size"
+        level: must
+        check: setup_present
+        args: {fields: [targeting]}
+        source: "LinkedIn targeting by job function, seniority, title, company size and industry (linkedin.com/help/lms/answer/a424655)"
+      - id: LI02
+        text: "Audience above LinkedIn's minimum of 300 members"
+        level: must
+        check: setup_at_least
+        args: {field: audienceSize, min: 300}
+        source: "LinkedIn audience size minimum (linkedin.com/help/lms/answer/a423690)"
+      - id: LI03
+        text: "Audience large enough to deliver well (50,000 or more)"
+        level: should
+        check: setup_at_least
+        args: {field: audienceSize, min: 50000}
+        source: "LinkedIn suggests 50,000 or more, and 300,000 or more for Sponsored Content (linkedin.com/help/lms/answer/a423690)"
+      - id: LI04
+        text: "Daily budget at or above LinkedIn's minimum (USD 10)"
+        level: must
+        check: setup_at_least
+        args: {field: dailyBudget, min: 10}
+        source: "LinkedIn: USD 10 a day minimum, USD 100 lifetime for a new campaign (business.linkedin.com/advertise/ads/best-practices/maximize-your-budget)"
+      - id: LI05
+        text: "Conversion tracking or a Lead Gen Form in place"
+        level: must
+        check: setup_any
+        args: {fields: [conversionTracking, leadGenForm]}
+        source: "LinkedIn Insight Tag and Conversions API, both recommended (linkedin.com/help/lms/answer/67513); Lead Gen Forms (business.linkedin.com/marketing-solutions/native-advertising/lead-gen-ads)"
+      - id: LI06
+        text: "Intro text's point fits before 'see more' (150 characters)"
+        level: should
+        check: asset_field_max
+        args: {field: introText, max: 150}
+        source: "LinkedIn single image ad specs: up to 3,000 characters, keep within 150 to avoid truncation (linkedin.com/help/lms/answer/a426534)"
+      - id: LI07
+        text: "Headline within 70 characters"
+        level: should
+        check: asset_field_max
+        args: {field: headline, max: 70}
+        source: "LinkedIn single image ad specs: up to 200 characters, keep within 70 to avoid truncation (linkedin.com/help/lms/answer/a426534)"
+      - id: LI08
+        text: "Destination link tagged for tracking (UTM)"
+        level: should
+        check: asset_url_tagged
+        args: {field: destination, params: [utm_source, utm_medium, utm_campaign]}
+        source: "Practice: UTM parameters attribute applications to the ad (litmus.com/blog/ultimate-email-checklist lists the same for email)"
+
+  instagram_ads:
+    name: Instagram ads
+    assetKind: ad_copy
+    reach:
+      how: "Paid placement in Instagram feeds, Stories and Reels through Meta's ad system, targeted by location, age, interests and behaviours; job title and employer targeting rest on what people put in their profiles."
+      fitsWell: "Consumers, and small-business owners and founders reached through interests; visual products."
+      fitsPoorly: "Mid-market and enterprise buyers named by role and company size: job-title and employer data is self-reported and often missing, Meta offers no company-size targeting, and Advantage+ audience may show the ad beyond the targeting set."
+    format: "Visual first, in a fast-scrolling feed: the image or video carries the message (4:5 recommended); Meta recommends about 125 characters of primary text and a 40-character headline."
+    setup:
+      targeting: "Targeting (locations, ages, interests, behaviours, work fields)"
+      dailyBudget: "Daily budget (USD)"
+      conversionTracking: "Conversion tracking (Meta Pixel and/or Conversions API)"
+    assetFields:
+      visual: "Image or video (ratio and what it shows)"
+      caption: "Primary text"
+      headline: "Headline"
+      cta: "Call-to-action button"
+      destination: "Destination URL"
+    checks:
+      - id: IG01
+        text: "Targeting stated"
+        level: must
+        check: setup_present
+        args: {fields: [targeting]}
+        source: "Meta ad targeting; Advantage+ audience may reach beyond it (facebook.com/business/ads/meta-advantage-plus/audience)"
+      - id: IG02
+        text: "Conversion tracking in place (Meta Pixel or Conversions API)"
+        level: must
+        check: setup_present
+        args: {fields: [conversionTracking]}
+        source: "Meta Conversions API alongside the Pixel (facebook.com/business/help/2041148702652965)"
+      - id: IG03
+        text: "Visual described for the feed"
+        level: must
+        check: asset_field_present
+        args: {field: visual}
+        source: "Instagram feed image ads: 4:5 recommended (1440x1800), 4:5 to 1.91:1 allowed (facebook.com/business/ads-guide/update/image/instagram-feed)"
+      - id: IG04
+        text: "Primary text within Meta's 125-character recommendation"
+        level: should
+        check: asset_field_max
+        args: {field: caption, max: 125}
+        source: "Meta ads guide, Instagram feed: primary text 125 characters recommended (facebook.com/business/ads-guide/update/image/instagram-feed)"
+      - id: IG05
+        text: "Destination link tagged for tracking (UTM)"
+        level: should
+        check: asset_url_tagged
+        args: {field: destination, params: [utm_source, utm_medium, utm_campaign]}
+        source: "Practice: UTM parameters attribute applications to the ad"
+
+  reddit_ads:
+    name: Reddit ads
+    assetKind: ad_copy
+    reach:
+      how: "Promoted posts shown to people who subscribed to or visited the chosen communities (subreddits) in the last 28 days; the ads can appear anywhere on Reddit."
+      fitsWell: "Practitioners in topic communities (for example accounting or procurement subreddits) and technical, early-adopter audiences."
+      fitsPoorly: "Senior buyers who are not active in communities; copy that reads as a sales pitch."
+    format: "Reads as a post in a community: plain, specific and honest. Comments are off by default; when turned on, everyone sees them."
+    setup:
+      communities: "Communities (subreddits targeted; Reddit suggests at least 15)"
+      dailyBudget: "Daily budget (USD)"
+      conversionTracking: "Conversion tracking (Reddit Pixel and/or Conversions API)"
+      commentPlan: "Comment plan (whether comments are on, and who answers them)"
+    assetFields:
+      headline: "Headline"
+      body: "Post text"
+      cta: "Call-to-action button"
+      destination: "Destination URL"
+    checks:
+      - id: RD01
+        text: "Communities stated"
+        level: must
+        check: setup_present
+        args: {fields: [communities]}
+        source: "Reddit community targeting (advertising.reddithelp.com/en/categories/targeting/targeting-community)"
+      - id: RD02
+        text: "Conversion tracking in place"
+        level: must
+        check: setup_present
+        args: {fields: [conversionTracking]}
+        source: "Reddit Pixel and Conversions API (advertising.reddithelp.com)"
+      - id: RD03
+        text: "Comment plan stated"
+        level: should
+        check: setup_present
+        args: {fields: [commentPlan]}
+        source: "Reddit: comments on ads are off by default and can be allowed (advertising.reddithelp.com/en/categories/managing-ads/managing-ads-comments)"

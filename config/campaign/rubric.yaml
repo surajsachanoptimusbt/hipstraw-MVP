@@ -1,0 +1,94 @@
+# Campaign rubric: how G0 says whether a campaign is right for its audience and market, without a score
+# (spec Session 2026-10-29, FR-049 to FR-051). M06 judges each question met / partly / not_met / unknown,
+# quoting the campaign word for word. A proposal for the domain owner to review, like
+# config/campaign/criteria.yaml. Lines and Moves named in `fix` are where a miss gets worked on.
+#
+# v0.2 (Oct 30 meeting): a campaign starts from its channels, and every channel reaches a different audience,
+# so the questions that depend on the channel are judged once per channel (scope: channel), led by the one the
+# product owner asked for: is this message right for this audience on this channel? The rest are judged once
+# for the whole campaign (scope: campaign). The channel's own rules are checked separately by M13
+# (config/campaign/channels.yaml); M06 judges "Channel reaches the audience" against that file's reach notes.
+version: campaign-rubric.v0.2
+status: "proposal for domain-owner review"
+questions:
+  - id: CR01
+    title: Message fits the audience
+    scope: channel
+    area: strategy
+    question: "Is this channel's message right for the stated audience: a problem they own, in their words, at their level?"
+    met: "The copy on this channel names a problem this audience owns, in the terms they use, and speaks to their role and company size."
+    partly: "Relevant to the audience but generic, in the seller's terms, or pitched at the wrong level (too technical, too broad)."
+    notMet: "Written for someone else, or only about the product."
+    fix: "M07 message variant for this audience within L02 Strategy validation; M08 request evidence that the audience has the problem"
+  - id: CR02
+    title: Channel reaches the audience
+    scope: channel
+    area: strategy
+    question: "Can this channel put the message in front of this audience, for this kind of decision?"
+    met: "The channel's reach (who it targets and how) matches the stated audience, and the Sponsor states who on this channel will see it."
+    partly: "The channel can reach the audience, but the list or the targeting is not stated or is broader than the audience."
+    notMet: "The channel does not reach this audience (for example consumer social for an enterprise finance buyer)."
+    fix: "Move the budget to a channel that reaches this audience, or state the list or targeting; M08 request channel evidence"
+  - id: CR03
+    title: Offer and one next step
+    scope: channel
+    area: strategy
+    question: "Does this channel's copy make a concrete offer with one clear, low-effort next step?"
+    met: "A specific offer and a single call to action the reader can take now, on this channel."
+    partly: "An offer or a next step, but vague, or several competing ones."
+    notMet: "No offer and no next step."
+    fix: "M07 offer variant"
+  - id: CR04
+    title: Same promise as the landing page
+    scope: channel
+    area: readiness
+    question: "Does this channel make the same promise and offer as the landing page it sends people to?"
+    met: "The promise, the offer and the next step match the landing page."
+    partly: "The promise matches but the offer or the next step differs in a detail."
+    notMet: "The channel promises or offers something the landing page does not."
+    fix: "Align the copy or the landing page before Day Zero; re-run L01 Readiness-first"
+  - id: CR05
+    title: Written for the channel
+    scope: channel
+    area: readiness
+    question: "Is the copy written for how this channel is read (the channel's format note)?"
+    met: "The point and the offer sit where this channel's readers see them first (subject and preheader, the first lines before 'see more', the visual)."
+    partly: "The point is there but buried below what the channel shows first."
+    notMet: "The copy ignores how the channel is read (for example a long paragraph as a feed caption)."
+    fix: "Rewrite for the channel's format; see the M13 channel standards"
+  - id: CR06
+    title: Specific audience
+    scope: campaign
+    area: strategy
+    question: "Is the audience specific enough to reach: a role, a kind of company and a market?"
+    met: "Names the role, the company type or size, and the market."
+    partly: "Names one or two of the three."
+    notMet: "A general audience such as 'businesses' or 'everyone'."
+    fix: "M07 audience variant within L02 Strategy validation"
+  - id: CR07
+    title: Outcome, not features
+    scope: campaign
+    area: strategy
+    question: "Does the campaign say what changes for the buyer, not only what the product does?"
+    met: "States a concrete outcome (money, time, risk) for the buyer."
+    partly: "Implies an outcome but leads with features."
+    notMet: "Lists features only."
+    fix: "M07 message variant"
+  - id: CR08
+    title: Reason to believe
+    scope: campaign
+    area: strategy
+    question: "Does the campaign give a reason to believe the claim (proof, numbers, a customer, a demo)?"
+    met: "At least one specific, checkable proof point."
+    partly: "A proof point that is vague or unsourced."
+    notMet: "Claims with no proof."
+    fix: "M08 request evidence for the claim; add the proof to the landing page"
+  - id: CR09
+    title: Fits the market
+    scope: campaign
+    area: readiness
+    question: "Is the campaign right for its market (for the US or India: currency, language, local norms and rules)?"
+    met: "Currency, language and references fit the market; nothing that breaks local rules."
+    partly: "Small mismatches (currency, spelling, references)."
+    notMet: "Written for another market, or a likely local rule problem."
+    fix: "Localize the assets; M08 request a local review"

@@ -234,6 +234,11 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("view", parents=[common], help="start the read-only trace viewer")
     p.add_argument("--port", type=int, default=8765)
 
+    # --- feature 004: Hipstraw G0 campaign testing ---
+    from hipstraw_mm.campaign.cli import register as register_campaign
+
+    register_campaign(sub, common, common_after, _Parser)
+
     return parser
 
 
@@ -684,12 +689,18 @@ def main(
     try:
         args = build_parser().parse_args(argv)
         command, json_mode = args.command, args.json
-        factory = build_memory_context if args.memory else context_factory
-        ctx = factory(load_config(Path(args.config_dir)))
-        if args.memory and command == "market":
-            for program_file in sorted((Path(args.config_dir) / "programs").glob("*.yaml")):
-                intake(ctx, program_file.stem)
-        result = HANDLERS[command](ctx, args)
+        if command == "campaign":
+            # Its own store and config; building the market context would open Firestore for nothing.
+            from hipstraw_mm.campaign.cli import dispatch as dispatch_campaign
+
+            result = dispatch_campaign(args)
+        else:
+            factory = build_memory_context if args.memory else context_factory
+            ctx = factory(load_config(Path(args.config_dir)))
+            if args.memory and command == "market":
+                for program_file in sorted((Path(args.config_dir) / "programs").glob("*.yaml")):
+                    intake(ctx, program_file.stem)
+            result = HANDLERS[command](ctx, args)
     except SystemExit as exc:  # --help
         return int(exc.code or 0)
     except _HANDLED as exc:

@@ -1,0 +1,22 @@
+# Trace layers for Hipstraw G0 campaign testing (constitution XIV; specs/004-campaign-readiness-g0).
+layers:
+  - id: campaign_manager
+    responsibility: Opens launches, keeps the mandate, recommends and records the chosen Line, runs its stages, and commits the Campaign Position after the Sponsor accepts a Review.
+    actors: [launch_desk, line_selector, stage_runner, position_keeper]
+    rights: [open_launch, amend_mandate, propose_position, recommend_lines, choose_line, record_deviation, run_stage, commit_position, render_report]
+  - id: readiness_testing
+    responsibility: Runs one Move with explicit inputs; its output is input to Review, never the Position itself.
+    actors: [move_runner]
+    rights: [run_move]
+  - id: authority_gate
+    responsibility: Checks roles and each Move's effect class before it runs; fails closed.
+    actors: [authority_gate]
+    rights: [check_authority]
+  - id: review
+    responsibility: Drafts the Review from Move outputs; the reviewer validates it and the Sponsor accepts or rejects it.
+    actors: [review_assembler, reviewer, sponsor]
+    rights: [draft_review, review_finding, validate_review, accept_review, reject_review]
+  - id: workers
+    responsibility: Bounded tasks with explicit inputs and structured outputs - one model call, one page read.
+    actors: [llm_worker, fetch_worker]
+    rights: [call_model, fetch_page]

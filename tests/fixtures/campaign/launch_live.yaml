@@ -1,0 +1,62 @@
+# Sample launch for specs/004-campaign-readiness-g0/quickstart.md. Fictional product and copy.
+product:
+  name: "LedgerLoop"
+  description: "Catches invoice errors before payment for mid-size finance teams."
+  website: "https://example.com/ledgerloop"
+audience:
+  description: "Accounts payable managers at US companies with 200 to 2,000 employees"
+  segments: ["AP managers", "Finance controllers"]
+market: US
+dayZero: 2026-10-20
+objective:
+  statement: "Book 40 demo calls in the first two weeks after launch"
+  successMeasure: "Demo calls booked from campaign traffic"
+strategy:
+  message: "Stop paying wrong invoices: LedgerLoop flags errors before they leave your account."
+  offer: "Free invoice error audit of your last 90 days"
+  budget: {amount: 5000, currency: USD}
+authorizedChannels: []
+approver: "Demo Sponsor"
+trackingPlan: "UTM tags per channel; demo bookings tracked in the CRM"
+assets:
+  - {kind: landing_page, url: "https://example.com/ledgerloop/launch"}
+# Channel-first (Oct 30 meeting): each channel with who it reaches, its setup and its own assets.
+channels:
+  - channel: email
+    audience: "1,800 AP managers and controllers who signed up for the LedgerLoop newsletter"
+    successMeasure: "Demo calls booked from email clicks"
+    setup:
+      listSource: "LedgerLoop newsletter sign-ups"
+      consent: opt_in
+      listSize: 1800
+      sendingDomain: "mail.example.com"
+      authentication: [SPF, DKIM, DMARC]
+      unsubscribe: one_click
+      postalAddress: "100 Example Street, Springfield, IL 62701"
+      preSendTest: "Rendering and seed test two days before the send"
+    assets:
+      - kind: email_copy
+        readyDate: 2026-10-15
+        text: "Subject: Your last 90 days of invoices, checked for free. Body: AP teams lose money to duplicate and mispriced invoices..."
+        fields:
+          subject: "Your last 90 days of invoices, checked for free"
+          preheader: "A free invoice error audit for AP teams"
+          ctaUrl: "https://example.com/ledgerloop/launch?utm_source=newsletter&utm_medium=email&utm_campaign=launch"
+          footer: "LedgerLoop, 100 Example Street, Springfield, IL 62701. Unsubscribe."
+  - channel: linkedin_ads
+    audience: "Accounts payable and finance managers at US companies with 201 to 2,000 employees"
+    successMeasure: "Demo calls booked from LinkedIn clicks"
+    setup:
+      targeting: "Job functions: Accounting, Finance. Seniority: Manager, Director. Company size: 201-2,000. Location: US."
+      audienceSize: 120000
+      dailyBudget: 60
+      conversionTracking: "Insight Tag"
+    assets:
+      - kind: ad_copy
+        readyDate: 2026-10-16
+        text: "Wrong invoices cost more than you think. Get a free 90-day invoice error audit."
+        fields:
+          introText: "Wrong invoices cost more than you think. Get a free 90-day invoice error audit."
+          headline: "Free 90-day invoice error audit"
+          destination: "https://example.com/ledgerloop/launch?utm_source=linkedin&utm_medium=paid_social&utm_campaign=launch"
+metricsFile: metrics.csv

@@ -16,7 +16,7 @@ from contextvars import ContextVar
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, Protocol, TypeVar
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
@@ -26,12 +26,20 @@ from hipstraw_mm.adapters.replay import ReplayMissingError
 from hipstraw_mm.errors import ExternalServiceError
 
 if TYPE_CHECKING:
-    from hipstraw_mm.context import Context
+    from hipstraw_mm.adapters.llm import LLMClient
     from hipstraw_mm.market.trace import Tracer, TraceStepContext
 
 T = TypeVar("T", bound=BaseModel)
 Route = Literal["rules", "open_weight", "frontier"]
 Doc = dict[str, Any]
+
+
+class ModelContext(Protocol):
+    """What the router and `model_call` read from a context: the frontier client and the optional
+    open-weight client. The market `Context` satisfies it, and so does the campaign module's own."""
+
+    llm: LLMClient
+    open_llm: LLMClient | None
 
 
 class TaskRoute(BaseModel):
@@ -148,7 +156,7 @@ class Rule:
 class TaskRouter:
     """One per stage, so the count of open-weight call failures in a row covers the stage's calls."""
 
-    def __init__(self, ctx: Context, tracer: Tracer, config: RoutingConfig, *, run_id: str) -> None:
+    def __init__(self, ctx: ModelContext, tracer: Tracer, config: RoutingConfig, *, run_id: str) -> None:
         self.ctx = ctx
         self.tracer = tracer
         self.config = config

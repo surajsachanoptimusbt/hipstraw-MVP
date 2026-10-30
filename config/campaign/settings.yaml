@@ -1,0 +1,24 @@
+version: campaign-settings.v0.1
+# US and India first (team update, 28 October 2026).
+launchMarkets: [US, IN]
+# "Day Zero is near" for Line conditions; to confirm with the domain owner.
+nearDayZeroDays: 14
+maxVariants: 3
+# M03: a metric whose window ended more than this many days ago is stale.
+metricFreshDays: 7
+# M02 page reads.
+fetch: {timeoutSeconds: 15, maxBytes: 2000000}
+# HA section 1, carried by every Review and report (HR11).
+scopeStatement: >-
+  Continuous Campaign Strategy & Readiness Testing tests a launch's campaign strategy and execution
+  readiness before and during the launch, measured against Day Zero. It reviews versioned,
+  evidence-linked Positions, runs named launch Lines made of typed Moves, proposes bounded Test Plans,
+  coordinates only authorized tests and actions, and records observed Deltas. It does not run campaigns,
+  replace channels, analytics, CRM or ad platforms, forecast campaign success, or publish, spend or
+  contact third parties without specific authority.
+# Core assumptions every launch starts with, all open until evidence supports them.
+coreAssumptions:
+  general:
+    - "The stated audience has the problem the message names"
+    - "The offer is strong enough for the audience to act"
+  perChannel: "The {channel} channel reaches the stated audience"

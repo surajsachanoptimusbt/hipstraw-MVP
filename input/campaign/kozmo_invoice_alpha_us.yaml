@@ -1,0 +1,96 @@
+# Demo scenario (spec Session 2026-10-29): the Kozmo Invoice Alpha launch campaign in the US, aimed at the
+# New York, San Francisco and Atlanta metros. The landing page is Kozmo's real program page; its copy is
+# pasted below as the Sponsor would supply it, because Cloudflare refuses automated reads (M02 records that
+# as an unknown). The email and ad copy are sample drafts written for this demo.
+product:
+  name: "Kozmo Invoice Alpha"
+  description: >-
+    Continuous obligation intelligence: checks every supplier invoice against the contract before payment,
+    protects entitlements and prevents leakage.
+  website: "https://kozmo.ai/invoice-alpha-genesis.html"
+audience:
+  description: >-
+    Heads of Accounts Payable and Procurement at startups and mid-market companies (50 to 2,000 employees)
+    with recurring SaaS, services and supplier spend, in the New York, San Francisco and Atlanta metro areas
+  segments: ["AP managers", "Procurement leads", "Finance controllers"]
+market: US
+dayZero: 2026-11-10
+objective:
+  statement: "Recruit 15 companies into the Invoice Alpha Genesis Cohort"
+  successMeasure: "Qualified cohort applications from campaign traffic"
+strategy:
+  channels: [email, paid_social]
+  message: "Your contracts say one price. Your invoices say another. Kozmo catches the gap before you pay."
+  offer: "Join the Genesis Cohort: a free invoice-against-contract check of your last 90 days of supplier invoices"
+  budget: {amount: 8000, currency: USD}
+authorizedChannels: []
+approver: "Kozmo GTM lead"
+trackingPlan: "UTM tags per channel; cohort applications tracked in the CRM"
+assets:
+  - kind: landing_page
+    url: "https://kozmo.ai/invoice-alpha-genesis.html"
+    text: |-
+      Commercial Program 01 / Invoice Alpha
+      Make the invoice confirmation, not discovery.
+      Invoice Alpha is an 8-week Genesis Cohort for procurement, AP, finance and commercial leaders exploring how AI and agents can maintain the obligation continuously — across contracts, POs, delivery, performance and supplier context — so teams can detect divergence earlier, protect entitlements, prevent leakage and decide what should be paid before payment pressure takes over.
+      Request a spot →
+      ProcurementAP / P2PFinanceCommercialSupplier Management
+      Live obligation position
+      Continuously evaluated
+      01
+      Contract / PO$540K baseline
+      Monthly service fee establishes the starting obligation.
+      02
+      08 Oct / PerformanceSLA miss · −$31K
+      Entitlement is visible before the supplier bills.
+      03
+      14 Oct / IncidentP1 event · −$11K
+      Additional protected amount enters the position.
+      04
+      Expected obligation$498K payable
+      The commercial position is known before invoice receipt.
+      19 days before invoice
+      Expected
+      obligation$498K
+      Invoice arrives$540K27 Oct
+      Divergence+$42K
+      Recommended commercial movePay $498K · protect $42K
+      Challenge entitlement before due-date pressure
+      Program format
+      Format8-week live cohort
+      Experiments6 obligation contexts
+      Weekly outputDesigned evidence report
+      ParticipationBy selection
+      Why Invoice Alpha
+      The commercial opportunity often appears before the document.
+      Traditional AP becomes active when an invoice arrives. But performance, acceptance, usage, credits, scope and supplier context can change what should be owed days or weeks earlier. Invoice Alpha explores what happens when agents maintain that obligation continuously instead of discovering it at the payment queue.
+      Why nowOnce the invoice arrives, opportunities to prevent leakage, capture entitlements or prepare a supplier challenge may already be compressed by payment timelines.
+      Market context: AP benchmarking continues to track cost per invoice, cycle time, exception handling and payment performance as core operating measures. APQC · IOFM
+      The operating shift
+      Move from invoice handling to obligation intelligence.
+      The cohort is built around three changes in where the work starts, what the system maintains and how payment decisions are made.
+      01
+      Old frameMatch what arrived.
+      Invoice AlphaAnticipate what should arrive.
+      Build an expected obligation from contract terms, delivery, usage, performance and known adjustments before the supplier bills.
+      02
+      Old frameManage an exception.
+      Invoice AlphaMaintain the obligation position.
+      Separate authorized, committed, delivered, accepted, invoiced and paid value so the commercial state is understood before AP is forced to resolve it.
+      03
+      Old frameDecide pay or hold.
+      Invoice AlphaChoose the commercial move.
+      Pay deliberately, protect entitlements, re-scope, notify, challenge, accelerate or hold within clear authority boundaries.
+  - kind: email_copy
+    channel: email
+    readyDate: 2026-11-04
+    text: >-
+      Subject: Are you paying what your contracts say? Most finance teams only find invoice errors after the
+      money has left. Kozmo Invoice Alpha reads your contracts and checks every supplier invoice against them
+      before payment. Join the Genesis Cohort for a free check of your last 90 days of invoices.
+  - kind: ad_copy
+    channel: paid_social
+    readyDate: 2026-11-08
+    text: >-
+      Invoices drift from contracts. Kozmo catches it before you pay. Free 90-day invoice check for Genesis
+      Cohort members.

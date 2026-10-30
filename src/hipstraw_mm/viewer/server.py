@@ -78,6 +78,7 @@ def as_read_store(store: Any) -> Any:
 class _Handler(BaseHTTPRequestHandler):
     store: Any
     allowed_hosts: set[str]
+    page = "index.html"
 
     def log_message(self, format: str, *args: Any) -> None:
         pass
@@ -261,7 +262,7 @@ class _Handler(BaseHTTPRequestHandler):
         self._json_error(404, f"unknown route: {path}")
 
     def _serve_index(self, head: bool = False) -> None:
-        index_path = STATIC_DIR / "index.html"
+        index_path = STATIC_DIR / self.page
         if not index_path.exists():
             self._html_response(200, b"<html><body>Viewer not built yet</body></html>")
             return
@@ -294,7 +295,9 @@ class _Handler(BaseHTTPRequestHandler):
 class ViewerServer(HTTPServer):
     allow_reuse_address = False
 
-    def __init__(self, store: Any, host: str = "127.0.0.1", port: int = 8765) -> None:
+    def __init__(self, store: Any, host: str = "127.0.0.1", port: int = 8765,
+                 handler: type[_Handler] = _Handler) -> None:
+        """`handler` lets another read-only page (the campaign page) keep these rules with its own routes."""
         if host not in ALLOWED_HOSTS:
             raise ValueError(f"viewer host must be a loopback address, got {host!r}")
         if _has_write_methods(store):
@@ -302,11 +305,11 @@ class ViewerServer(HTTPServer):
                 "viewer store has write methods; pass as_read_store(store) or use a ReadStore"
             )
 
-        handler = type("Handler", (_Handler,), {
+        bound = type("Handler", (handler,), {
             "store": store,
             "allowed_hosts": ALLOWED_HOSTS | {host},
         })
-        super().__init__((host, port), handler)
+        super().__init__((host, port), bound)
 
     def handle_error(self, request: Any, client_address: Any) -> None:
         # The browser dropped the connection (tab switched, poll replaced): nothing to report.

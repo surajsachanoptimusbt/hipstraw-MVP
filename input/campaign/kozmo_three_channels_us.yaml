@@ -1,0 +1,155 @@
+# Scenario 2 (Oct 30 meeting): the same campaign on three channels, email, LinkedIn ads and Instagram ads, to
+# show how one message is judged differently for each channel's audience. Sample copy written for this demo;
+# the landing page is Kozmo's real program page. docs/campaign_channel_scenarios.md walks through it.
+product:
+  name: "Kozmo Invoice Alpha"
+  description: >-
+    Continuous obligation intelligence: checks every supplier invoice against the contract before payment,
+    protects entitlements and prevents leakage.
+  website: "https://kozmo.ai/invoice-alpha-genesis.html"
+audience:
+  description: >-
+    Heads of Accounts Payable and Procurement at startups and mid-market companies (50 to 2,000 employees)
+    with recurring SaaS, services and supplier spend, in the New York, San Francisco and Atlanta metro areas
+  segments: ["AP managers", "Procurement leads", "Finance controllers"]
+market: US
+dayZero: 2026-11-10
+objective:
+  statement: "Recruit 15 companies into the Invoice Alpha Genesis Cohort"
+  successMeasure: "Qualified cohort applications from campaign traffic"
+strategy:
+  message: "Your contracts say one price. Your invoices say another. Kozmo catches the gap before you pay."
+  offer: "Join the Genesis Cohort: a free invoice-against-contract check of your last 90 days of supplier invoices"
+  budget: {amount: 8000, currency: USD}
+authorizedChannels: []
+approver: "Kozmo GTM lead"
+trackingPlan: "UTM tags per channel; cohort applications tracked in the CRM"
+# The landing page every channel sends people to: Kozmo's real program page, its copy pasted as the Sponsor would
+# supply it (Cloudflare refuses automated reads; M02 records that as an unknown).
+assets:
+  - kind: landing_page
+    url: "https://kozmo.ai/invoice-alpha-genesis.html"
+    text: |-
+      Commercial Program 01 / Invoice Alpha
+      Make the invoice confirmation, not discovery.
+      Invoice Alpha is an 8-week Genesis Cohort for procurement, AP, finance and commercial leaders exploring how AI and agents can maintain the obligation continuously — across contracts, POs, delivery, performance and supplier context — so teams can detect divergence earlier, protect entitlements, prevent leakage and decide what should be paid before payment pressure takes over.
+      Request a spot →
+      ProcurementAP / P2PFinanceCommercialSupplier Management
+      Live obligation position
+      Continuously evaluated
+      01
+      Contract / PO$540K baseline
+      Monthly service fee establishes the starting obligation.
+      02
+      08 Oct / PerformanceSLA miss · −$31K
+      Entitlement is visible before the supplier bills.
+      03
+      14 Oct / IncidentP1 event · −$11K
+      Additional protected amount enters the position.
+      04
+      Expected obligation$498K payable
+      The commercial position is known before invoice receipt.
+      19 days before invoice
+      Expected
+      obligation$498K
+      Invoice arrives$540K27 Oct
+      Divergence+$42K
+      Recommended commercial movePay $498K · protect $42K
+      Challenge entitlement before due-date pressure
+      Program format
+      Format8-week live cohort
+      Experiments6 obligation contexts
+      Weekly outputDesigned evidence report
+      ParticipationBy selection
+      Why Invoice Alpha
+      The commercial opportunity often appears before the document.
+      Traditional AP becomes active when an invoice arrives. But performance, acceptance, usage, credits, scope and supplier context can change what should be owed days or weeks earlier. Invoice Alpha explores what happens when agents maintain that obligation continuously instead of discovering it at the payment queue.
+      Why nowOnce the invoice arrives, opportunities to prevent leakage, capture entitlements or prepare a supplier challenge may already be compressed by payment timelines.
+      Market context: AP benchmarking continues to track cost per invoice, cycle time, exception handling and payment performance as core operating measures. APQC · IOFM
+      The operating shift
+      Move from invoice handling to obligation intelligence.
+      The cohort is built around three changes in where the work starts, what the system maintains and how payment decisions are made.
+      01
+      Old frameMatch what arrived.
+      Invoice AlphaAnticipate what should arrive.
+      Build an expected obligation from contract terms, delivery, usage, performance and known adjustments before the supplier bills.
+      02
+      Old frameManage an exception.
+      Invoice AlphaMaintain the obligation position.
+      Separate authorized, committed, delivered, accepted, invoiced and paid value so the commercial state is understood before AP is forced to resolve it.
+      03
+      Old frameDecide pay or hold.
+      Invoice AlphaChoose the commercial move.
+      Pay deliberately, protect entitlements, re-scope, notify, challenge, accelerate or hold within clear authority boundaries.
+channels:
+  - channel: email
+    audience: >-
+      2,100 finance, AP and procurement contacts at US companies who registered for Kozmo's 2026 invoice-leakage
+      webinars or joined the Invoice Alpha waitlist
+    budget: {amount: 1500, currency: USD}
+    successMeasure: "Open rate above 40%, and cohort applications from email clicks"
+    setup:
+      listSource: "Kozmo webinar registrants and Invoice Alpha waitlist sign-ups, 2026"
+      consent: opt_in
+      listSize: 2100
+      sendingDomain: "mail.kozmo.ai"
+      authentication: [SPF, DKIM]
+      unsubscribe: link
+    assets:
+      - kind: email_copy
+        readyDate: 2026-11-04
+        fields:
+          from: "Kozmo Invoice Alpha"
+          subject: "Are you paying what your contracts say?"
+          preheader: "A free check of your last 90 days of supplier invoices, before you pay the next one."
+          body: >-
+            Most finance teams only find invoice errors after the money has left. Your contract says one
+            price; the invoice says another, and the gap is paid before anyone sees it. Kozmo Invoice Alpha
+            reads your contracts and checks every supplier invoice against them before payment. Join the
+            Genesis Cohort for a free check of your last 90 days of invoices.
+          cta: "Get my free invoice check"
+          ctaUrl: "https://kozmo.ai/invoice-alpha-genesis.html?utm_source=kozmo_email&utm_medium=email"
+          footer: "You are receiving this because you registered for a Kozmo webinar or joined the Invoice Alpha waitlist. Unsubscribe."
+  - channel: linkedin_ads
+    audience: >-
+      LinkedIn members in Accounting, Finance and Purchasing job functions, Manager to VP seniority, at
+      companies of 51 to 5,000 employees, in the New York, San Francisco Bay Area and Atlanta metro areas
+    budget: {amount: 4500, currency: USD}
+    successMeasure: "Cohort applications from LinkedIn clicks"
+    setup:
+      targeting: >-
+        Job functions: Accounting, Finance, Purchasing. Seniority: Manager, Director, VP. Company size: 51-200,
+        201-500, 501-1,000, 1,001-5,000. Locations: New York, San Francisco Bay Area, Atlanta.
+      audienceSize: 38000
+      dailyBudget: 150
+      conversionTracking: "Insight Tag on kozmo.ai"
+    assets:
+      - kind: ad_copy
+        readyDate: 2026-11-08
+        fields:
+          introText: >-
+            Invoices drift from contracts: a missed SLA credit here, a price that crept up there. Most AP teams
+            only find the gap after the money has left. Kozmo checks every supplier invoice against the
+            contract before you pay. Genesis Cohort members get a free check of their last 90 days of invoices.
+          headline: "Free 90-day invoice-against-contract check"
+          image: "1200x628: an invoice and its contract side by side, the $42K gap highlighted"
+          cta: "Apply"
+          destination: "https://kozmo.ai/invoice-alpha-genesis.html?utm_source=linkedin&utm_medium=paid_social&utm_campaign=genesis_cohort"
+  - channel: instagram_ads
+    audience: >-
+      Instagram users aged 28 to 55 in New York, San Francisco and Atlanta interested in accounting, small
+      business and finance
+    budget: {amount: 2000, currency: USD}
+    successMeasure: "Cohort applications from Instagram clicks"
+    setup:
+      targeting: "Interests: accounting, small business, finance. Ages 28-55. Locations: New York, San Francisco, Atlanta."
+      dailyBudget: 70
+    assets:
+      - kind: ad_copy
+        readyDate: 2026-11-06
+        fields:
+          visual: "1080x1350 (4:5): a contract and an invoice with the price difference circled in red"
+          caption: "Your contract says one price. Your invoice says another. Kozmo catches the gap before you pay."
+          headline: "Free 90-day invoice check"
+          cta: "Learn more"
+          destination: "https://kozmo.ai/invoice-alpha-genesis.html?utm_source=instagram&utm_medium=paid_social&utm_campaign=genesis_cohort"

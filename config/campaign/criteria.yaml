@@ -1,0 +1,21 @@
+# Readiness criteria for M04 and Day Zero dependency rules for M05 (research R10). A starting proposal for
+# the domain owner to review, like config/playbook/picker.yaml. Checks are named functions in
+# src/hipstraw_mm/campaign/moves/readiness.py; this file chooses and parameterizes them.
+version: readiness-criteria.v0.2
+status: "proposal for domain-owner review"
+leadDays: 3
+criteria:
+  - {id: RC01, text: "Landing page address given", check: asset_present, args: {kind: landing_page}}
+  - {id: RC02, text: "Objective and success measure stated", check: field_present, args: {field: objective.successMeasure}}
+  - {id: RC03, text: "Approver named", check: field_present, args: {field: approver}}
+  - id: RC04
+    text: "Each campaign channel has its asset"
+    check: channel_assets
+    # v0.2: the platforms in channels.yaml (Oct 30 meeting); paid_social, search and display stay for older launches.
+    args: {email: email_copy, linkedin_ads: ad_copy, instagram_ads: ad_copy, reddit_ads: ad_copy,
+           paid_social: ad_copy, search: ad_copy, display: creative}
+  - {id: RC05, text: "Tracking plan stated", check: field_present, args: {field: trackingPlan}}
+  - {id: RC06, text: "Campaign budget stated", check: field_present, args: {field: strategy.budget}}
+dependencyRules:
+  - {id: DZ01, text: "Day Zero set and in the future, or the launch is live", check: day_zero_valid}
+  - {id: DZ02, text: "Every asset ready before the Day Zero lead time", check: assets_ready_before}

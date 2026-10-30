@@ -1,0 +1,31 @@
+# Sample launch for specs/004-campaign-readiness-g0/quickstart.md. Fictional product and copy.
+product:
+  name: "LedgerLoop"
+  description: "Catches invoice errors before payment for mid-size finance teams."
+  website: "https://example.com/ledgerloop"
+audience:
+  description: "Accounts payable managers at US companies with 200 to 2,000 employees"
+  segments: ["AP managers", "Finance controllers"]
+market: DE
+dayZero: 2026-11-11
+objective:
+  statement: "Book 40 demo calls in the first two weeks after launch"
+  successMeasure: "Demo calls booked from campaign traffic"
+strategy:
+  channels: [email, paid_social]
+  message: "Stop paying wrong invoices: LedgerLoop flags errors before they leave your account."
+  offer: "Free invoice error audit of your last 90 days"
+  budget: {amount: 5000, currency: USD}
+authorizedChannels: []
+approver: "Demo Sponsor"
+trackingPlan: "UTM tags per channel; demo bookings tracked in the CRM"
+assets:
+  - {kind: landing_page, url: "https://example.com/ledgerloop/launch"}
+  - kind: email_copy
+    channel: email
+    readyDate: 2026-11-05
+    text: "Subject: Your last 90 days of invoices, checked for free. Body: AP teams lose money to duplicate and mispriced invoices..."
+  - kind: ad_copy
+    channel: paid_social
+    readyDate: 2026-11-06
+    text: "Wrong invoices cost more than you think. Get a free 90-day invoice error audit."

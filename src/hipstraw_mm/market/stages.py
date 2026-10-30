@@ -37,7 +37,7 @@ from hipstraw_mm.market.links import check_link_coverage, chunk_links, link_chec
 from hipstraw_mm.market.meaning import load_graph_meaning
 from hipstraw_mm.market.paths import path_id, paths_below
 from hipstraw_mm.market.repair import bounded_repair
-from hipstraw_mm.market.router import TaskRouter, load_routing
+from hipstraw_mm.market.router import ModelContext, TaskRouter, load_routing
 from hipstraw_mm.market.schemas import (
     GRAPH_LEVELS,
     BeamScoring,
@@ -107,7 +107,7 @@ RETRY_BACKOFF = (4, 12, 30)
 
 
 def model_call(
-    ctx: Context,
+    ctx: ModelContext,
     tracer: Tracer,
     schema: type[T],
     messages: list[dict[str, str]],

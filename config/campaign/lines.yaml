@@ -1,0 +1,40 @@
+# Hipstraw G0 first-release Lines (HA section 5). Moves in one stage run as a group; stages run in order;
+# every Line ends in a Review. Use-when and exclude-when are typed checks over Position and mandate facts
+# (research R4); thresholds are to be confirmed by the domain owner.
+version: campaign-repertoire.v0.2
+lines:
+  - id: L01
+    version: 2
+    name: Readiness-first
+    # v2: M13 checks each channel against its platform rules and practice (config/campaign/channels.yaml).
+    stages: [[M01], [M04, M05, M13], [M12]]
+    reviewQuestion: "Is the campaign operationally ready for Day Zero, and what blocks it?"
+    useWhen: {all: [{fact: daysToDayZero, op: "<=", value: 14}, {fact: isLive, op: "==", value: false}]}
+    excludeWhen: {any: [{fact: isLive, op: "==", value: true}]}
+  - id: L02
+    version: 1
+    name: Strategy validation
+    stages: [[M02], [M06], [M07], [M09]]
+    reviewQuestion: "Do the campaign's core assumptions hold, and what must be validated before launch?"
+    useWhen: {all: [{fact: unverifiedCoreAssumptions, op: ">", value: 0}]}
+    excludeWhen: {any: [{fact: unverifiedCoreAssumptions, op: "==", value: 0}]}
+  - id: L03
+    version: 1
+    name: Test before expansion
+    stages: [[M07], [M09], [M10], [M11]]
+    reviewQuestion: "Does the proposed variant have field signal before it is scaled?"
+    useWhen: {all: [{fact: openHypotheses, op: ">", value: 0}]}
+    excludeWhen: {any: [{fact: authorizedTestChannel, op: "==", value: false}, {fact: testPlanBudgetSet, op: "==", value: false}]}
+  - id: L04
+    version: 1
+    name: Live checkpoint
+    stages: [[M03], [M11], [M06]]
+    reviewQuestion: "Since launch, is the campaign delivering as planned, and is each gap a delivery defect or a strategy signal?"
+    useWhen: {all: [{fact: isLive, op: "==", value: true}, {fact: hasMetrics, op: "==", value: true}]}
+    excludeWhen: {any: [{fact: isLive, op: "==", value: false}]}
+  - id: L05
+    version: 1
+    name: Contested evidence
+    stages: [[M08], [M02], [M12]]
+    reviewQuestion: "What evidence is missing or contradictory, and who must resolve it?"
+    useWhen: {any: [{fact: contestedClaims, op: ">", value: 0}, {fact: unknowns, op: ">", value: 0}]}
