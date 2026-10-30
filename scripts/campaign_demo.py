@@ -1,6 +1,7 @@
 """Run the Hipstraw G0 campaign demo end to end, then open the campaign page.
 
-    python scripts/campaign_demo.py             # both scenarios, then the page on http://127.0.0.1:8766/
+    python scripts/campaign_demo.py             # both scenarios, then the console on http://127.0.0.1:8766/
+    python scripts/campaign_demo.py --read-only # the same, with the read-only page instead of the console
     python scripts/campaign_demo.py --no-view   # build the database and the reports only
 
 Both scenarios in docs/campaign_channel_scenarios.md (Kozmo on email only, then on email, LinkedIn and
@@ -77,15 +78,17 @@ def run_scenario(db: str, launch_file: str, report: str) -> None:
     print(f"  report: {report}")
 
 
-def serve(db: str, port: int) -> None:
-    page = subprocess.Popen([sys.executable, "-c", CLI, "campaign", "--db", db, "view", "--port", str(port)])
+def serve(db: str, port: int, read_only: bool) -> None:
+    command = "view" if read_only else "console"
+    page = subprocess.Popen([sys.executable, "-c", CLI, "campaign", "--db", db, command, "--port", str(port)])
     for _ in range(50):
         with socket.socket() as s:
             if s.connect_ex(("127.0.0.1", port)) == 0:
                 break
         time.sleep(0.2)
     url = f"http://127.0.0.1:{port}/"
-    print(f"\nCampaign page: {url}  (Report, Campaign and Reviewer desk; Ctrl+C stops it)")
+    what = "read-only" if read_only else "console: submit and decide as the person and role under 'Acting as'"
+    print(f"\nCampaign page: {url}  ({what}; Ctrl+C stops it)")
     webbrowser.open(url)
     try:
         page.wait()
@@ -98,6 +101,7 @@ def main() -> None:
     parser.add_argument("--db", default=".runs/campaign_demo_run.db", help="a new database, replaced on each run")
     parser.add_argument("--port", type=int, default=8766)
     parser.add_argument("--no-view", action="store_true", help="do not start the page")
+    parser.add_argument("--read-only", action="store_true", help="serve the read-only page instead of the console")
     args = parser.parse_args()
 
     load_dotenv()
@@ -113,7 +117,7 @@ def main() -> None:
     for launch_file, report in SCENARIOS:
         run_scenario(str(db), launch_file, report)
     if not args.no_view:
-        serve(str(db), args.port)
+        serve(str(db), args.port, args.read_only)
 
 
 if __name__ == "__main__":

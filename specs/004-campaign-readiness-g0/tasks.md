@@ -268,6 +268,13 @@ and CLI wiring.
 - [x] T084 Page: Report, Campaign and Reviewer desk views plus Audit (`viewer.py`, `campaign.html`); findings keep the question title they were judged under
 - [x] T085 Scenarios `input/campaign/kozmo_email_us.yaml` and `kozmo_three_channels_us.yaml`; `docs/campaign_channel_scenarios.md` (practice, sources, open questions); demo guide updated
 
+### Added 2026-10-30 (constitution v2.0.0: the governed console)
+
+- [x] T086 Constitution XIII amended to v2.0.0 (read-only viewer and governed console) in `.specify/memory/constitution.md`
+- [x] T087 Tests first: `tests/unit/test_campaign_console.py` (approved actions only, form submission equals file submission, gate refusals audited, reviewer and Sponsor decisions, request checks) and `tests/integration/test_campaign_console_server.py` (session, token, Origin, Host, content type, size, 403/404/409, PUT/PATCH/DELETE refused, standards and examples)
+- [x] T088 `submit_launch_data` beside `submit_launch` in `src/hipstraw_mm/campaign/intake.py`; `CampaignConsole`, `CampaignConsoleHandler` and `ConsoleServer` in `src/hipstraw_mm/campaign/console.py`; command `campaign console [--port 8766]`; `/api/session` and `/api/standards` on the page
+- [x] T089 Page: "Acting as" (name and role), the new-launch form, decision buttons on the Reviewer desk, the Sponsor's decision on the Campaign view; checked end to end in headless Chrome
+
 ---
 
 ## Dependencies & Execution Order

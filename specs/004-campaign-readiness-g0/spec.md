@@ -62,9 +62,11 @@ supplied on 2026-10-29.)
   Review (FR-054).
 - Q: Which scenarios? → A: Kozmo on one channel (email) first, then the same campaign on three channels to show
   how one message is judged differently per channel (`docs/campaign_channel_scenarios.md`).
-- Q: Separate views for the customer, the reviewer and the report? → A: Yes, as three views of the read-only
-  page (Report, Campaign, Reviewer desk) plus an Audit view. Decisions stay in the CLI (constitution XIII);
-  the desk shows the command. Writing from the page needs a constitution decision (FR-055).
+- Q: Separate views for the customer, the reviewer and the report? → A: Yes, as three views of the page
+  (Report, Campaign, Reviewer desk) plus an Audit view (FR-055).
+- Q: Should the customer and the reviewer submit and decide in the browser? → A: Yes (product owner,
+  30 October). Constitution XIII was amended (v2.0.0) to allow a governed console beside the read-only viewer;
+  `campaign console` offers exactly the approved actions (FR-056, FR-057).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -420,7 +422,17 @@ the stored records.
   rule, law, or a fact needed to judge the channel; `should`: practice) and its source; M13 MUST apply them
   deterministically, opening a blocker for a `must` not met and an unknown for a `must` not stated.
 - **FR-055**: The page MUST offer separate views for the report, the customer's campaign and the reviewer
-  desk, and MUST stay read-only (constitution XIII): the desk shows the command for each decision.
+  desk. Served by `campaign view` it MUST stay read-only (constitution XIII): the desk shows the command for
+  each decision.
+- **FR-056**: `campaign console` MUST serve the same page with only these actions (constitution XIII,
+  v2.0.0): the Sponsor submits a launch (a form built from the channel standards, which may start from a
+  scenario file) and accepts or rejects a validated Review; a reviewer accepts, corrects or rejects findings
+  and validates a Review. Choosing or running a Line, amending a mandate and anything with an external effect
+  stay on the command line.
+- **FR-057**: Each console action MUST call the same governed operation as its CLI command (authority gate,
+  trace, audit; a refused role audited), name the acting person and role, and be accepted only as a JSON POST
+  from the console's own page: Host and Origin checked, the per-session token present, the body at most
+  256 KB. A metrics export is still submitted as a file from the command line.
 
 **Interface**
 

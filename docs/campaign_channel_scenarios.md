@@ -81,11 +81,15 @@ The verdicts above are from the rehearsal on 30 October (gpt-4o, temperature 0).
    - `must` is a platform rule, the law, or a fact needed to judge the channel; `should` is practice.
    - Each check names its source.
    - M13 runs them in L01 Readiness-first.
-4. **Three views on the page** (`hs view`), still read-only:
+4. **Three views on the page:**
    - **Report:** the answer channel by channel, side by side.
    - **Campaign:** what the customer submitted, with each asset previewed as the channel shows it.
-   - **Reviewer desk:** what awaits a decision, the command for each one, and every decision made.
+   - **Reviewer desk:** what awaits a decision, and every decision made.
    - Lines, evidence and trace move under **Audit**.
+5. **The console** (`hs console`; `hs view` stays read-only). Constitution XIII was amended to v2.0.0.
+   - The customer submits a launch from a form built from the channel rules, and accepts or rejects a validated Review.
+   - The reviewer accepts, corrects or rejects findings and validates, from the desk.
+   - Each action runs the same governed command as the CLI: the role is checked, and every decision is traced and audited.
 
 ## Sources (read 30 October 2026)
 
@@ -101,5 +105,8 @@ The verdicts above are from the rehearsal on 30 October (gpt-4o, temperature 0).
 
 1. **Levels.** Should "list source and consent stated" stay a `must` for US email? US law is opt-out, but Gmail's 0.3% complaint limit makes an unknown list risky.
 2. **Thresholds.** These come from platform guidance: LinkedIn audience 50,000; subject line 60 and intro text 150 characters. Do they need tuning per market (India)?
-3. **Writing from the page.** Constitution XIII allows only a read-only viewer, so customer input and reviewer decisions stay in the CLI, and the page shows the command. A form for the customer and buttons for the reviewer need an amendment: a governed write path with role checks, separate from the viewer.
+3. **Writing from the page: decided 30 October.**
+   - The customer and the reviewer act in the browser through `hs console` (constitution XIII, v2.0.0).
+   - Still open: should the Campaign Manager also choose and run Lines from the page?
+   - Still open: when does real sign-in replace the declared "Acting as" identity?
 4. **More channels.** Google Search, display and WhatsApp (India) are not in the standards file yet.

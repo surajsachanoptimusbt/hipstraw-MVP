@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import json
 from collections import Counter
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -161,6 +162,17 @@ def read_launch_file(path: Path) -> LaunchFile:
         raise UsageError(f"cannot read launch file {path}: {exc}") from exc
     except (yaml.YAMLError, ValidationError) as exc:
         raise UsageError(f"launch file {path} is not valid: {exc}") from exc
+
+
+def parse_launch(raw: Any, source: str) -> LaunchFile:
+    """A launch submitted as data (the console's form) instead of a file; the same model checks it."""
+    try:
+        launch = LaunchFile.model_validate(raw)
+    except ValidationError as exc:
+        raise UsageError(f"launch from {source} is not valid: {exc}") from exc
+    if launch.metricsFile:
+        raise UsageError("a metrics export is submitted as a file, from the command line")
+    return launch
 
 
 def parse_metrics_csv(path: Path) -> list[MetricRow]:
@@ -370,12 +382,30 @@ def _initial_items(mandate: Mandate, brief: EvidenceRecord, assets: dict[str, Ev
 
 def submit_launch(store: CampaignStore, config_dir: Path, path: Path, *, by: str, role: str,
                   now: datetime) -> SubmitResult:
+    return _submit(store, config_dir, lambda: read_launch_file(path), source=str(path),
+                   digest=lambda: _sha256(path), base_dir=path.parent, by=by, role=role, now=now)
+
+
+def submit_launch_data(store: CampaignStore, config_dir: Path, raw: Any, *, source: str, by: str, role: str,
+                       now: datetime) -> SubmitResult:
+    """The governed console's submission (constitution XIII): the same steps, gate, trace and audit as a
+    launch file; only where the launch comes from differs."""
+    def digest() -> str:
+        text = json.dumps(raw, sort_keys=True, ensure_ascii=False, default=str)
+        return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+    return _submit(store, config_dir, lambda: parse_launch(raw, source), source=source, digest=digest,
+                   base_dir=None, by=by, role=role, now=now)
+
+
+def _submit(store: CampaignStore, config_dir: Path, load: Callable[[], LaunchFile], *, source: str,
+            digest: Callable[[], str], base_dir: Path | None, by: str, role: str, now: datetime) -> SubmitResult:
     at = now.isoformat()
     settings = load_settings(config_dir)
     authorize(store, load_roles(config_dir), launch_id=None, actor=by, role=role, action="submit_launch", at=at)
-    lf = read_launch_file(path)
+    lf = load()
     _check_market(lf.market, settings)
-    metrics_path = (path.parent / lf.metricsFile) if lf.metricsFile else None
+    metrics_path = (base_dir / lf.metricsFile) if lf.metricsFile and base_dir else None
     metrics_rows = parse_metrics_csv(metrics_path) if metrics_path else None
     repertoire = load_repertoire(config_dir)
     standards = load_channel_standards(config_dir)
@@ -387,7 +417,7 @@ def submit_launch(store: CampaignStore, config_dir: Path, path: Path, *, by: str
     writer = _EvidenceWriter(store, launch_id, by, at)
 
     with tracer.step("campaign_manager", "launch_desk", "open_launch", right="open_launch") as step:
-        step.set_inputs({"file": str(path), "sha256": _sha256(path), "market": lf.market, "by": by, "role": role})
+        step.set_inputs({"file": source, "sha256": digest(), "market": lf.market, "by": by, "role": role})
         metrics = MetricsFile(path=str(metrics_path), sha256=_sha256(metrics_path)) if metrics_path else None
         mandate = _build_mandate(lf, launch_id, 1, by, at, metrics)
         store.insert(mandate)

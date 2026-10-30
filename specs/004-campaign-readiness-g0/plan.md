@@ -62,7 +62,7 @@ findings per Review.
 | X Smallest units | Eight units, each specified, tested and reviewed before the next (tasks.md) | Pass |
 | XI Jev deferred | Not used | Pass |
 | XII Traceability | Every Move execution, gate decision, Review step and model call is a trace step with layer, actor, operation, inputs, outputs, decision, right, checks, cost and latency | Pass |
-| XIII Read-only viewer | No viewer in this feature; a later unit will be read-only | Pass (N/A) |
+| XIII Read-only viewer and governed console (v2.0.0) | `campaign view` is read-only (read-only SQLite connection, GET and HEAD only). `campaign console` offers only the approved actions (FR-056), each through the CLI's governed operation, with Host, Origin, token and size checks (FR-057) | Pass |
 | XIV Layer boundaries | New `config/campaign/layers.yaml`: campaign_manager, readiness_testing, review, authority_gate, workers; each step names its layer | Pass |
 | XV Bounded search | No search. M02 reads only addresses named in the mandate | Pass (N/A) |
 

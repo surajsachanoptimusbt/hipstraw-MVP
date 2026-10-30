@@ -84,7 +84,8 @@ class CampaignView:
         self._rubric = load_rubric(config_dir)
         self._repertoire = load_repertoire(config_dir)
         self._standards = load_channel_standards(config_dir)
-        self._scope = load_settings(config_dir).scopeStatement
+        settings = load_settings(config_dir)
+        self._scope, self._markets = settings.scopeStatement, settings.launchMarkets
         self._store: SqliteCampaignStore | None = None
 
     def _db(self) -> SqliteCampaignStore | None:
@@ -161,6 +162,15 @@ class CampaignView:
         if blob is None:
             return None
         return {key: blob.get(key) for key in ("blobId", "kind", "content", "truncated", "bytes")}
+
+    def standards(self) -> Doc:
+        """What a launch needs per channel (config/campaign/channels.yaml), for the console's form."""
+        return {
+            "version": self._standards.version, "markets": self._markets,
+            "channels": {cid: {"name": s.name, "assetKind": s.assetKind, "setup": s.setup,
+                               "assetFields": s.assetFields, "format": s.format}
+                         for cid, s in self._standards.channels.items()},
+        }
 
     # -- shapes ------------------------------------------------------------------------------------------
 
@@ -373,10 +383,20 @@ class CampaignHandler(_Handler):
     page = "campaign.html"
     store: CampaignView
 
+    def _session(self) -> Doc:
+        """A viewer cannot change anything (constitution XIII); the console overrides this."""
+        return {"writable": False}
+
     def _route(self, head: bool = False) -> None:
         path = urlparse(self.path).path.rstrip("/") or "/"
         if path == "/":
             self._serve_index(head)
+            return
+        if path == "/api/session":
+            self._json_response(200, self._session())
+            return
+        if path == "/api/standards":
+            self._json_response(200, self.store.standards())
             return
         m = re.match(r"^/vendor/([^/]+)$", path)
         if m:

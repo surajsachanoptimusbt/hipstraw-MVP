@@ -100,11 +100,22 @@ def test_only_loopback_can_be_bound(tmp_path: Path) -> None:
         ViewerServer(CampaignView(str(tmp_path / "c.db"), CONFIG), host="0.0.0.0", port=0, handler=CampaignHandler)
 
 
-def test_the_page_never_sends_a_write() -> None:
+def test_the_page_writes_only_through_the_console_actions() -> None:
+    """Constitution XIII (v2.0.0): one POST in the page, to /api/console/<action>, with the console's token; a
+    viewer refuses it (405 above) and never offers it (`writable` is false)."""
     page = Path("src/hipstraw_mm/viewer/static/campaign.html").read_text(encoding="utf-8")
-    for method in ("POST", "PUT", "PATCH", "DELETE"):
+    assert page.count('method: "POST"') == 1 and "fetch(`/api/console/${action}`" in page
+    assert '"X-Hipstraw-Token": s.token' in page
+    for method in ("PUT", "PATCH", "DELETE"):
         assert f'"{method}"' not in page and f"'{method}'" not in page
     assert "score" not in page.lower() and "forecast" not in page.lower()
+
+
+def test_a_viewer_says_it_cannot_write(served: tuple[int, str]) -> None:
+    port, _ = served
+    status, session, _ = _request(port, "/api/session")
+    assert status == 200 and session == {"writable": False}
+    assert _request(port, "/api/console/submit", method="POST")[0] == 405
 
 
 def test_the_page_has_the_three_views_and_the_audit() -> None:

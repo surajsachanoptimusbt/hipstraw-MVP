@@ -249,7 +249,7 @@ def test_the_read_only_connection_refuses_writes(tmp_path: Path) -> None:
 
 def test_the_page_object_exposes_no_write_method() -> None:
     public = {name for name in dir(CampaignView) if not name.startswith("_")}
-    assert public == {"launches", "launch", "trace", "blob"}
+    assert public == {"launches", "launch", "trace", "blob", "standards"}
 
 
 def test_a_review_judged_with_an_earlier_rubric_keeps_its_own_questions(tmp_path: Path) -> None:

@@ -109,6 +109,9 @@ class SqliteCampaignStore:
         self._conn.row_factory = sqlite3.Row
         self._create_schema()
 
+    def close(self) -> None:
+        self._conn.close()
+
     @classmethod
     def read_only(cls, path: str) -> SqliteCampaignStore:
         """For the viewer (Constitution XIII): SQLite refuses every write on this connection. The viewer's

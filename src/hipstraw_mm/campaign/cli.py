@@ -84,6 +84,9 @@ def register(
 
     p = csub.add_parser("view", parents=[common_after], help="serve the read-only campaign page on 127.0.0.1")
     p.add_argument("--port", type=int, default=8766)
+    p = csub.add_parser("console", parents=[common_after],
+                        help="serve the campaign page with its approved actions (submit, review, accept) on 127.0.0.1")
+    p.add_argument("--port", type=int, default=8766)
 
     rp = csub.add_parser("review", parents=[common_after], help="the review queue: show, finding, validate, accept")
     rsub = rp.add_subparsers(dest="review_command", required=True, parser_class=parser_class)
@@ -354,3 +357,27 @@ def _view(args: argparse.Namespace) -> CommandResult:
     finally:
         server.server_close()
     return CommandResult("campaign view", message="campaign page stopped")
+
+
+@_command("console")
+def _console(args: argparse.Namespace) -> CommandResult:
+    """Constitution XIII (v2.0.0): the page plus the approved actions, each through the governed operation."""
+    import sys
+
+    from hipstraw_mm.campaign.console import CampaignConsole, ConsoleServer
+    from hipstraw_mm.campaign.store import SqliteCampaignStore, default_db_path
+    from hipstraw_mm.campaign.viewer import CampaignView
+
+    db = args.db or default_db_path()
+    SqliteCampaignStore(db).close()  # create the database, so the page can open it before the first launch
+    server = ConsoleServer(CampaignView(db, _config_dir(args)), CampaignConsole(db, _config_dir(args)),
+                           port=args.port)
+    print(f"campaign console: http://{server.server_address[0]!s}:{server.server_address[1]}/ "
+          f"(changes {db} only through the governed commands; Ctrl+C stops it)", file=sys.stderr, flush=True)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+    return CommandResult("campaign console", message="campaign console stopped")

@@ -1,23 +1,26 @@
 <!--
 SYNC IMPACT REPORT (temporary - remove before commit)
-Version change: 1.1.0 → 1.2.0 (MINOR: four principles added; none removed or redefined)
-Modified principles: none (I-XI retained verbatim)
-Added principles:
-  - XII. Traceability
-  - XIII. Read-Only Viewer
-  - XIV. Layer Boundaries
-  - XV. Bounded Search
+Version change: 1.2.0 → 2.0.0 (MAJOR: Principle XIII redefined. Its rule "a user interface is in scope
+  only as a read-only viewer" no longer holds; a governed console may now change state. Under this
+  constitution's Version Strategy a redefinition is MAJOR. No existing code becomes non-compliant:
+  viewers stay read-only.)
+Modified principles:
+  - XIII. Read-Only Viewer → XIII. Read-Only Viewer and Governed Console
 Added sections: none
 Removed sections: none
+Decision: product owner, 2026-10-30 (relayed by the developer): the customer (Sponsor) and the Hipstraw
+  reviewer submit and decide in the browser.
+Migration plan:
+  - Existing viewers (market viewer, `campaign view`) are unchanged and remain read-only.
+  - A console is a separate interface with its own command; it lists its approved actions in its
+    feature spec (feature 004: FR-055 and the console requirements that follow it).
+  - Tests that assert "the page never writes" stay true for viewers and are re-scoped for consoles to
+    "writes only through the governed operations, with token, Origin and role checks".
 Templates: plan/spec/tasks templates read the constitution at runtime; not modified here
-Follow-up TODOs (compliance gaps in existing work, not placeholders):
-  - Feature 002 logs step start/end and model-call events only; it does not yet record the full
-    per-step trace that XII requires (inputs, outputs, decision and right used, rationale, checks,
-    prompt and structured response, tool calls, cost/latency).
-  - Feature 002 spec FR-019 excludes any user interface; XIII permits only a read-only viewer, so
-    the two agree, but a viewer needs its own spec.
-  - XIV names layers that feature 002's plan does not yet map: discover/verify (Search & Research),
-    Review (Market Manager), report. The plan's Constitution Check should record the mapping.
+Follow-up TODOs:
+  - Feature 004: specify and build the campaign console (`campaign console`) under the new XIII.
+  - Resolved from 1.2.0: "a viewer needs its own spec": the market viewer is specified in feature 003,
+    the campaign page in feature 004 (FR-055).
 -->
 
 # hipstraw MVP Constitution
@@ -156,13 +159,30 @@ recorded. Traces MUST NOT contain secrets (API keys, tokens, credentials).
 **Rationale**: Review, debugging, and audit all depend on being able to reconstruct why the system
 did what it did from stored records, not from memory or opaque model state.
 
-### XIII. Read-Only Viewer
+### XIII. Read-Only Viewer and Governed Console
 
-A user interface is in scope only as a read-only viewer of stored state and traces. A viewer MUST
-NOT write, edit, or delete data, and MUST NOT trigger pipeline steps. All changes to state go
-through the governed pipeline (Principle VI).
+A user interface is in scope in two forms only.
 
-**Rationale**: A viewer that can write would be a second, ungoverned path to canonical state.
+- **Viewer**: shows stored state and traces. A viewer MUST NOT write, edit, or delete data, and MUST
+  NOT trigger pipeline steps.
+- **Governed console**: the only kind of interface that MAY change state, and only through the
+  governed pipeline (Principle VI). A console MUST:
+  - change state only by calling the same library operations the CLI calls (Principle II), so the
+    authority gate, the trace (Principle XII) and the append-only audit apply to every action
+    exactly as on the command line. It MUST NOT write to storage directly or add a second code path;
+  - offer only the actions the product owner approved for it, listed in its feature spec;
+  - name the acting person and role on every change, checked by the authority gate, which fails
+    closed;
+  - serve on loopback only and check the Host header; accept a change only as a JSON request that
+    carries the per-session token the console issued and an Origin matching the console, refusing
+    cross-site requests; and bound the size of each request;
+  - never dispatch an external effect, or start pipeline steps beyond its approved actions.
+- Until authentication exists, the actor declares their identity, as on the command line, and a
+  console MUST stay loopback-only.
+
+**Rationale**: There is one governed path to canonical state, whether a request comes from a
+terminal or a browser. A viewer that could write, or a console with its own write path, would be a
+second, ungoverned path.
 
 ### XIV. Layer Boundaries
 
@@ -225,4 +245,4 @@ requests MUST include written justification.
 - **MINOR** bump: New principles added or existing ones materially expanded
 - **PATCH** bump: Clarifications, wording improvements, or non-semantic refinements
 
-**Version**: 1.2.0 | **Ratified**: 2026-10-05 | **Last Amended**: 2026-10-08
+**Version**: 2.0.0 | **Ratified**: 2026-10-05 | **Last Amended**: 2026-10-30

@@ -231,6 +231,30 @@ details.rules[open] > summary { border-bottom: 1px solid var(--border); }
 .cmd-label { color: var(--muted); font-size: 12px; }
 .cmd code { background: var(--code); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; overflow-x: auto; white-space: nowrap; display: block; }
 @media (max-width: 1000px) { .chan-grid { grid-template-columns: 1fr; } .vopen { padding-left: 16px; } }
+/* console */
+.readonly.console { color: var(--warn); border-color: var(--warn); }
+.acting { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.acting input, .acting select { font: inherit; font-size: 12px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel); color: var(--fg); }
+.acting input { width: 150px; }
+.btn-s { border: 1px solid var(--border); background: var(--panel); color: var(--fg); border-radius: 6px; padding: 4px 12px; font: inherit; font-size: 12.5px; cursor: pointer; }
+.btn-s:hover:not(:disabled) { background: var(--hover); }
+.btn-s:disabled { opacity: .5; cursor: default; }
+.btn-s.on { border-color: var(--accent); background: var(--sel); }
+.btn-s.ok { border-color: var(--ok); color: var(--ok); }
+.btn-s.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.decide { margin-top: 8px; }
+.decide-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.decide-form { display: grid; gap: 8px; margin-top: 8px; max-width: 760px; }
+.decide-form input, .decide-form textarea, .decide-form select, .field input, .field textarea, .field select { font: inherit; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel); color: var(--fg); width: 100%; }
+label.inline { display: flex; gap: 8px; align-items: center; color: var(--muted); }
+label.inline select { width: auto; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+.form-grid .wide, .form-grid h3 { grid-column: 1 / -1; }
+.field { display: grid; gap: 4px; }
+.field > span { color: var(--muted); font-size: 12px; }
+.field > span i { font-style: normal; color: var(--faint); }
+.new-launch { display: block; margin: 4px 12px 8px; padding: 6px 10px; border: 1px dashed var(--border); border-radius: 6px; text-align: center; }
+@media (max-width: 760px) { .form-grid { grid-template-columns: 1fr; } .acting input { width: 100px; } }
 @media (max-width: 1100px) { .trace { grid-template-columns: 1fr; } .detail { position: static; max-height: none; } }
 @media (max-width: 760px) {
   .app { grid-template-columns: 1fr; grid-template-rows: 48px auto 1fr; }
@@ -250,7 +274,7 @@ details.rules[open] > summary { border-bottom: 1px solid var(--border); }
 <script src="/vendor/htm.umd.js"></script>
 <script>
 "use strict";
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef, useContext } = React;
 const html = htm.bind(React.createElement);
 const enc = encodeURIComponent;
 
@@ -312,7 +336,9 @@ function usePoll(path, everyMs) {
       if (alive && everyMs) timer = setTimeout(load, everyMs);
     };
     load();
-    return () => { alive = false; clearTimeout(timer); };
+    const now = () => { clearTimeout(timer); load(); };
+    addEventListener("hipstraw:changed", now);
+    return () => { alive = false; clearTimeout(timer); removeEventListener("hipstraw:changed", now); };
   }, [path, everyMs]);
   return st;
 }
@@ -330,6 +356,7 @@ function useHash() {
 function parseRoute(hash) {
   const p = hash.replace(/^#\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
   if (p[0] === "launch" && p[1]) return { launchId: p[1], tab: p[2] || "report", focus: p[3] || null };
+  if (p[0] === "new") return { launchId: null, tab: "new", focus: null };
   return { launchId: null, tab: "report", focus: null };
 }
 const href = (launchId, tab, focus) => `#/launch/${enc(launchId)}/${tab}${focus ? `/${enc(focus)}` : ""}`;
@@ -532,6 +559,9 @@ function CampaignView({ d }) {
   const landing = m.assets.filter(a => a.kind === "landing_page");
   return html`<div className="stack">
     <${Progress} d=${d} />
+    ${d.desk.queue.filter(r => r.state === "validated").map(r => html`<div className="card" key=${r.reviewId}>
+      <div className="card-head"><h2>Your decision: ${r.reviewId}</h2><span className="hint">${r.question}</span></div>
+      <${SponsorDecision} r=${r} d=${d} /></div>`)}
     <div className="card">
       <div className="card-head"><h2>Your campaign</h2><span className="hint">mandate v${m.version} · submitted by ${d.owner} · to change it, submit a new version (hs amend)</span></div>
       <div className="card-body"><dl className="kv">
@@ -632,20 +662,18 @@ function Cmd({ label, text }) {
 
 function DeskView({ d }) {
   const desk = d.desk;
-  const sponsor = d.mandate.approver || "Sponsor";
+  const s = useContext(Session);
   return html`<div className="stack">
-    <div className="alert info">The page is read-only (constitution XIII). Each decision is taken in the terminal with the command shown, by the role it names, and appears here within a few seconds.</div>
+    ${s.writable ? html`<div className="alert info">Decisions are taken here as the person and role under “Acting as”. Each one runs the same governed command as the CLI: the authority gate checks the role, and the decision is traced and audited.</div>`
+      : html`<div className="alert info">This page is read-only (constitution XIII). Each decision is taken in the terminal with the command shown, by the role it names, or in the console (hs console).</div>`}
     ${!desk.queue.length && html`<${Empty} title="Nothing awaits a decision" hint="When a Line ends, its Review lands here for a Hipstraw reviewer." />`}
     ${desk.queue.map(r => html`<div className="card" key=${r.reviewId}>
       <div className="card-head"><div><h2>${r.reviewId} ${r.lineId ? html`<span className="tag">${r.lineId}</span>` : ""} <${Pill} tone=${stateTone(r.state)}>${r.state}<//></h2>
         <div className="muted">${r.question}</div></div>
         <span className="hint">${r.done} of ${r.total} findings decided</span></div>
       ${r.state === "drafted" && r.pending.length > 0 && r.pending.map(f => html`<${DeskFinding} key=${f.findingId} r=${r} f=${f} d=${d} />`)}
-      ${r.state === "drafted" && r.pending.length === 0 && html`<div className="card-body"><b>Every finding is decided.</b> The reviewer validates the Review:
-        <${Cmd} label="Validate" text=${`hs review validate --review ${r.reviewId} --by "${REVIEWER}" --as reviewer`} /></div>`}
-      ${r.state === "validated" && html`<div className="card-body"><b>Validated; awaiting the Sponsor.</b> Only the Sponsor's acceptance commits the next Position:
-        <${Cmd} label="Accept" text=${`hs review accept --review ${r.reviewId} --by "${sponsor}" --as sponsor`} />
-        <${Cmd} label="Reject" text=${`hs review reject --review ${r.reviewId} --reason "<why>" --by "${sponsor}" --as sponsor`} /></div>`}
+      ${r.state === "drafted" && r.pending.length === 0 && html`<${ValidateBox} r=${r} />`}
+      ${r.state === "validated" && html`<${SponsorDecision} r=${r} d=${d} />`}
     </div>`)}
     <${Decisions} d=${d} />
   </div>`;
@@ -680,12 +708,259 @@ function DeskFinding({ r, f, d }) {
       <span className="muted">${f.isProposal ? "model proposal" : "deterministic check"} · ${f.uncertainty}</span></div>
     <div style=${{ marginTop: 4 }}>${f.currentText}</div>
     ${f.quotes && f.quotes.length > 0 && f.quotes.map((x, i) => html`<div key=${i} className="quote" style=${{ marginTop: 6 }}><q>${x.quote}</q><span className="src">from <${EvLink} d=${d} id=${x.evidenceId} /></span></div>`)}
-    <details className="anchors" style=${{ marginTop: 6 }}><summary>Decide in the terminal</summary>
+    <${FindingDecision} r=${r} f=${f} />
+    <details className="anchors" style=${{ marginTop: 6 }}><summary>Or decide in the terminal</summary>
       <${Cmd} label="Accept" text=${`${base} --accept --reason "checked against the evidence" ${who}`} />
       <${Cmd} label="Correct" text=${f.kind === "rubric" ? `${base} --correct "<what the evidence shows>" --verdict not_met --reason "<why>" ${who}` : `${base} --correct "<corrected text>" --reason "<why>" ${who}`} />
       <${Cmd} label="Reject" text=${`${base} --reject --reason "<why>" ${who}`} />
     </details>
   </div>`;
+}
+
+/* ---------- console: the approved actions (constitution XIII, v2.0.0) ---------- */
+
+// The page talks to a viewer (read-only) or to a console. A console's session carries its token and the rights
+// of each role; every change goes to /api/console/<action> as the person and role under "Acting as", and the
+// server runs the same governed command as the CLI (authority gate, trace, audit).
+const Session = React.createContext({ writable: false, roles: {}, actor: { by: "", role: "" } });
+const DEFAULT_NAMES = { sponsor: "Kozmo GTM lead", reviewer: "Hipstraw Reviewer", campaign_manager: "Hipstraw CM" };
+
+function loadActor() {
+  try {
+    const a = JSON.parse(localStorage.getItem("hipstraw.actor") || "null");
+    if (a && a.by && a.role) return a;
+  } catch (e) { /* storage unavailable */ }
+  return { by: DEFAULT_NAMES.reviewer, role: "reviewer" };
+}
+function saveActor(a) { try { localStorage.setItem("hipstraw.actor", JSON.stringify(a)); } catch (e) { /* storage unavailable */ } }
+
+const can = (s, right) => !!s.writable && ((s.roles || {})[s.actor.role] || []).includes(right);
+
+async function act(s, action, body) {
+  if (!s.actor.by.trim()) throw new Error("Enter your name under “Acting as” first.");
+  const r = await fetch(`/api/console/${action}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Hipstraw-Token": s.token },
+    body: JSON.stringify({ ...body, by: s.actor.by.trim(), role: s.actor.role }),
+  });
+  let data = {};
+  try { data = await r.json(); } catch (e) { /* no body */ }
+  if (!r.ok) throw new Error(data.error || `${r.status} ${r.statusText}`);
+  dispatchEvent(new Event("hipstraw:changed"));
+  return data;
+}
+
+function useAct() {
+  const s = useContext(Session);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+  const run = async (action, body, then) => {
+    setBusy(true); setError(null);
+    try { const out = await act(s, action, body); if (then) then(out); }
+    catch (e) { setError(e.message); }
+    finally { setBusy(false); }
+  };
+  return { s, busy, error, run };
+}
+
+function ActingAs() {
+  const s = useContext(Session);
+  const { actor, setActor } = s;
+  const pick = role => setActor({ role, by: !actor.by || Object.values(DEFAULT_NAMES).includes(actor.by) ? (DEFAULT_NAMES[role] || actor.by) : actor.by });
+  return html`<span className="acting">Acting as
+    <input value=${actor.by} aria-label="Your name" onChange=${e => setActor({ ...actor, by: e.target.value })} />
+    <select value=${actor.role} aria-label="Your role" onChange=${e => pick(e.target.value)}>
+      ${Object.keys(s.roles || {}).map(r => html`<option key=${r} value=${r}>${r.replace(/_/g, " ")}</option>`)}
+    </select></span>`;
+}
+
+function FindingDecision({ r, f }) {
+  const { s, busy, error, run } = useAct();
+  const [mode, setMode] = useState(null);
+  const [reason, setReason] = useState("");
+  const [text, setText] = useState("");
+  const [verdict, setVerdict] = useState(f.verdict === "not_met" ? "partly" : "not_met");
+  if (!can(s, "review_finding")) return html`<div className="muted" style=${{ marginTop: 6 }}>Act as a reviewer to decide this finding.</div>`;
+  const send = (action, extra) => run("finding", { reviewId: r.reviewId, findingId: f.findingId, action, reason: reason.trim() || "checked against the evidence", ...extra });
+  const toggle = m => setMode(mode === m ? null : m);
+  return html`<div className="decide">
+    <div className="decide-row">
+      <button className="btn-s ok" disabled=${busy} onClick=${() => send("accept", {})}>Accept</button>
+      <button className=${`btn-s ${mode === "correct" ? "on" : ""}`} disabled=${busy} onClick=${() => toggle("correct")}>Correct…</button>
+      <button className=${`btn-s ${mode === "reject" ? "on" : ""}`} disabled=${busy} onClick=${() => toggle("reject")}>Reject…</button>
+      ${error && html`<span className="ico-fail">${error}</span>`}
+    </div>
+    ${mode && html`<div className="decide-form">
+      ${mode === "correct" && html`<textarea rows="2" placeholder="What the evidence shows" value=${text} onChange=${e => setText(e.target.value)}></textarea>`}
+      ${mode === "correct" && f.kind === "rubric" && html`<label className="inline">New verdict <select value=${verdict} onChange=${e => setVerdict(e.target.value)}>
+        ${Object.entries(VERDICT).map(([k, [l]]) => html`<option key=${k} value=${k}>${l}</option>`)}</select></label>`}
+      <input placeholder="Reason (kept with the decision)" value=${reason} onChange=${e => setReason(e.target.value)} />
+      <div className="decide-row"><button className="btn-s primary" disabled=${busy || !reason.trim() || (mode === "correct" && !text.trim())}
+        onClick=${() => send(mode, mode === "correct" ? { text: text.trim(), verdict: f.kind === "rubric" ? verdict : undefined } : {})}>${mode === "correct" ? "Save correction" : "Reject finding"}</button></div>
+    </div>`}
+  </div>`;
+}
+
+function ValidateBox({ r }) {
+  const { s, busy, error, run } = useAct();
+  return html`<div className="card-body"><b>Every finding is decided.</b> The reviewer validates the Review; then the Sponsor decides.
+    ${can(s, "validate_review") ? html`<div className="decide-row" style=${{ marginTop: 8 }}><button className="btn-s primary" disabled=${busy}
+        onClick=${() => run("validate", { reviewId: r.reviewId })}>Validate Review</button>${error && html`<span className="ico-fail">${error}</span>`}</div>`
+      : s.writable ? html`<div className="muted" style=${{ marginTop: 6 }}>Act as a reviewer to validate.</div>`
+      : html`<${Cmd} label="Validate" text=${`hs review validate --review ${r.reviewId} --by "${REVIEWER}" --as reviewer`} />`}
+  </div>`;
+}
+
+function SponsorDecision({ r, d }) {
+  const { s, busy, error, run } = useAct();
+  const [reason, setReason] = useState("");
+  const sponsor = d.mandate.approver || "Sponsor";
+  let body;
+  if (can(s, "accept_review")) {
+    body = html`<div className="decide-form">
+      <input placeholder="Reason (needed to reject)" value=${reason} onChange=${e => setReason(e.target.value)} />
+      <div className="decide-row">
+        <button className="btn-s primary" disabled=${busy} onClick=${() => run("decide", { reviewId: r.reviewId, decision: "accept", reason: reason.trim() || undefined })}>Accept: commit the next Position</button>
+        <button className="btn-s" disabled=${busy || !reason.trim()} onClick=${() => run("decide", { reviewId: r.reviewId, decision: "reject", reason: reason.trim() })}>Reject</button>
+        ${error && html`<span className="ico-fail">${error}</span>`}</div></div>`;
+  } else if (s.writable) {
+    body = html`<div className="muted" style=${{ marginTop: 6 }}>Act as the Sponsor to decide.</div>`;
+  } else {
+    body = html`<${Cmd} label="Accept" text=${`hs review accept --review ${r.reviewId} --by "${sponsor}" --as sponsor`} />
+      <${Cmd} label="Reject" text=${`hs review reject --review ${r.reviewId} --reason "<why>" --by "${sponsor}" --as sponsor`} />`;
+  }
+  return html`<div className="card-body"><b>Validated; awaiting the Sponsor.</b> Only the Sponsor's acceptance commits the next Position.${body}</div>`;
+}
+
+/* ---------- console: a new launch, channel first ---------- */
+
+const LIST_FIELDS = ["authentication"];
+const LONG_FIELDS = ["body", "introText", "caption", "footer"];
+
+function setIn(obj, path, value) {
+  if (!path.length) return value;
+  const [k, ...rest] = path;
+  const copy = Array.isArray(obj) ? [...obj] : { ...(obj || {}) };
+  copy[k] = setIn(copy[k], rest, value);
+  return copy;
+}
+
+const blankLaunch = () => ({
+  product: { name: "", description: "", website: "" }, audience: { description: "", segments: [] }, market: "US",
+  dayZero: "", objective: { statement: "", successMeasure: "" },
+  strategy: { message: "", offer: "", budget: { amount: "", currency: "USD" } }, approver: "", trackingPlan: "",
+  assets: [{ kind: "landing_page", url: "", text: "" }], channels: [],
+});
+const blankChannel = (id, sd) => ({ channel: id, audience: "", budget: { amount: "", currency: "USD" }, successMeasure: "",
+  setup: {}, assets: [{ kind: sd.assetKind, readyDate: "", fields: {} }] });
+
+function fromExample(raw) {
+  const L = { ...blankLaunch(), ...JSON.parse(JSON.stringify(raw)) };
+  if (!(L.assets || []).some(a => a.kind === "landing_page")) L.assets = [{ kind: "landing_page", url: "", text: "" }, ...(L.assets || [])];
+  return L;
+}
+
+function clean(v) {
+  if (Array.isArray(v)) { const a = v.map(clean).filter(x => x !== undefined); return a.length ? a : undefined; }
+  if (v && typeof v === "object") {
+    const o = {};
+    for (const [k, x] of Object.entries(v)) { const c = clean(x); if (c !== undefined) o[k] = c; }
+    return Object.keys(o).length ? o : undefined;
+  }
+  if (typeof v === "string") { const t = v.trim(); return t === "" ? undefined : t; }
+  return v;
+}
+
+function prepare(L) {
+  const num = v => (typeof v === "string" && /^\d+(\.\d+)?$/.test(v.trim())) ? Number(v) : v;
+  const list = v => Array.isArray(v) ? v : String(v || "").split(",").map(x => x.trim()).filter(Boolean);
+  const budget = b => b && String(b.amount == null ? "" : b.amount).trim() !== "" ? { amount: Number(b.amount), currency: b.currency || "USD" } : undefined;
+  const filled = a => (a.url || "").trim() || (a.text || "").trim() || Object.values(a.fields || {}).some(x => String(x).trim());
+  const out = JSON.parse(JSON.stringify(L));
+  out.audience = { ...out.audience, segments: list(out.audience.segments) };
+  out.strategy = { ...out.strategy, budget: budget(out.strategy.budget) };
+  out.assets = (out.assets || []).filter(filled);
+  out.channels = (out.channels || []).map(c => ({
+    ...c, budget: budget(c.budget),
+    setup: Object.fromEntries(Object.entries(c.setup || {}).map(([k, v]) => [k, LIST_FIELDS.includes(k) ? list(v) : num(v)])),
+    assets: (c.assets || []).filter(filled),
+  }));
+  return clean(out);
+}
+
+function Field({ label, hint, value, onChange, long, type, wide }) {
+  const v = value == null ? "" : Array.isArray(value) ? value.join(", ") : String(value);
+  return html`<label className=${`field ${wide ? "wide" : ""}`}><span>${label}${hint ? html` <i>${hint}</i>` : ""}</span>
+    ${long ? html`<textarea rows="3" value=${v} onChange=${e => onChange(e.target.value)}></textarea>`
+      : html`<input type=${type || "text"} value=${v} onChange=${e => onChange(e.target.value)} />`}</label>`;
+}
+
+function NewLaunchView() {
+  const { s, busy, error, run } = useAct();
+  const std = usePoll("/api/standards", 0).data;
+  const examples = usePoll("/api/console/examples", 0).data || [];
+  const [L, setL] = useState(blankLaunch);
+  const up = (path, v) => setL(prev => setIn(prev, path, v));
+  if (!s.writable) return html`<div className="content"><${Empty} title="This page is read-only" hint="Start the console (hs console) to submit a launch from the browser." /></div>`;
+  if (!std) return html`<div className="content muted">Loading…</div>`;
+  const name = t => t.replace(/\s*\(.*$/, ""), detail = t => (/\((.*)\)/.exec(t) || [])[1];
+  const lp = L.assets.findIndex(a => a.kind === "landing_page");
+  const submit = () => run("submit", { launch: prepare(L) }, out => { location.hash = href(out.launchId, "campaign"); });
+  return html`<div className="content"><div className="stack">
+    <div className="card"><div className="card-head"><h2>New launch</h2><span className="hint">a campaign starts from its channels: each one is judged for its own audience and checked against its own rules</span></div>
+      <div className="card-body decide-row">Start from:
+        <button className="btn-s" onClick=${() => setL(blankLaunch())}>Blank</button>
+        ${examples.map(e => html`<button key=${e.name} className="btn-s" onClick=${() => setL(fromExample(e.launch))}>${e.name.replace(/\.yaml$/, "").replace(/_/g, " ")}</button>`)}</div></div>
+    <div className="card"><div className="card-head"><h2>Product, audience and market</h2></div><div className="card-body form-grid">
+      <${Field} label="Product name" value=${L.product.name} onChange=${v => up(["product", "name"], v)} />
+      <${Field} label="Website" value=${L.product.website} onChange=${v => up(["product", "website"], v)} />
+      <${Field} wide long label="What it does" value=${L.product.description} onChange=${v => up(["product", "description"], v)} />
+      <${Field} wide long label="Target audience" hint="role, company size, market" value=${L.audience.description} onChange=${v => up(["audience", "description"], v)} />
+      <${Field} label="Segments" hint="comma-separated" value=${L.audience.segments} onChange=${v => up(["audience", "segments"], v)} />
+      <label className="field"><span>Market</span><select value=${L.market} onChange=${e => up(["market"], e.target.value)}>
+        ${std.markets.map(mk => html`<option key=${mk} value=${mk}>${mk}</option>`)}</select></label>
+      <${Field} label="Day Zero" type="date" value=${L.dayZero} onChange=${v => up(["dayZero"], v)} />
+    </div></div>
+    <div className="card"><div className="card-head"><h2>Objective, message and offer</h2></div><div className="card-body form-grid">
+      <${Field} wide label="Objective" value=${L.objective.statement} onChange=${v => up(["objective", "statement"], v)} />
+      <${Field} wide label="Success measure" value=${L.objective.successMeasure} onChange=${v => up(["objective", "successMeasure"], v)} />
+      <${Field} wide long label="Message" value=${L.strategy.message} onChange=${v => up(["strategy", "message"], v)} />
+      <${Field} wide label="Offer" value=${L.strategy.offer} onChange=${v => up(["strategy", "offer"], v)} />
+      <${Field} label="Total budget" hint=${(L.strategy.budget || {}).currency || "USD"} type="number" value=${(L.strategy.budget || {}).amount} onChange=${v => up(["strategy", "budget", "amount"], v)} />
+      <${Field} label="Approver (Sponsor)" value=${L.approver} onChange=${v => up(["approver"], v)} />
+      <${Field} wide label="Tracking plan" value=${L.trackingPlan} onChange=${v => up(["trackingPlan"], v)} />
+    </div></div>
+    ${lp >= 0 && html`<div className="card"><div className="card-head"><h2>Landing page</h2><span className="hint">where every channel sends people</span></div><div className="card-body form-grid">
+      <${Field} wide label="Address" value=${L.assets[lp].url} onChange=${v => up(["assets", lp, "url"], v)} />
+      <${Field} wide long label="Page copy" hint="paste it if the page cannot be read automatically" value=${L.assets[lp].text} onChange=${v => up(["assets", lp, "text"], v)} />
+    </div></div>`}
+    ${L.channels.map((c, i) => {
+      const sd = std.channels[c.channel];
+      const base = ["channels", i];
+      const asset = (c.assets || [])[0] || {};
+      return html`<div className="card" key=${`${c.channel}-${i}`}>
+        <div className="chan-head"><div><h2>${sd ? sd.name : c.channel}</h2><div className="who">${sd ? sd.format : "not a platform with rules on file"}</div></div>
+          <button className="btn-s" onClick=${() => setL(prev => ({ ...prev, channels: prev.channels.filter((_, j) => j !== i) }))}>Remove</button></div>
+        <div className="card-body form-grid">
+          <${Field} wide long label="Who this channel reaches" hint="the list, or the targeting" value=${c.audience} onChange=${v => up([...base, "audience"], v)} />
+          <${Field} label="Budget" hint=${(c.budget || {}).currency || "USD"} type="number" value=${(c.budget || {}).amount} onChange=${v => up([...base, "budget", "amount"], v)} />
+          <${Field} label="Success measure" value=${c.successMeasure} onChange=${v => up([...base, "successMeasure"], v)} />
+          ${sd && Object.entries(sd.setup).map(([k, t]) => html`<${Field} key=${k} label=${name(t)} hint=${detail(t)} value=${(c.setup || {})[k]} onChange=${v => up([...base, "setup", k], v)} />`)}
+          <h3 className="wide">${sd ? `${sd.name} copy` : "Copy"}</h3>
+          <${Field} label="Ready on" type="date" value=${asset.readyDate} onChange=${v => up([...base, "assets", 0, "readyDate"], v)} />
+          ${sd && Object.entries(sd.assetFields).map(([k, t]) => html`<${Field} key=${k} wide=${LONG_FIELDS.includes(k)} long=${LONG_FIELDS.includes(k)} label=${name(t)} hint=${detail(t)}
+            value=${(asset.fields || {})[k]} onChange=${v => up([...base, "assets", 0, "fields", k], v)} />`)}
+        </div></div>`;
+    })}
+    <div className="card"><div className="card-body decide-row">Add a channel:
+      ${Object.entries(std.channels).filter(([id]) => !L.channels.some(c => c.channel === id)).map(([id, sd]) => html`<button key=${id} className="btn-s"
+        onClick=${() => setL(prev => ({ ...prev, channels: [...prev.channels, blankChannel(id, sd)] }))}>+ ${sd.name}</button>`)}</div></div>
+    <div className="card"><div className="card-body">
+      <div className="decide-row"><button className="btn-s primary" disabled=${busy || !can(s, "submit_launch")} onClick=${submit}>Submit launch</button>
+        ${!can(s, "submit_launch") ? html`<span className="muted">Act as the Sponsor to submit.</span>` : html`<span className="muted">Submitted as ${s.actor.by} (${s.actor.role.replace(/_/g, " ")}); recorded as evidence and Position v1, like hs submit.</span>`}</div>
+      ${error && html`<pre className="json ico-fail" style=${{ marginTop: 10 }}>${error}</pre>`}
+    </div></div>
+  </div></div>`;
 }
 
 /* ---------- position ---------- */
@@ -955,17 +1230,23 @@ function LaunchView({ launchId, tab, focus, onUpdated }) {
 function App() {
   const route = parseRoute(useHash());
   const launches = usePoll("/api/launches", 4000);
+  const served = usePoll("/api/session", 0).data || { writable: false, roles: {} };
+  const [actor, setActorState] = useState(loadActor);
+  const setActor = a => { setActorState(a); saveActor(a); };
+  const session = { ...served, actor, setActor };
   const [updated, setUpdated] = useState(null);
   const list = launches.data || [];
   useEffect(() => {
-    if (!route.launchId && list.length) location.replace(href(list[0].launchId, "report"));
-  }, [route.launchId, list.length]);
-  return html`<div className="app">
+    if (!route.launchId && route.tab !== "new" && list.length) location.replace(href(list[0].launchId, "report"));
+  }, [route.launchId, route.tab, list.length]);
+  return html`<${Session.Provider} value=${session}><div className="app">
     <header className="topbar"><span className="logo"></span><span className="brand">hipstraw<span>campaign strategy & readiness</span></span>
       <span className="spacer"></span>
       ${updated && html`<span className="updated">live · updated ${updated.toLocaleTimeString()}</span>`}
-      <span className="readonly">read-only</span></header>
+      ${session.writable ? html`<${ActingAs} /><span className="readonly console" title="changes go through the governed commands">console</span>`
+        : html`<span className="readonly">read-only</span>`}</header>
     <aside className="sidebar"><div className="side-title">Launches</div>
+      ${session.writable ? html`<a className="new-launch" href="#/new">+ New launch</a>` : ""}
       ${launches.error ? html`<div className="alert fail" style=${{ margin: 12 }}>${launches.error}</div>` : ""}
       ${list.map(l => html`<a key=${l.launchId} className=${`run-item ${route.launchId === l.launchId ? "active" : ""}`}
         href=${href(l.launchId, route.tab)}>
@@ -977,11 +1258,12 @@ function App() {
       </a>`)}
     </aside>
     <main className="main">
-      ${route.launchId ? html`<${LaunchView} key=${route.launchId} launchId=${route.launchId} tab=${route.tab} focus=${route.focus} onUpdated=${setUpdated} />`
+      ${route.tab === "new" ? html`<${NewLaunchView} />`
+        : route.launchId ? html`<${LaunchView} key=${route.launchId} launchId=${route.launchId} tab=${route.tab} focus=${route.focus} onUpdated=${setUpdated} />`
         : html`<div className="content"><${Empty} title=${launches.data ? "No launches yet" : "Loading…"}
-            hint="Submit one in a terminal (hs submit --file …); it appears here within a few seconds." /></div>`}
+            hint=${session.writable ? "Submit one with “+ New launch”, or in a terminal (hs submit --file …)." : "Submit one in a terminal (hs submit --file …); it appears here within a few seconds."} /></div>`}
     </main>
-  </div>`;
+  </div><//>`;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);
