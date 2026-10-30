@@ -5,6 +5,12 @@ San Francisco, Atlanta), Day Zero 2026-11-10. First the **email-only** scenario 
 on three channels** from the rehearsal. About 12 minutes. Scenarios and sources:
 `docs/campaign_channel_scenarios.md`. Spec: `specs/004-campaign-readiness-g0/`.
 
+## One command (any machine)
+
+`python scripts/campaign_demo.py` runs both scenarios end to end through the same commands as the flow below:
+submit, L02, review, L01, review, report. The reviewer and Sponsor decisions are scripted. It then opens the
+page on http://127.0.0.1:8766/. It needs `OPENAI_API_KEY` in `.env`; `--no-view` skips the page.
+
 ## Setup (repo root, PowerShell)
 
 Terminal 1, the flow:
