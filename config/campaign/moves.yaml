@@ -113,7 +113,8 @@ moves:
     risks: ["external effect: publishes, sends or spends"]
     handler: testing.dispatch_blocked
   - id: M11
-    version: 1
+    version: 2
+    # v2 (Nov 2 meeting): a live direction the Sponsor applied gets its measure before and after the change.
     name: Record observation and Delta
     group: testing
     effectClasses: [E1]
@@ -144,3 +145,16 @@ moves:
       - {kind: unknown, from: [null, open], to: [open, resolved]}
     risks: ["checks what the Sponsor stated, not the live platform setup"]
     handler: readiness.channel_standards
+  # Added 2026-11-02 (Nov 2 meeting: review running campaigns daily and give them direction).
+  - id: M14
+    version: 1
+    name: Review live performance
+    group: testing
+    effectClasses: [E0]
+    eligibility: {all: [{fact: isLive, op: "==", value: true}, {fact: hasMetrics, op: "==", value: true}]}
+    inputs: [mandate, position, evidence, performance_rules]
+    transitions:
+      - {kind: hypothesis, from: [null], to: [proposed]}
+      - {kind: blocker, from: [null, open], to: [open, cleared]}
+    risks: ["benchmarks are averages from other campaigns", "a direction is a recommendation, not a forecast"]
+    handler: performance.review

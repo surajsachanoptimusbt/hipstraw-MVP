@@ -39,7 +39,7 @@ def _recommend(name: str) -> tuple[set[str], set[str], dict[str, list[str]]]:
 def test_ten_days_out_without_test_channels() -> None:
     eligible, excluded, reasons = _recommend("launch_complete.yaml")
     assert eligible == {"L01", "L02"}
-    assert excluded == {"L03", "L04", "L05"}
+    assert excluded == {"L03", "L04", "L05", "L06"}
     assert any("authorized test channel" in r for r in reasons["L03"])
     assert any("live" in r for r in reasons["L04"])
     assert any("days to Day Zero = 10" in r for r in reasons["L01"])

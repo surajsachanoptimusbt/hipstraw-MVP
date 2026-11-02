@@ -1,7 +1,8 @@
 # Who may take which campaign action (HA section 9). G0 is used internally from the command line, so a
 # role is declared with --as; every action is still checked here and audited.
-version: campaign-roles.v0.1
+version: campaign-roles.v0.2
+# v0.2 (Nov 2): metrics exports (ingest_metrics) and changes the Sponsor applied (record_change).
 roles:
-  sponsor: [submit_launch, amend_mandate, accept_review, reject_review]
-  campaign_manager: [submit_launch, choose_line, deviate, run_line, stop_line]
+  sponsor: [submit_launch, amend_mandate, accept_review, reject_review, ingest_metrics, record_change]
+  campaign_manager: [submit_launch, choose_line, deviate, run_line, stop_line, ingest_metrics]
   reviewer: [review_finding, validate_review]

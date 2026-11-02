@@ -99,13 +99,14 @@ def condition_errors(condition: Condition | None, owner: str, field: str) -> lis
 
 
 def compute_facts(mandate: Mandate, position: PositionSnapshot, today: date,
-                  test_plans: Sequence[TestPlan] = ()) -> Facts:
-    """The facts Line and Move conditions test, from the head Position and the current mandate only."""
-    return facts_from_items(mandate, position.items, today, test_plans)
+                  test_plans: Sequence[TestPlan] = (), metric_evidence: bool = False) -> Facts:
+    """The facts Line and Move conditions test, from the head Position, the current mandate and whether
+    metric evidence exists (a launch file's metrics or the daily exports)."""
+    return facts_from_items(mandate, position.items, today, test_plans, metric_evidence)
 
 
 def facts_from_items(mandate: Mandate, items: Sequence[PositionItem], today: date,
-                     test_plans: Sequence[TestPlan] = ()) -> Facts:
+                     test_plans: Sequence[TestPlan] = (), metric_evidence: bool = False) -> Facts:
     """The same facts over any item list, e.g. a Line run's working state at the start of a stage."""
 
     def count(kind: str, *states: str, area: str | None = None) -> int:
@@ -115,7 +116,7 @@ def facts_from_items(mandate: Mandate, items: Sequence[PositionItem], today: dat
     return {
         "daysToDayZero": days,
         "isLive": days <= 0,  # Day Zero itself is the first live day (T0)
-        "hasMetrics": mandate.metricsFile is not None,
+        "hasMetrics": mandate.metricsFile is not None or metric_evidence,
         "openBlockers": count("blocker", "open"),
         "openReadinessBlockers": count("blocker", "open", area="readiness"),
         "unverifiedCoreAssumptions": sum(

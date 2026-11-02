@@ -275,6 +275,14 @@ and CLI wiring.
 - [x] T088 `submit_launch_data` beside `submit_launch` in `src/hipstraw_mm/campaign/intake.py`; `CampaignConsole`, `CampaignConsoleHandler` and `ConsoleServer` in `src/hipstraw_mm/campaign/console.py`; command `campaign console [--port 8766]`; `/api/session` and `/api/standards` on the page
 - [x] T089 Page: "Acting as" (name and role), the new-launch form, decision buttons on the Reviewer desk, the Sponsor's decision on the Campaign view; checked end to end in headless Chrome
 
+### Added 2026-11-02 (spec Session 2026-11-02: daily review of live campaigns)
+
+- [x] T090 Tests first: `tests/unit/test_campaign_live.py` (sourced rules, measures from counts and waiting, fatigue rule, governed metrics feed labelled simulated, L06 eligibility, a delivery defect as blocker and direction, the Sponsor's change and M11's Delta, M12 escalating only new items) and `tests/integration/test_campaign_simulation.py` (each planted problem found and each change measured, the day-by-day walk-through, every metric simulated, page and report)
+- [x] T091 `config/campaign/performance.yaml` (measures, sourced benchmarks, rules DX01 to DX07) and `src/hipstraw_mm/campaign/performance.py`
+- [x] T092 `ingest_metrics` (`campaign metrics`), `record_change` (`campaign applied`, `src/hipstraw_mm/campaign/live.py`), Direction and ChangeRecord records, Delta with numbers; roles and trace rights
+- [x] T093 M14 Review live performance (`moves/performance.py`), M11 v2, M09 plans from a Direction, M12 escalating only new items, Line L06 Daily performance review; `hasMetrics` from metric evidence
+- [x] T094 Simulation: `src/hipstraw_mm/campaign/simulation.py`, `campaign simulate`, scenario `input/campaign/simulations/`; Performance view on the page; "Live performance" in the report; `docs/campaign_live_simulation.md`, `docs/competitive_meta_muse.md`
+
 ---
 
 ## Dependencies & Execution Order

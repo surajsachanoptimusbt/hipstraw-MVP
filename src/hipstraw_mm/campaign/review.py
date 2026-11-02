@@ -17,6 +17,7 @@ from hipstraw_mm.campaign.config import load_roles, load_settings
 from hipstraw_mm.campaign.gate import authorize
 from hipstraw_mm.campaign.models import (
     Correction,
+    Delta,
     Escalation,
     Finding,
     LineRun,
@@ -29,6 +30,7 @@ from hipstraw_mm.campaign.models import (
     Verdict,
 )
 from hipstraw_mm.campaign.moves.readiness import load_criteria
+from hipstraw_mm.campaign.performance import PerformanceRules, fmt, load_performance_rules
 from hipstraw_mm.campaign.repertoire import Repertoire, load_repertoire
 from hipstraw_mm.campaign.stamp import mechanism_stamp
 from hipstraw_mm.campaign.store import CampaignStore
@@ -76,8 +78,22 @@ class _Findings:
                                   **fields))  # type: ignore[arg-type]
 
 
+def _delta_text(store: CampaignStore, rules: PerformanceRules, execution: MoveExecution, item_id: str, text: str,
+                result: str) -> str:
+    """A Delta finding with its numbers when M11 measured a live direction before and after."""
+    delta = next((d for d in store.list_for_launch(Delta, execution.launchId)
+                  if d.deltaId in execution.produced and d.hypothesisItemId == item_id), None)
+    if delta is None or delta.measure is None:
+        return f"Observed Delta for {item_id}: {text} ({result})"
+    d = rules.measure(delta.channel, delta.measure)
+    shown = f"{fmt(d, delta.before)} before ({delta.windowBefore}), {fmt(d, delta.after)} since ({delta.windowAfter})"
+    label = d.label if d else delta.measure
+    return (f"Delta for {item_id}: {label} {shown}: {result.replace('_', ' ')}. {delta.attributionNotes}. "
+            f"Change: {text}")
+
+
 def _assemble(store: CampaignStore, rep: Repertoire, criteria_version: str, executions: list[MoveExecution],
-              items: list[PositionItem]) -> list[Finding]:
+              items: list[PositionItem], perf: PerformanceRules) -> list[Finding]:
     by_id = {i.itemId: i for i in items}
     out = _Findings()
     deterministic = f"deterministic check (readiness criteria {criteria_version})"
@@ -101,6 +117,12 @@ def _assemble(store: CampaignStore, rep: Repertoire, criteria_version: str, exec
                 out.add(kind="stale_metric", area="readiness", text=f"Stale metric: {item.text} ({item.note})",
                         itemRefs=[item.itemId], evidenceRefs=item.evidenceRefs,
                         uncertainty="metric cannot be relied on until refreshed", sourceMove=e.moveId)
+            elif item.kind == "hypothesis" and (item.key or "").startswith("DX"):
+                out.add(kind="proposal", area="strategy", channel=item.channel,
+                        text=f"Direction: {item.text}. Why: {item.note}", itemRefs=[item.itemId],
+                        evidenceRefs=item.evidenceRefs, isProposal=True, sourceMove=e.moveId,
+                        uncertainty="rule-based diagnosis against published benchmarks; a recommendation, not a "
+                                    "forecast")
             elif item.kind == "hypothesis":
                 out.add(kind="proposal", area="strategy", text=f"Proposed variant to test: {item.text}",
                         itemRefs=[item.itemId], evidenceRefs=item.evidenceRefs, isProposal=True,
@@ -124,10 +146,15 @@ def _assemble(store: CampaignStore, rep: Repertoire, criteria_version: str, exec
                 out.add(kind="test_plan", area="strategy", text=f"Draft Test Plan for {t.itemId}: {text}",
                         itemRefs=[t.itemId], evidenceRefs=[], uncertainty="a draft, not an approval",
                         sourceMove=e.moveId)
-            elif t.fromState == "running":
-                out.add(kind="delta", area="strategy", text=f"Observed Delta for {t.itemId}: {text} ({t.toState})",
-                        itemRefs=[t.itemId], evidenceRefs=t.evidenceRefs,
-                        uncertainty="observational comparison; never causal proof", sourceMove=e.moveId)
+            elif t.toState == "running":
+                out.add(kind="delta", area="strategy", channel=changed.channel if changed else None,
+                        text=f"Change applied by the Sponsor; measuring until enough days have passed: {text}",
+                        itemRefs=[t.itemId], evidenceRefs=[], uncertainty="measuring", sourceMove=e.moveId)
+            elif t.toState in ("supported", "not_supported", "inconclusive"):
+                out.add(kind="delta", area="strategy", channel=changed.channel if changed else None,
+                        text=_delta_text(store, perf, e, t.itemId, text, t.toState), itemRefs=[t.itemId],
+                        evidenceRefs=t.evidenceRefs, uncertainty="observational comparison; never causal proof",
+                        sourceMove=e.moveId)
         for p in e.proposals:
             kind = p.get("type")
             if kind == "rubric":
@@ -185,7 +212,7 @@ def draft_review(store: CampaignStore, config_dir: Path, run: LineRun, now: date
     with tracer.step("review", "review_assembler", "draft_review", right="draft_review") as step:
         step.set_inputs({"lineRunId": run.lineRunId, "basePositionVersion": run.basePositionVersion,
                          "executions": [e.executionId for e in executions]})
-        findings = _assemble(store, rep, criteria.version, executions, items)
+        findings = _assemble(store, rep, criteria.version, executions, items, load_performance_rules(config_dir))
         review = ReviewRun(
             reviewId=review_id, launchId=run.launchId, lineRunId=run.lineRunId,
             question=rep.lines[run.lineId].reviewQuestion, basePositionVersion=run.basePositionVersion,

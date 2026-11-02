@@ -18,7 +18,10 @@ from typing import Any
 from hipstraw_mm.campaign.channels import channel_plans, load_channel_standards
 from hipstraw_mm.campaign.config import load_settings
 from hipstraw_mm.campaign.models import (
+    ChangeRecord,
+    Delta,
     Deviation,
+    Direction,
     EvidenceRecord,
     Finding,
     LineRun,
@@ -30,6 +33,7 @@ from hipstraw_mm.campaign.models import (
     ReviewRun,
 )
 from hipstraw_mm.campaign.moves.readiness import load_criteria
+from hipstraw_mm.campaign.performance import daily_metrics, fmt, load_performance_rules
 from hipstraw_mm.campaign.repertoire import load_repertoire
 from hipstraw_mm.campaign.review import VERDICT_TEXT, rubric_head, rubric_reason, rubric_title
 from hipstraw_mm.campaign.rubric import load_rubric
@@ -150,6 +154,55 @@ def _channel_sections(mandate: Mandate, rubric_findings: list[Finding], titles: 
     return out
 
 
+def _live_section(store: CampaignStore, config_dir: Path, launch_id: str, names: dict[str, str],
+                  executions: list[MoveExecution]) -> list[str]:
+    """Live performance (Nov 2 meeting), when metrics exist: the latest daily review's measures against their
+    benchmarks, and each direction with the change applied and what the Delta measured."""
+    evidence = store.list_for_launch(EvidenceRecord, launch_id)
+    series = daily_metrics(evidence)
+    if not series:
+        return []
+    rules = load_performance_rules(config_dir)
+    simulated = any(e.source == "simulation" for e in evidence)
+    days = sorted({d for s in series.values() for d in s})
+    out = ["", "## Live performance", ""]
+    if simulated:
+        out += ["**Simulation:** the metrics come from the campaign simulator's response model, not from a real "
+                "platform export. The reviews, directions and Deltas are real runs of Hipstraw's rules on them.", ""]
+    out += [f"{len(days)} days of metrics, {days[0].isoformat()} to {days[-1].isoformat()}; reviewed daily by L06 "
+            f"against {rules.version}.", ""]
+    latest = next((e for e in reversed(executions) if e.moveId == "M14" and e.status == "succeeded"), None)
+    perf = [p for p in latest.proposals if p.get("type") == "performance"] if latest else []
+    if perf:
+        out += [f"Latest daily review ({perf[0]['day']}, last {rules.window} days):", "",
+                "| Channel | Measure | Value | Benchmark |", "|---|---|---|---|"]
+        for p in perf:
+            for m in p["measures"].values():
+                if m["benchmark"] is None and m["value"] is None:
+                    continue
+                value = m["display"] if m["value"] is not None else f"waiting ({m['waiting']})"
+                out.append(f"| {p['channelName']} | {m['label']} | {_cell(value)} | {m['benchmarkDisplay']} |")
+        out.append("")
+    directions = store.list_for_launch(Direction, launch_id)
+    if not directions:
+        return [*out, "No direction yet: nothing has fallen outside its benchmark."]
+    head = store.head_position(launch_id)
+    found_on = {i.itemId: i.channel for i in (head.items if head else [])}
+    changes = {c.hypothesisItemId: c for c in store.list_for_launch(ChangeRecord, launch_id)}
+    deltas = {d.hypothesisItemId: d for d in store.list_for_launch(Delta, launch_id) if d.measure}
+    out += ["| Found | Channel | What Hipstraw saw | Direction | Applied | Delta |", "|---|---|---|---|---|---|"]
+    for d in directions:
+        change, delta = changes.get(d.hypothesisItemId), deltas.get(d.hypothesisItemId)
+        md = rules.measure(delta.channel, delta.measure) if delta and delta.measure else None
+        measured = (f"{fmt(md, delta.before)} → {fmt(md, delta.after)}: {(delta.result or '').replace('_', ' ')}"
+                    if delta else "not measured yet")
+        channel = found_on.get(d.hypothesisItemId) or d.channel or ""
+        out.append(f"| {d.windowEnd} | {names.get(channel, channel or 'all channels')} | {_cell(d.finding)} "
+                   f"| {_cell(d.change)} | {change.appliedOn.isoformat() if change else 'not yet'} | {measured} |")
+    return [*out, "", "A Delta compares the days before a change with the days since: observational, never causal "
+                      "proof; other changes in the same days are named in each Review."]
+
+
 def build_report(store: CampaignStore, config_dir: Path, launch_id: str) -> tuple[str, PositionSnapshot]:
     position = store.head_position(launch_id)
     if position is None or position.state != "accepted":
@@ -205,6 +258,8 @@ def build_report(store: CampaignStore, config_dir: Path, launch_id: str) -> tupl
     lines += _rubric_rows(campaign_wide, titles, names) if campaign_wide else ["No campaign-wide judgements yet."]
     if rejected:
         lines += ["", f"Judgements rejected by the reviewer: {len(rejected)}."]
+
+    lines += _live_section(store, config_dir, launch_id, names, executions_all)
 
     lines += ["", "## Readiness blockers", ""]
     blockers = [i for i in items if i.kind == "blocker" and i.state == "open"]

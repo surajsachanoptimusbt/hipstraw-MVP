@@ -9,10 +9,11 @@ from hipstraw_mm.campaign.repertoire import load_repertoire
 REP = load_repertoire(Path("config"))
 
 
-def test_thirteen_moves_and_five_lines() -> None:
+def test_fourteen_moves_and_six_lines() -> None:
     assert REP.version == "campaign-repertoire.v0.2"
-    assert sorted(REP.moves) == [f"M{n:02d}" for n in range(1, 14)]  # HA's twelve plus M13 channel standards
-    assert sorted(REP.lines) == ["L01", "L02", "L03", "L04", "L05"]
+    # HA's twelve, M13 channel standards (Oct 30) and M14 live performance (Nov 2)
+    assert sorted(REP.moves) == [f"M{n:02d}" for n in range(1, 15)]
+    assert sorted(REP.lines) == ["L01", "L02", "L03", "L04", "L05", "L06"]
 
 
 def test_line_stages_follow_ha_section_5() -> None:
@@ -23,6 +24,7 @@ def test_line_stages_follow_ha_section_5() -> None:
         "L03": [["M07"], ["M09"], ["M10"], ["M11"]],
         "L04": [["M03"], ["M11"], ["M06"]],
         "L05": [["M08"], ["M02"], ["M12"]],
+        "L06": [["M11", "M14"], ["M09"], ["M12"]],
     }
 
 

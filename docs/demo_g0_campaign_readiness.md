@@ -80,6 +80,19 @@ $R = "rev_<L>_1"
   ForEach-Object { hs review finding --review $R --finding $_.findingId --accept --reason "checked against the evidence" --by "Hipstraw Reviewer" --as reviewer --json | Out-Null }
 ```
 
+## Live campaign simulation (Nov 2 meeting)
+
+`hs simulate` walks the Atlanta IT-services campaign through 14 simulated days live, with no model calls
+(`docs/campaign_live_simulation.md`). Open the launch's **Performance** view. Then:
+- **Day 1, email:** spam complaints over Gmail's limit, so a blocker. The list is cleaned on day 2, and the Delta shows 0.43% → 0.00%.
+- **Day 1, Instagram:** none of its applications come from the target audience, so it is paused and its budget moved to LinkedIn.
+- **Day 2, LinkedIn:** clicks without applications, because the landing page doesn't match the ad. The page is aligned on day 3: 0% → 5.98%.
+- **Day 9, LinkedIn:** worn-out creative, refreshed on day 10: CTR 0.42% → 0.57%.
+- **Repertoire gap:** LinkedIn cost per click is far over its benchmark and no rule reads it, which is a candidate new Move.
+
+Every number is labelled simulated. Every review, direction and Delta is a real run of the governed commands.
+Every Delta names the other changes made in the same days.
+
 ## Answers to have ready
 
 - **"Is this message good for this audience?"**
@@ -97,4 +110,8 @@ $R = "rev_<L>_1"
   - Constitution XIII (v2.0.0) allows a governed console: the same governed commands as the CLI, only the approved actions, loopback only, a per-session token and an Origin check.
   - The gate checks every role, and every action is audited.
   - Identity is declared as on the CLI until authentication exists.
+- **"Meta's Muse is free and continuous."**
+  - Hence the daily review (L06): `docs/competitive_meta_muse.md`.
+  - Muse reviews Meta ads for small businesses and drafts campaigns.
+  - Hipstraw checks readiness across channels before launch, with evidence and a reviewer, independent of the ad seller. Its first live direction moved budget off Instagram.
 - **"Launch orchestrator":** every choice, deviation and correction is in the tactic record, per channel. That is the G0 → G1 evidence.

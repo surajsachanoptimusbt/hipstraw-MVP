@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlparse
@@ -24,8 +24,11 @@ from hipstraw_mm.campaign.channels import channel_plans, load_channel_standards
 from hipstraw_mm.campaign.config import load_settings
 from hipstraw_mm.campaign.intake import asset_content
 from hipstraw_mm.campaign.models import (
+    ChangeRecord,
     Correction,
+    Delta,
     Deviation,
+    Direction,
     EvidenceRecord,
     Finding,
     Launch,
@@ -37,6 +40,7 @@ from hipstraw_mm.campaign.models import (
     ReviewRun,
     TestPlan,
 )
+from hipstraw_mm.campaign.performance import compute, daily_metrics, fmt, load_performance_rules
 from hipstraw_mm.campaign.repertoire import load_repertoire
 from hipstraw_mm.campaign.review import rubric_head, rubric_reason, rubric_title
 from hipstraw_mm.campaign.rubric import load_rubric
@@ -84,6 +88,7 @@ class CampaignView:
         self._rubric = load_rubric(config_dir)
         self._repertoire = load_repertoire(config_dir)
         self._standards = load_channel_standards(config_dir)
+        self._perf = load_performance_rules(config_dir)
         settings = load_settings(config_dir)
         self._scope, self._markets = settings.scopeStatement, settings.launchMarkets
         self._store: SqliteCampaignStore | None = None
@@ -142,6 +147,7 @@ class CampaignView:
             "rubric": rubric,
             "channels": self._channels(mandate, rubric, executions, items, evidence),
             "desk": self._desk(reviews, decisions, runs),
+            "performance": self._performance(db, launch_id, mandate, evidence, executions, items),
             "positions": self._positions(db.list_for_launch(PositionSnapshot, launch_id)),
             "reviews": [self._review(r, decisions, runs) for r in reviews],
             "lineRuns": [self._line_run(r, executions, deviations) for r in runs],
@@ -232,6 +238,96 @@ class CampaignView:
                 },
             })
         return out
+
+    def _performance(self, db: SqliteCampaignStore, launch_id: str, m: Mandate, evidence: list[EvidenceRecord],
+                     executions: list[MoveExecution], items: list[PositionItem]) -> Doc | None:
+        """Live performance (Nov 2 meeting): each channel's measures day by day over the same window the daily
+        review judges, and what Hipstraw did: directions, changes the Sponsor applied, Deltas, repertoire gaps."""
+        series = daily_metrics(evidence)
+        if not series:
+            return None
+        rules, names = self._perf, self._standards
+        days = sorted({d for s in series.values() for d in s})
+        span = [days[0] + timedelta(days=n) for n in range((days[-1] - days[0]).days + 1)]
+
+        def points(defn: Any, channel_series: list[dict[date, dict[str, float]]]) -> list[float | None]:
+            out: list[float | None] = []
+            for day in span:
+                start = day - timedelta(days=rules.window - 1)
+                window = [vals for s in channel_series for d, vals in s.items() if start <= d <= day]
+                out.append(compute(defn, window).value if window else None)
+            return out
+
+        held = {i.itemId: i for i in items}
+        channels = []
+        for channel in m.strategy.channels:
+            if channel not in series or channel not in rules.measures:
+                continue
+            s = series[channel]
+            totals: dict[str, float] = {}
+            for vals in s.values():
+                for k, v in vals.items():
+                    if k != "frequency":
+                        totals[k] = totals.get(k, 0.0) + v
+            last = max(s)
+            channels.append({
+                "channel": channel, "name": names.name(channel), "firstDay": min(s).isoformat(),
+                "lastDay": last.isoformat(), "stopped": (days[-1] - last).days >= rules.window,
+                "sends": names.channels[channel].assetKind == "email_copy" if channel in names.channels else False,
+                "totals": totals,
+                "measures": [{"name": n, "label": d.label, "unit": d.unit, "better": d.better, "benchmark": d.benchmark,
+                              "benchmarkDisplay": fmt(d, d.benchmark), "benchmarkSource": d.benchmarkSource,
+                              "points": points(d, [s])} for n, d in rules.measures[channel].items()],
+            })
+        spend = sum(v.get("spend", 0.0) for s in series.values() for v in s.values())
+        qualified = sum(v.get("qualified_applications", 0.0) for s in series.values() for v in s.values())
+        applications = sum(v.get("applications", 0.0) for s in series.values() for v in s.values())
+
+        by_rule = {r.id: r for r in rules.rules}
+        events: list[Doc] = []
+        directions = db.list_for_launch(Direction, launch_id)
+        source_channel = {d.hypothesisItemId: (held[d.hypothesisItemId].channel if d.hypothesisItemId in held
+                                               else d.channel) for d in directions}
+        for d in directions:
+            item = held.get(d.hypothesisItemId)
+            rule = by_rule.get(d.ruleId)
+            events.append({"day": d.windowEnd, "kind": "direction", "channel": source_channel[d.hypothesisItemId],
+                           "measures": sorted({d.measure, *(c.measure for c in (rule.when if rule else []))}),
+                           "ruleId": d.ruleId, "level": rule.level if rule else "should", "finding": d.finding,
+                           "change": d.change, "hypothesis": d.hypothesisItemId,
+                           "state": item.state if item else "not accepted", "source": d.source})
+        measures_of = {ev["hypothesis"]: ev["measures"] for ev in events}
+        for c in db.list_for_launch(ChangeRecord, launch_id):
+            events.append({"day": c.appliedOn.isoformat(), "kind": "applied",
+                           "measures": measures_of.get(c.hypothesisItemId, []),
+                           "channel": source_channel.get(c.hypothesisItemId), "text": c.what, "by": c.by,
+                           "hypothesis": c.hypothesisItemId})
+        for x in db.list_for_launch(Delta, launch_id):
+            if x.measure is None:
+                continue
+            md = rules.measure(x.channel, x.measure)
+            events.append({"day": (x.windowAfter or x.createdAt)[-10:], "kind": "delta",
+                           "channel": source_channel.get(x.hypothesisItemId, x.channel),
+                           "measure": md.label if md else x.measure, "before": fmt(md, x.before),
+                           "after": fmt(md, x.after),
+                           "result": x.result, "notes": x.attributionNotes, "hypothesis": x.hypothesisItemId})
+        for e in executions:
+            if e.moveId == "M14":
+                events += [{"day": p["day"], "kind": "gap", "channel": p.get("channel"), "text": p["text"]}
+                           for p in e.proposals if p.get("type") == "gap" and p.get("day")]
+        order = {"direction": 0, "applied": 1, "delta": 2, "gap": 3}
+        events.sort(key=lambda ev: (ev["day"], order[ev["kind"]]))
+        latest = next((e for e in reversed(executions) if e.moveId == "M14" and e.status == "succeeded"), None)
+        return {
+            "simulated": any(e.source == "simulation" for e in evidence), "window": rules.window,
+            "version": rules.version, "days": [d.isoformat() for d in span], "dayZero": m.dayZero.isoformat(),
+            "channels": channels, "events": events,
+            "totals": {"spend": spend, "applications": applications, "qualified": qualified,
+                       "costPerQualified": spend / qualified if qualified else None},
+            "campaign": [{"name": n, "label": d.label, "unit": d.unit,
+                          "points": points(d, list(series.values()))} for n, d in rules.campaign.items()],
+            "latest": [p for p in latest.proposals if p.get("type") == "performance"] if latest else [],
+        }
 
     @staticmethod
     def _desk(reviews: list[ReviewRun], decisions: dict[tuple[str, str], Correction], runs: list[LineRun]) -> Doc:

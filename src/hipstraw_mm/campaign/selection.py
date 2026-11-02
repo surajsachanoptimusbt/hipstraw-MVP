@@ -15,7 +15,7 @@ from hipstraw_mm.campaign.audit import record_audit
 from hipstraw_mm.campaign.conditions import Facts, compute_facts, describe, evaluate
 from hipstraw_mm.campaign.config import load_roles
 from hipstraw_mm.campaign.gate import authorize
-from hipstraw_mm.campaign.models import LineChoice, LineRecommendation, LineRun, TestPlan
+from hipstraw_mm.campaign.models import EvidenceRecord, LineChoice, LineRecommendation, LineRun, TestPlan
 from hipstraw_mm.campaign.repertoire import LineDef, Repertoire, load_repertoire
 from hipstraw_mm.campaign.store import CampaignStore
 from hipstraw_mm.campaign.tracing import campaign_tracer
@@ -54,7 +54,8 @@ def recommend_for_launch(store: CampaignStore, config_dir: Path, launch_id: str,
     mandate, position = store.latest_mandate(launch_id), store.head_position(launch_id)
     if mandate is None or position is None:
         raise PreconditionError(f"launch {launch_id} not found")
-    facts = compute_facts(mandate, position, now.date(), store.list_for_launch(TestPlan, launch_id))
+    metrics = any(e.kind == "metric" for e in store.list_for_launch(EvidenceRecord, launch_id))
+    facts = compute_facts(mandate, position, now.date(), store.list_for_launch(TestPlan, launch_id), metrics)
     rec = recommend_lines(rep, facts, position.version)
     tracer = campaign_tracer(store, config_dir, launch_id)
     with tracer.step("campaign_manager", "line_selector", "recommend_lines", right="recommend_lines") as step:

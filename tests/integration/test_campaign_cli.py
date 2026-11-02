@@ -27,7 +27,7 @@ def test_lint_json() -> None:
     code, body, _ = run("campaign", "--db", ":memory:", "lint", "--json")
     assert code == 0
     assert body["repertoireVersion"] == "campaign-repertoire.v0.2"
-    assert body["counts"] == {"moves": 13, "lines": 5}
+    assert body["counts"] == {"moves": 14, "lines": 6}
     assert body["errors"] == []
 
 
@@ -100,7 +100,7 @@ def test_lines_and_choose(tmp_path: Path) -> None:
     assert code == 0
     assert "daysToDayZero" in body["facts"]
     assert {c["lineId"] for c in body["eligible"]} | {c["lineId"] for c in body["excluded"]} == {
-        "L01", "L02", "L03", "L04", "L05"}
+        "L01", "L02", "L03", "L04", "L05", "L06"}
 
     eligible = body["eligible"][0]["lineId"]
     code, chosen, _ = run("campaign", "--db", db, "choose", "--launch", launch_id, "--line", eligible,

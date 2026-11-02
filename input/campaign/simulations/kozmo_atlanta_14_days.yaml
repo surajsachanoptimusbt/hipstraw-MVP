@@ -1,0 +1,50 @@
+# The live campaign simulation (Nov 2 meeting): the Atlanta IT-services campaign's first 14 days, with three
+# things wrong, one per channel, and one that appears later. Hipstraw never reads this file: it sees only the
+# daily metrics exports the simulator writes from it, and diagnoses from those numbers. A change the Sponsor
+# applies helps only if it addresses an issue listed here.
+#
+# Rates are the healthy ones; an issue overrides them while it holds, and `fix` is what applying the matching
+# change does. Email rates: delivered (of sent), click and complaint and unsubscribe (of delivered), apply (of
+# clicks), qualified (of applications). Ad rates: ctr, cpc (USD), apply (of clicks), qualified (of applications).
+version: campaign-simulation.v0.1
+name: "Kozmo Genesis Cohort, Atlanta IT services: the first 14 days live"
+note: "SIMULATION: the daily metrics come from this scenario's response model, not from Kozmo, LinkedIn, Meta or any real export."
+launch: input/campaign/simulations/kozmo_atlanta_it_services.yaml
+days: 14
+seed: 11
+prelaunch: [L01]
+dailyLine: L06
+decisions: {sponsor: "Kozmo GTM lead", reviewer: "Hipstraw Reviewer", manager: "Hipstraw CM", applyAfterDays: 1}
+channels:
+  email:
+    kind: email
+    sendDays: [1, 4, 8, 11]
+    listSize: 1200
+    rates: {delivered: 0.97, click: 0.011, complaint: 0.0045, unsubscribe: 0.007, apply: 0.12, qualified: 0.75}
+    issues:
+      # A badge-scan list nobody opted in to: complaints over Gmail's 0.3% limit, few clicks.
+      - cause: complaint_rate
+        fix: {listSize: 780, rates: {complaint: 0.0005, click: 0.031, unsubscribe: 0.002}}
+  linkedin_ads:
+    kind: ads
+    impressions: 3600
+    frequencyPerDay: 0.3
+    rates: {ctr: 0.0058, cpc: 14.5, apply: 0.055, qualified: 0.8}
+    issues:
+      # The ad promises a free 90-day check; the landing page offers a selective 8-week cohort.
+      - cause: landing_mismatch
+        rates: {apply: 0.012}
+      # A 21,000-member audience sees the same ad again and again from day 6.
+      - cause: creative_fatigue
+        fromDay: 6
+        decay: {ctr: 0.14}
+  instagram_ads:
+    kind: ads
+    impressions: 9000
+    frequencyPerDay: 0.35
+    rates: {ctr: 0.016, cpc: 0.9, apply: 0.07, qualified: 0.6}
+    issues:
+      # Cheap clicks and applications, but from sole traders and consumers, not finance leaders at 50-500 staff.
+      - cause: audience_mismatch
+        rates: {qualified: 0.07}
+        fix: {pause: true, moveBudgetTo: linkedin_ads, budgetLift: 0.4}

@@ -62,7 +62,8 @@ def run_move(ctx: MoveContext, *, stage_index: int) -> MoveExecution:
         allowed, gate = gate_move(ctx.tracer, move)
         if allowed and move.eligibility is not None:
             facts = facts_from_items(ctx.mandate, ctx.items, ctx.now.date(),
-                                     ctx.store.list_for_launch(TestPlan, ctx.launch_id))
+                                     ctx.store.list_for_launch(TestPlan, ctx.launch_id),
+                                     any(e.kind == "metric" for e in ctx.evidence))
             allowed, reasons = evaluate_condition(move.eligibility, facts)
             if not allowed:
                 gate = "eligibility not met: " + "; ".join(reasons)

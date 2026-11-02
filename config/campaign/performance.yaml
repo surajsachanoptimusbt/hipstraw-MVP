@@ -1,0 +1,173 @@
+# Live performance (Nov 2 meeting: review running campaigns daily and give them direction). M14 computes each
+# channel's measures from the daily metric exports over the last `window` days, compares them with the
+# benchmarks below and applies the diagnosis rules in order, the way practitioners read a funnel: delivery,
+# then attention, then conversion, then audience. M11 compares a measure over the days before an applied
+# change with the days since, once `deltaMinDays` have passed; a move of `supportedChange` (relative) in the
+# expected direction reads as supported, observational and never causal. A measure worse than its benchmark
+# by `gapFactor` that no rule explains is a repertoire gap: a candidate for a new Move, for review.
+# Benchmarks name their source; a value without a published source is a plan target and says so. The
+# `minimum` data before a measure is judged is Hipstraw's own: no platform publishes one.
+# A proposal for domain-owner review, like criteria.yaml and channels.yaml.
+version: performance-rules.v0.1
+status: "proposal for domain-owner review; benchmarks checked 2026-11-02"
+window: 3
+deltaMinDays: 3
+supportedChange: 0.2
+gapFactor: 1.5
+
+measures:
+  email:
+    click_rate:
+      {label: "Click rate", num: clicks, den: delivered, unit: "%", better: higher, benchmark: 0.0278,
+       benchmarkSource: "Mailchimp, Business and Finance, campaigns to 1,000+ subscribers, data to Dec 2023 (mailchimp.com/resources/email-marketing-benchmarks)",
+       minimum: {delivered: 500}}
+    complaint_rate:
+      {label: "Spam complaint rate", num: complaints, den: delivered, unit: "%", better: lower, benchmark: 0.001,
+       benchmarkSource: "Gmail: keep below 0.10%, never reach 0.30% (support.google.com/a/answer/14229414)",
+       minimum: {delivered: 500}}
+    unsubscribe_rate:
+      {label: "Unsubscribe rate", num: unsubscribes, den: delivered, unit: "%", better: lower, benchmark: 0.005,
+       benchmarkSource: "Mailchimp: a good unsubscribe rate stays below 0.5%; the average is 0.15 to 0.22% (mailchimp.com/resources/email-unsubscribe-rate)",
+       minimum: {delivered: 500}}
+    conversion_rate:
+      {label: "Click to application", num: applications, den: clicks, unit: "%", better: higher, benchmark: 0.066,
+       benchmarkSource: "Unbounce Conversion Benchmark Report 2024: all-industry landing page median 6.6% (unbounce.com/conversion-benchmark-report)",
+       minimum: {clicks: 20}}
+    qualified_share:
+      {label: "Qualified applications", num: qualified_applications, den: applications, unit: "%", better: higher,
+       benchmark: 0.5, benchmarkSource: "plan target: half of applications from the target roles and company sizes",
+       minimum: {applications: 5}}
+  linkedin_ads:
+    ctr:
+      {label: "Click-through rate", num: clicks, den: impressions, unit: "%", better: higher, benchmark: 0.0052,
+       benchmarkSource: "ZenABM LinkedIn Ads Benchmarks 2026: US median CTR 0.52% (211 B2B companies; zenabm.com/blog/linkedin-ads-benchmarks-2026)",
+       minimum: {impressions: 2000}}
+    cpc:
+      {label: "Cost per click", num: spend, den: clicks, unit: USD, better: lower, benchmark: 8.99,
+       benchmarkSource: "ZenABM LinkedIn Ads Benchmarks 2026: US median CPC $8.99, all B2B industries",
+       minimum: {clicks: 20}}
+    conversion_rate:
+      {label: "Click to application", num: applications, den: clicks, unit: "%", better: higher, benchmark: 0.0402,
+       benchmarkSource: "LinkedIn: landing page conversion averages 4.02%, against 13% for Lead Gen Forms (linkedin.com/business/marketing/blog/lead-generation/how-to-use-linkedin-lead-gen-forms)",
+       minimum: {clicks: 40}}
+    qualified_share:
+      {label: "Qualified applications", num: qualified_applications, den: applications, unit: "%", better: higher,
+       benchmark: 0.5, benchmarkSource: "plan target: half of applications from the target roles and company sizes",
+       minimum: {applications: 5}}
+    cost_per_qualified:
+      {label: "Cost per qualified application", num: spend, den: qualified_applications, unit: USD, better: lower,
+       minimum: {qualified_applications: 1}}
+    frequency:
+      {label: "Frequency (impressions per member)", latest: frequency, unit: x, better: lower, benchmark: 3.0,
+       benchmarkSource: "Hipstraw heuristic: no platform publishes a frequency limit; LinkedIn advises refreshing ads at least monthly as CTR declines (linkedin.com/help/lms/answer/a420488) and Meta flags creative fatigue in Ads Manager"}
+    daily_spend:
+      {label: "Spend per day", perDay: spend, unit: USD, better: higher}
+  instagram_ads:
+    ctr:
+      {label: "Click-through rate", num: clicks, den: impressions, unit: "%", better: higher, benchmark: 0.0146,
+       benchmarkSource: "LocaliQ Facebook (Meta) advertising benchmarks, Finance and Insurance traffic campaigns, Sep 2026; Instagram not reported separately (localiq.com/blog/facebook-advertising-benchmarks)",
+       minimum: {impressions: 2000}}
+    cpc:
+      {label: "Cost per click", num: spend, den: clicks, unit: USD, better: lower, benchmark: 0.86,
+       benchmarkSource: "LocaliQ, Finance and Insurance traffic campaigns on Meta, Sep 2026",
+       minimum: {clicks: 20}}
+    conversion_rate:
+      {label: "Click to application", num: applications, den: clicks, unit: "%", better: higher, benchmark: 0.0854,
+       benchmarkSource: "LocaliQ, Meta leads campaigns: 8.54% conversion rate, Sep 2026",
+       minimum: {clicks: 40}}
+    qualified_share:
+      {label: "Qualified applications", num: qualified_applications, den: applications, unit: "%", better: higher,
+       benchmark: 0.5, benchmarkSource: "plan target: half of applications from the target roles and company sizes",
+       minimum: {applications: 5}}
+    cost_per_qualified:
+      {label: "Cost per qualified application", num: spend, den: qualified_applications, unit: USD, better: lower,
+       minimum: {qualified_applications: 1}}
+    frequency:
+      {label: "Frequency (impressions per person)", latest: frequency, unit: x, better: lower, benchmark: 3.0,
+       benchmarkSource: "Hipstraw heuristic: no platform publishes a frequency limit; LinkedIn advises refreshing ads at least monthly as CTR declines (linkedin.com/help/lms/answer/a420488) and Meta flags creative fatigue in Ads Manager"}
+    daily_spend:
+      {label: "Spend per day", perDay: spend, unit: USD, better: higher}
+
+campaign:
+  cost_per_qualified:
+    {label: "Cost per qualified application (all channels)", num: spend, den: qualified_applications, unit: USD,
+     better: lower, minimum: {qualified_applications: 1}}
+  qualified_per_day:
+    {label: "Qualified applications per day (all channels)", perDay: qualified_applications, unit: x, better: higher}
+
+# In order: delivery, then attention (worn-out creative before a weak message), conversion, audience and
+# delivery of spend; once a rule fires for a measure on a channel, later rules for that measure are skipped.
+# {name} is the channel, {value} and {benchmark} the measure and its benchmark, {best} the paid channel whose
+# applications come most from the target audience, {window} the days judged.
+rules:
+  - id: DX01
+    cause: complaint_rate
+    channels: [email]
+    level: must
+    when: [{measure: complaint_rate, op: above, value: 0.003}]
+    finding: "{name}: spam complaint rate {value} over the last {window} days, at or above Gmail's 0.30% limit; mail risks being rejected"
+    change: "Stop sending to addresses without a recorded opt-in or any engagement in 90 days, make unsubscribe one-click, publish DMARC; resume when the rate is under 0.10%"
+    measure: complaint_rate
+    expected: decrease
+    source: "Gmail sender guidelines: spam rate below 0.10%, never 0.30% (support.google.com/a/answer/14229414)"
+  - id: DX07
+    cause: creative_fatigue
+    channels: [linkedin_ads, instagram_ads]
+    level: should
+    when: [{measure: ctr, op: dropFromBest, value: 0.3}, {measure: frequency, op: above, value: 3.0}]
+    finding: "{name}: click-through rate {value} has fallen 30% or more from its best, and each person has seen the ad more than 3 times: the creative is worn out"
+    change: "Refresh the creative: a new image and a new first line, keeping the offer; rotate two versions"
+    measure: ctr
+    expected: increase
+    source: "LinkedIn: CTR declines when the same ad runs week after week; refresh at least monthly and rotate 2 to 4 versions (linkedin.com/help/lms/answer/a420488); Meta shows a creative fatigue status in Ads Manager"
+  - id: DX02
+    cause: low_attention
+    channels: [linkedin_ads, instagram_ads]
+    level: should
+    when: [{measure: ctr, op: belowBenchmark, value: 0.7}]
+    finding: "{name}: click-through rate {value}, under 70% of the {benchmark} benchmark: the ad is not stopping this audience"
+    change: "Test a new image and an intro line that names the buyer's problem in the first 150 characters (M07 message variant)"
+    measure: ctr
+    expected: increase
+    source: "WordStream: low CTR means improve the ad copy; A/B test headlines, descriptions or images (wordstream.com/blog/ws/2017/11/02/ppc-performance-metrics, updated Apr 2024)"
+  - id: DX03
+    cause: low_email_clicks
+    channels: [email]
+    level: should
+    when: [{measure: click_rate, op: belowBenchmark, value: 0.5}, {measure: complaint_rate, op: below, value: 0.003}]
+    finding: "{name}: click rate {value}, under half the {benchmark} benchmark, with delivery healthy: the message is not moving readers"
+    change: "Test a subject line and first paragraph that name the reader's problem, with one call to action (M07 message variant)"
+    measure: click_rate
+    expected: increase
+    source: "Mailchimp: with Apple Mail Privacy Protection, judge by clicks, not opens (mailchimp.com/help/apple-privacy-faq)"
+  - id: DX04
+    cause: landing_mismatch
+    channels: [email, linkedin_ads, instagram_ads]
+    level: should
+    when: [{measure: conversion_rate, op: belowBenchmark, value: 0.4}]
+    finding: "{name}: people click but few apply ({value} of clicks against a {benchmark} benchmark): the page they land on does not carry the promise that brought them"
+    change: "Make the landing page repeat this channel's promise and offer above the fold (the free 90-day invoice check), or use the platform's lead form (the pre-launch rubric checks this as CR04, same promise as the landing page)"
+    measure: conversion_rate
+    expected: increase
+    source: "Unbounce on message match: the landing page headline must match the call to action that was clicked (unbounce.com/ppc/poor-message-match); HubSpot: the page must reflect what the call to action promised (May 2026)"
+  - id: DX05
+    cause: audience_mismatch
+    channels: [email, linkedin_ads, instagram_ads]
+    level: should
+    when: [{measure: qualified_share, op: below, value: 0.3}]
+    finding: "{name}: only {value} of applications come from the target roles and company sizes: the channel reaches the wrong people"
+    change: "Pause {name} and move its budget to {best}, whose applications come from the target roles (the pre-launch rubric checks this as CR02, channel reaches the audience)"
+    measure: cost_per_qualified
+    scope: campaign
+    expected: decrease
+    source: "WordStream: a low conversion rate asks whether the ad is shown to the wrong type of viewer (Apr 2024); the rule's 30% floor is Hipstraw's"
+  - id: DX06
+    cause: under_delivery
+    channels: [linkedin_ads, instagram_ads]
+    level: should
+    when: [{measure: daily_spend, op: belowSetup, value: 0.6, setup: dailyBudget}]
+    finding: "{name}: spending {value} a day, under 60% of the planned daily budget: the audience is too narrow or the bid too low"
+    change: "Widen the targeting (add adjacent job titles or company sizes) or raise the bid"
+    measure: daily_spend
+    expected: increase
+    source: "LinkedIn: for under-delivery, review the bid and raise the daily budget; healthy audiences are 30,000 to 300,000+ members (linkedin.com/help/lms/answer/a421044)"

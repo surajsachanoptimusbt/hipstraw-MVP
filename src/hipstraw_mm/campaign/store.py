@@ -23,9 +23,11 @@ from pydantic import BaseModel
 
 from hipstraw_mm.campaign.models import (
     AuditEvent,
+    ChangeRecord,
     Correction,
     Delta,
     Deviation,
+    Direction,
     Escalation,
     EvidenceRecord,
     EvidenceRequest,
@@ -69,6 +71,8 @@ _TABLES: dict[type[BaseModel], _Table] = {
     EvidenceRequest: _Table("evidence_requests", lambda r: r.requestId, True),
     Escalation: _Table("escalations", lambda r: r.escalationId, False),
     Delta: _Table("deltas", lambda r: r.deltaId, False),
+    Direction: _Table("directions", lambda r: r.directionId, False),
+    ChangeRecord: _Table("changes", lambda r: r.changeId, False),
     ReportRecord: _Table("reports", lambda r: r.reportId, False),
 }
 _TRACE_TABLES = ("trace_runs", "trace_steps", "trace_blobs")
@@ -198,21 +202,29 @@ class SqliteCampaignStore:
             if not updated:
                 raise PreconditionError(f"{table.name}/{record_id} not found")
 
+    def _docs(self, sql: str, params: tuple[Any, ...] = ()) -> list[sqlite3.Row]:
+        """Rows for a read. A read-only connection to a database made before a table existed (the viewer
+        opens it without creating the schema) finds no such table: that is no rows, not an error."""
+        try:
+            return self._conn.execute(sql, params).fetchall()
+        except sqlite3.OperationalError as exc:
+            if "no such table" in str(exc):
+                return []
+            raise
+
     def get(self, model: type[R], record_id: str) -> R | None:
         table = self._table(model)
-        row = self._conn.execute(f"SELECT doc FROM {table.name} WHERE id = ?", (record_id,)).fetchone()
-        return model.model_validate_json(row["doc"]) if row else None
+        rows = self._docs(f"SELECT doc FROM {table.name} WHERE id = ?", (record_id,))
+        return model.model_validate_json(rows[0]["doc"]) if rows else None
 
     def list_for_launch(self, model: type[R], launch_id: str) -> list[R]:
         table = self._table(model)
-        rows = self._conn.execute(
-            f"SELECT doc FROM {table.name} WHERE launch_id = ? ORDER BY rowid", (launch_id,)
-        ).fetchall()
+        rows = self._docs(f"SELECT doc FROM {table.name} WHERE launch_id = ? ORDER BY rowid", (launch_id,))
         return [model.model_validate_json(r["doc"]) for r in rows]
 
     def list_all(self, model: type[R]) -> list[R]:
         table = self._table(model)
-        rows = self._conn.execute(f"SELECT doc FROM {table.name} ORDER BY rowid").fetchall()
+        rows = self._docs(f"SELECT doc FROM {table.name} ORDER BY rowid")
         return [model.model_validate_json(r["doc"]) for r in rows]
 
     def latest_mandate(self, launch_id: str) -> Mandate | None:

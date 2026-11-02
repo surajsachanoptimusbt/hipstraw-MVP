@@ -23,6 +23,8 @@ HANDLER_NAMES = (
     "testing.dispatch_blocked",        # M10
     "testing.record_delta",            # M11
     "escalation.escalate",             # M12
+    "readiness.channel_standards",     # M13
+    "performance.review",              # M14
 )
 
 
@@ -42,4 +44,4 @@ def register(name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     return wrap
 
 
-from hipstraw_mm.campaign.moves import escalation, evidence, readiness, strategy, testing  # noqa: E402, F401
+from hipstraw_mm.campaign.moves import escalation, evidence, performance, readiness, strategy, testing  # noqa: E402, F401, I001

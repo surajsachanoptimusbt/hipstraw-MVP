@@ -32,6 +32,16 @@ lines:
     reviewQuestion: "Since launch, is the campaign delivering as planned, and is each gap a delivery defect or a strategy signal?"
     useWhen: {all: [{fact: isLive, op: "==", value: true}, {fact: hasMetrics, op: "==", value: true}]}
     excludeWhen: {any: [{fact: isLive, op: "==", value: false}]}
+  # Added 2026-11-02 (Nov 2 meeting: continuous review). Run every day a campaign is live: what changed in the
+  # numbers, what to change next, and what yesterday's applied changes did. Rules only, no model, so it is cheap
+  # to run daily; L04 adds the model's reading when wanted.
+  - id: L06
+    version: 1
+    name: Daily performance review
+    stages: [[M11, M14], [M09], [M12]]
+    reviewQuestion: "Since yesterday, which channel is not performing, what should change, and did the changes already applied work?"
+    useWhen: {all: [{fact: isLive, op: "==", value: true}, {fact: hasMetrics, op: "==", value: true}]}
+    excludeWhen: {any: [{fact: isLive, op: "==", value: false}, {fact: hasMetrics, op: "==", value: false}]}
   - id: L05
     version: 1
     name: Contested evidence

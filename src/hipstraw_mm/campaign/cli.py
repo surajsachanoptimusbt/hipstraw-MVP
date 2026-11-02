@@ -78,6 +78,25 @@ def register(
     p.add_argument("--reason", required=True)
     _actor(p)
 
+    p = csub.add_parser("metrics", parents=[common_after], help="add a metrics export (CSV) to a live launch")
+    p.add_argument("--launch", required=True)
+    p.add_argument("--file", required=True, help="metrics CSV: metric,value,unit,window_start,window_end,...")
+    p.add_argument("--simulated", action="store_true", help="the rows come from a simulation, not a platform")
+    _actor(p)
+
+    p = csub.add_parser("applied", parents=[common_after],
+                        help="record that the Sponsor applied a recommended change, and when")
+    p.add_argument("--launch", required=True)
+    p.add_argument("--hypothesis", required=True, help="the direction's hypothesis item, e.g. H03")
+    p.add_argument("--on", required=True, help="date applied, YYYY-MM-DD")
+    p.add_argument("--what", required=True, help="what was changed")
+    _actor(p)
+
+    p = csub.add_parser("simulate", parents=[common_after],
+                        help="walk a simulated live campaign day by day through the daily review")
+    p.add_argument("--scenario", default="input/campaign/simulations/kozmo_atlanta_14_days.yaml")
+    p.add_argument("--exports", default=".runs/simulations", help="where the simulated daily exports are written")
+
     p = csub.add_parser("report", parents=[common_after], help="the readiness report from the accepted Position")
     p.add_argument("--launch", required=True)
     p.add_argument("--out", default=None, help="default: reports/<launch>_readiness.md")
@@ -147,6 +166,61 @@ def _lint(args: argparse.Namespace) -> CommandResult:
         message=f"{rep.version}: {len(rep.moves)} Moves, {len(rep.lines)} Lines, no lint errors",
         counts={"moves": len(rep.moves), "lines": len(rep.lines)},
         data={"repertoireVersion": rep.version, "errors": []},
+    )
+
+
+@_command("metrics")
+def _metrics(args: argparse.Namespace) -> CommandResult:
+    from hipstraw_mm.campaign.intake import ingest_metrics
+
+    r = ingest_metrics(_store(args), _config_dir(args), args.launch, Path(args.file), by=args.by, role=args.role,
+                       now=_now(), simulated=args.simulated)
+    return CommandResult(
+        "campaign metrics", runId=r.launchId, status="ingested",
+        message=f"{r.launchId}: {r.evidence} metric records for {', '.join(r.days) or 'no dated rows'}"
+                + (" (simulated)" if args.simulated else ""),
+        data={"launchId": r.launchId, "evidence": r.evidence, "days": r.days},
+    )
+
+
+@_command("applied")
+def _applied(args: argparse.Namespace) -> CommandResult:
+    from datetime import date
+
+    from hipstraw_mm.campaign.live import record_change
+    from hipstraw_mm.errors import UsageError
+
+    try:
+        on = date.fromisoformat(args.on)
+    except ValueError as exc:
+        raise UsageError(f"--on {args.on!r} is not a date (YYYY-MM-DD)") from exc
+    r = record_change(_store(args), _config_dir(args), args.launch, args.hypothesis, applied_on=on, what=args.what,
+                      by=args.by, role=args.role, now=_now())
+    return CommandResult(
+        "campaign applied", runId=r.changeId, status="recorded",
+        message=f"{r.changeId}: {r.hypothesisItemId} applied on {r.appliedOn.isoformat()}; the daily review measures "
+                "from that day",
+        data=r.model_dump(mode="json"),
+    )
+
+
+@_command("simulate")
+def _simulate(args: argparse.Namespace) -> CommandResult:
+    import sys
+
+    from hipstraw_mm.campaign.simulation import Event, run_simulation
+
+    def show(e: Event) -> None:
+        if e.kind != "metrics":
+            day = f"day {e.day:>2}" if e.day > 0 else "before Day Zero"
+            print(f"{day} ({e.on})  {e.kind:<9} {e.text}", file=sys.stderr, flush=True)
+
+    r = run_simulation(_store(args), _config_dir(args), Path(args.scenario), exports_dir=Path(args.exports),
+                       on_event=show)
+    return CommandResult(
+        "campaign simulate", runId=r.launchId, status="completed",
+        message=f"{r.launchId}: {r.scenario}; open it in the page (campaign view) under Performance",
+        data={"launchId": r.launchId, "events": [e.__dict__ for e in r.events]},
     )
 
 

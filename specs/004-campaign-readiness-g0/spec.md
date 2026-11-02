@@ -47,6 +47,21 @@ supplied on 2026-10-29.)
 - Q: Does M02's model summary ship first? → A: No. M02 reads the mandate's pages as evidence; M06 judges the
   rubric directly on that evidence. M02's summary step follows later.
 
+### Session 2026-11-02
+
+- Q: How often is a live campaign reviewed? → A: Daily (product owner, Nov 2: a free continuous agent, Meta's
+  Muse, sets the bar). Line L06 Daily performance review runs every live day: M11 measures applied changes, M14
+  reads each channel against sourced benchmarks and rules and gives a direction, M09 drafts its Test Plan, M12
+  escalates what is new. Rules only, no model, so a daily run is cheap (FR-058, FR-059).
+- Q: How is a direction followed through? → A: The Sponsor applies it on their own platform (Hipstraw
+  dispatches nothing) and records it; M11 compares the measure over the days before with the days since, once
+  enough days have passed, naming other changes in the same days; observational, never causal (FR-060).
+- Q: How is it shown before real connectors exist? → A: A simulation: a scenario's response model writes daily
+  exports, every row labelled simulated; everything else is the governed operations at the simulated date
+  (FR-061). The Atlanta IT-services micro-market from market discovery is the scenario.
+- Q: How does the system learn moves it lacks? → A: First step: a measure far from its benchmark that no rule
+  reads is raised once as a repertoire gap for the domain owner (FR-059).
+
 ### Session 2026-10-30
 
 - Q: Where does a campaign start? → A: From its channels. The launch file names each channel (email,
@@ -433,6 +448,22 @@ the stored records.
   trace, audit; a refused role audited), name the acting person and role, and be accepted only as a JSON POST
   from the console's own page: Host and Origin checked, the per-session token present, the body at most
   256 KB. A metrics export is still submitted as a file from the command line.
+
+**Live performance (Session 2026-11-02)**
+
+- **FR-058**: A metrics export for a live launch (`campaign metrics`; rows named `<channel>.<metric>`, one day
+  each) MUST become metric evidence through a governed operation, labelled simulated when it is.
+- **FR-059**: M14 MUST compute each channel's measures from counts over the last days, wait while a measure has
+  too little data, and apply the diagnosis rules in `config/campaign/performance.yaml` (each benchmark and rule
+  with its source) in funnel order; a rule that holds becomes a direction (a proposed hypothesis and a Direction
+  record with its measure), a `must` rule also a blocker cleared when the measure recovers; a measure far from
+  its benchmark that no rule reads is a repertoire gap, raised once.
+- **FR-060**: `campaign applied` MUST record that the Sponsor applied a direction, and when; M11 MUST then
+  record a Delta with the measure before and after, the result, and the other changes in the same days, never
+  causal.
+- **FR-061**: `campaign simulate` MUST run a scenario day by day through the governed operations at the
+  simulated date, and the page MUST show a Performance view (each channel's measures by day against the
+  benchmark, and what Hipstraw did each day) marked as a simulation when the metrics are simulated.
 
 **Interface**
 

@@ -150,6 +150,13 @@ class AmendResult:
     evidence: int
 
 
+@dataclass
+class IngestResult:
+    launchId: str
+    evidence: int
+    days: list[str]
+
+
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -256,8 +263,9 @@ def _asset_signature(asset: Asset) -> tuple[Any, ...]:
 
 
 class _EvidenceWriter:
-    def __init__(self, store: CampaignStore, launch_id: str, by: str, at: str) -> None:
-        self.store, self.launch_id, self.by, self.at = store, launch_id, by, at
+    def __init__(self, store: CampaignStore, launch_id: str, by: str, at: str,
+                 method: str = "launch submission") -> None:
+        self.store, self.launch_id, self.by, self.at, self.method = store, launch_id, by, at, method
         self.next_n = len(store.list_for_launch(EvidenceRecord, launch_id)) + 1
         self.written: list[EvidenceRecord] = []
 
@@ -265,7 +273,7 @@ class _EvidenceWriter:
         content = fields["content"]
         record = EvidenceRecord(
             evidenceId=f"ev_{self.launch_id}_{self.next_n}", launchId=self.launch_id, capturedAt=self.at,
-            provenance=Provenance(by=self.by, method="launch submission"), contentHash=content_hash(content),
+            provenance=Provenance(by=self.by, method=self.method), contentHash=content_hash(content),
             **fields,
         )
         self.store.insert(record)
@@ -296,20 +304,54 @@ def _record_mandate_evidence(
             verificationState="reported", uncertainty="as supplied; not yet checked against the live channel",
             content=asset_content(asset), accessClass="D2",
         )
-    for n, row in enumerate(metrics_rows or [], start=1):
-        r = row.values
+    if metrics_rows:
         assert mandate.metricsFile is not None
+        _add_metric_rows(writer, metrics_rows, mandate.metricsFile.sha256)
+    return brief, assets
+
+
+def _add_metric_rows(writer: _EvidenceWriter, rows: list[MetricRow], sha256: str, simulated: bool = False) -> None:
+    for n, row in enumerate(rows, start=1):
+        r = row.values
+        if simulated:
+            uncertainty = "simulated by the Hipstraw campaign simulator; not a real export"
+        else:
+            uncertainty = f"missing: {', '.join(row.missing)}" if row.missing else "customer export; not yet verified"
         writer.add(
-            kind="metric", source="metrics_export", sourceRef=f"metrics:{mandate.metricsFile.sha256[:12]}#row{n}",
-            effectiveAt=r["window_end"] or None,
-            verificationState="unverified" if row.missing else "reported",
-            uncertainty=f"missing: {', '.join(row.missing)}" if row.missing else "customer export; not yet verified",
+            kind="metric", source="simulation" if simulated else "metrics_export",
+            sourceRef=f"metrics:{sha256[:12]}#row{n}", effectiveAt=r["window_end"] or None,
+            verificationState="unverified" if row.missing else "reported", uncertainty=uncertainty,
             content=r, accessClass="D3",
             metric=MetricFields(metric=r["metric"], value=float(r["value"]), unit=r["unit"] or None,
                                 windowStart=r["window_start"] or None, windowEnd=r["window_end"] or None,
                                 denominator=r["denominator"] or None, definition=r["definition"] or None),
         )
-    return brief, assets
+
+
+def ingest_metrics(store: CampaignStore, config_dir: Path, launch_id: str, path: Path, *, by: str, role: str,
+                   now: datetime, simulated: bool = False) -> IngestResult:
+    """A metrics export for a live launch (Nov 2 meeting: daily review). In G0 the Sponsor or the Campaign
+    Manager supplies the file; a platform connector can call the same operation later. Each row becomes
+    metric evidence, labelled simulated when it is; the Position is unchanged until a Line reads it."""
+    at = now.isoformat()
+    authorize(store, load_roles(config_dir), launch_id=launch_id, actor=by, role=role, action="ingest_metrics",
+              at=at)
+    if store.get(Launch, launch_id) is None:
+        raise PreconditionError(f"launch {launch_id} not found")
+    rows = parse_metrics_csv(path)
+    sha = _sha256(path)
+    tracer = campaign_tracer(store, config_dir, launch_id)
+    method = "simulated metrics export" if simulated else "metrics export"
+    writer = _EvidenceWriter(store, launch_id, by, at, method=method)
+    with tracer.step("campaign_manager", "launch_desk", "ingest_metrics", right="ingest_metrics") as step:
+        step.set_inputs({"file": str(path), "sha256": sha, "rows": len(rows), "simulated": simulated})
+        _add_metric_rows(writer, rows, sha, simulated)
+        days = sorted({r.values["window_end"] for r in rows if r.values["window_end"]})
+        step.set_outputs({"evidence": len(writer.written), "days": days})
+        step.set_decision("ingested", "metric evidence only; the next Line reads it")
+    record_audit(store, launch_id=launch_id, at=at, actor=by, role=role, action="ingest_metrics",
+                 right="ingest_metrics", before=None, after=f"metrics:{sha[:12]}")
+    return IngestResult(launchId=launch_id, evidence=len(writer.written), days=days)
 
 
 def _initial_items(mandate: Mandate, brief: EvidenceRecord, assets: dict[str, EvidenceRecord],

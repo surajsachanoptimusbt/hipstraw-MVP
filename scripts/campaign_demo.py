@@ -9,7 +9,9 @@ Instagram) go through the same governed commands as docs/demo_g0_campaign_readin
 validation (two gpt-4o calls), the review, L01 Readiness-first, the review again, and the report. The reviewer
 and Sponsor decisions are scripted: the reviewer corrects "Same promise as the landing page" to not met where
 the model judged otherwise (the landing page offers a selective 8-week cohort, the channels a free invoice
-check) and accepts every other finding. Needs OPENAI_API_KEY in .env; a run costs a few cents.
+check) and accepts every other finding. Then the live simulation (docs/campaign_live_simulation.md): 14
+simulated days of the Atlanta IT-services campaign through the daily review, with no model calls. Needs
+OPENAI_API_KEY in .env; a run costs a few cents. `--simulation-only` runs just the simulation and needs no key.
 """
 
 from __future__ import annotations
@@ -78,6 +80,14 @@ def run_scenario(db: str, launch_file: str, report: str) -> None:
     print(f"  report: {report}")
 
 
+def run_live_simulation(db: str) -> None:
+    out = hs(db, "simulate")
+    print(f"\ninput/campaign/simulations/kozmo_atlanta_14_days.yaml (SIMULATION)\n  launch {out['runId']}")
+    for e in out["events"]:
+        if e["kind"] in ("direction", "applied", "delta", "gap"):
+            print(f"    day {e['day']:>2} {e['kind']:<9} {e['text'][:150]}")
+
+
 def serve(db: str, port: int, read_only: bool) -> None:
     command = "view" if read_only else "console"
     page = subprocess.Popen([sys.executable, "-c", CLI, "campaign", "--db", db, command, "--port", str(port)])
@@ -102,11 +112,13 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=8766)
     parser.add_argument("--no-view", action="store_true", help="do not start the page")
     parser.add_argument("--read-only", action="store_true", help="serve the read-only page instead of the console")
+    parser.add_argument("--simulation-only", action="store_true", help="only the live simulation (no model, no key)")
     args = parser.parse_args()
 
     load_dotenv()
-    if not os.environ.get("OPENAI_API_KEY", "").startswith("sk-") or "your-key" in os.environ["OPENAI_API_KEY"]:
-        raise SystemExit("Put your OPENAI_API_KEY in .env (copy .env.example to .env first).")
+    key = os.environ.get("OPENAI_API_KEY", "")
+    if not args.simulation_only and (not key.startswith("sk-") or "your-key" in key):
+        raise SystemExit("Put your OPENAI_API_KEY in .env (copy .env.example to .env first), or use --simulation-only.")
     db = Path(args.db)
     db.parent.mkdir(parents=True, exist_ok=True)
     Path("reports").mkdir(exist_ok=True)
@@ -114,8 +126,10 @@ def main() -> None:
         db.unlink(missing_ok=True)
     except PermissionError:
         raise SystemExit(f"{db} is open in another program (a campaign page?); stop it and run again.") from None
-    for launch_file, report in SCENARIOS:
-        run_scenario(str(db), launch_file, report)
+    if not args.simulation_only:
+        for launch_file, report in SCENARIOS:
+            run_scenario(str(db), launch_file, report)
+    run_live_simulation(str(db))
     if not args.no_view:
         serve(str(db), args.port, args.read_only)
 

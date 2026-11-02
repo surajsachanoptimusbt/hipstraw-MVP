@@ -3,7 +3,7 @@ layers:
   - id: campaign_manager
     responsibility: Opens launches, keeps the mandate, recommends and records the chosen Line, runs its stages, and commits the Campaign Position after the Sponsor accepts a Review.
     actors: [launch_desk, line_selector, stage_runner, position_keeper]
-    rights: [open_launch, amend_mandate, propose_position, recommend_lines, choose_line, record_deviation, run_stage, commit_position, render_report]
+    rights: [open_launch, amend_mandate, propose_position, recommend_lines, choose_line, record_deviation, run_stage, commit_position, render_report, ingest_metrics, record_change]
   - id: readiness_testing
     responsibility: Runs one Move with explicit inputs; its output is input to Review, never the Position itself.
     actors: [move_runner]
