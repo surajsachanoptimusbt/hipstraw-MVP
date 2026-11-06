@@ -1,0 +1,10 @@
+# Trace layers for demand validation (constitution XII and XIV): who may do what in a demand run.
+layers:
+  - id: demand_validation
+    responsibility: Reads a market thesis, judges its evidence against the demand rubric, and records the Line decided for each task of each hypothesis.
+    actors: [line_decider]
+    rights: [decide_lines]
+  - id: workers
+    responsibility: Bounded tasks with explicit inputs and structured outputs - one model call.
+    actors: [llm_worker]
+    rights: [call_model]

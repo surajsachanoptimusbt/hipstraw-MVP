@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: var(--font-mono-face), ui-monospace, "Cascadia Code", Consolas, monospace;
+  --color-ink: #0b1020;
+  --color-night: #0f1530;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-violet-glow: #8b5cf6;
+}
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; }
+  body { @apply bg-slate-50 text-slate-900; }
+  ::selection { background: rgb(99 102 241 / 0.18); }
+}
+
+/* A soft light behind the content, so the cards float. */
+.page-glow {
+  background:
+    radial-gradient(1100px 420px at 12% -10%, rgb(99 102 241 / 0.10), transparent 60%),
+    radial-gradient(900px 380px at 100% 0%, rgb(139 92 246 / 0.08), transparent 60%);
+}
+
+.brand-gradient { background-image: linear-gradient(135deg, #4f46e5 0%, #7c3aed 55%, #a855f7 100%); }
+.brand-text {
+  background-image: linear-gradient(135deg, #4f46e5, #7c3aed 60%, #c026d3);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* A border that glows with the brand gradient, for the picked Line and the decision panel. */
+.ring-gradient { position: relative; }
+.ring-gradient::before {
+  content: ""; position: absolute; inset: -1.5px; border-radius: inherit; padding: 1.5px;
+  background: linear-gradient(135deg, #6366f1, #a855f7, #06b6d4);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+}
+
+@keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+.shimmer {
+  background: linear-gradient(90deg, rgb(148 163 184 / 0.12) 0%, rgb(148 163 184 / 0.32) 50%, rgb(148 163 184 / 0.12) 100%);
+  background-size: 800px 100%; animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes flow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+.flowing {
+  background-image: linear-gradient(90deg, #6366f1, #a855f7, #06b6d4, #6366f1);
+  background-size: 200% 100%; animation: flow 2.4s linear infinite;
+}
+
+.scroll-thin { scrollbar-width: thin; scrollbar-color: rgb(148 163 184 / 0.5) transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer, .flowing { animation: none; }
+}

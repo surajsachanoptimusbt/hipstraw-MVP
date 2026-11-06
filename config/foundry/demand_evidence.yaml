@@ -1,0 +1,289 @@
+# Demand evidence rubric (Hipstraw Strategic & Operating Blueprint v0.1, section 07, rubric family "Demand
+# evidence": the strength and independence of buyer behaviour; the critical failure to detect is equating clicks
+# with willingness to buy). Nov 4 meeting: validate whether a specific market demands a specific product, with
+# several kinds of evidence, never one score.
+#
+# How it judges: every piece of evidence is classified by type (which fixes its level on the evidence ladder),
+# whether it comes from the target segment, whether it is independent, and which dimensions it supports or
+# contradicts. Each dimension is then judged met / partly / not met / unknown from those counts. The decision
+# follows from the dimensions and the gates; there is no total, and the rubric may abstain.
+#
+# Qualification (Blueprint section 07): candidate -> lab-tested -> shadow-tested -> field-qualified -> monitored
+# or retired. A candidate rubric helps a specialist think; it must not govern a high-stakes decision alone.
+# The profile thresholds below are Hipstraw's starting values, to be calibrated in the field; no published source
+# sets them.
+#
+# v0.2 (Nov 5 meeting): DE09 recurring demand, judged only for offerings bought again and again; the demand
+# scorecard; a case may set its own targets. The Moves and Lines that gather the evidence moved to
+# demand_repertoire.yaml: the rubric judges, the repertoire is the methods and strategies.
+# v0.3 (Nov 5 review): the six demand dimensions group the rubric questions; DE10 buyer demand (who decides and
+# controls the budget) and its indicator SC11.
+version: demand-evidence.v0.3
+qualification: candidate
+status: "candidate rubric for domain-owner review"
+
+# The evidence ladder (Blueprint section 02: simulations and expert opinion generate hypotheses; clicks show
+# attention; qualified conversations and commitments show stronger intent; paid fulfilment and repeat demand
+# deeper evidence).
+levels:
+  L0: {name: "Simulation or model output", demand: false, note: "generates hypotheses; never evidence of demand"}
+  L1: {name: "Secondary research or expert opinion", demand: false, note: "says the problem may exist; not that this segment will act"}
+  L2: {name: "Attention", demand: false, note: "impressions, visits, clicks: attention, not intent"}
+  L3: {name: "Expressed interest", demand: true, note: "sign-ups, replies, survey answers, stated willingness to pay"}
+  L4: {name: "Qualified conversation", demand: true, note: "a decision-maker in the segment discusses the problem and its priority"}
+  L5: {name: "Commitment", demand: true, note: "letter of intent, deposit, pre-order or signed pilot"}
+  L6: {name: "Paid fulfilment", demand: true, note: "paid for and delivered"}
+  L7: {name: "Repeat demand", demand: true, note: "repeat purchase or renewal"}
+
+evidenceTypes:
+  simulation: L0
+  model_estimate: L0
+  desk_research: L1
+  expert_opinion: L1
+  search_or_social_signal: L1
+  competitor_activity: L1
+  trigger_observed: L1  # a named organisation in the segment with an observable buying trigger
+  outreach_sent: L2
+  page_visit: L2
+  ad_click: L2
+  signup: L3
+  waitlist_join: L3
+  outreach_reply: L3
+  survey_response: L3
+  price_test_response: L3
+  proposal_request: L3  # asked for a scoped proposal or quote
+  problem_interview: L4
+  sales_conversation: L4
+  letter_of_intent: L5
+  deposit: L5
+  pre_order: L5
+  pilot_signed: L5
+  paid_order: L6
+  repeat_order: L7
+  renewal: L7
+
+# Hipstraw's six demand dimensions (Nov 5 meeting). Each is judged by its own rubric questions; a dimension has no
+# score of its own and the dimensions are never combined. Every rubric question belongs to exactly one dimension.
+demandDimensions:
+  - id: problem
+    name: Problem demand
+    question: "Is the problem real, frequent and costly enough to act on now?"
+    questions: [DE01, DE02]
+  - id: buyer
+    name: Buyer demand
+    question: "Who has the problem, and who decides and controls the budget for solving it?"
+    questions: [DE10]
+  - id: solution
+    name: Solution demand
+    question: "Would they choose this offering over what they do today, and act on it?"
+    questions: [DE04, DE05]
+  - id: payment
+    name: Payment demand
+    question: "Will they commit and pay a price that works?"
+    questions: [DE06, DE07]
+  - id: recurring
+    name: Recurring demand
+    question: "Do they keep paying, period after period?"
+    questions: [DE09]
+  - id: reachable
+    name: Reachable demand
+    question: "Can enough qualified buyers be reached, through more than one channel, on independent evidence?"
+    questions: [DE03, DE08]
+
+# Thresholds by kind of buyer (Nov 3 meeting: different industries, different demand). Counts are of evidence
+# items from the target segment unless the dimension says otherwise.
+profiles:
+  small_business:
+    {interviews: 10, confirmations: 6, rejections: 6, priority: 4, switch: 3, replies: 25, commitments: 3,
+     refusals: 10, exposure: 100, sources: 3, channels: 2, independentShare: 0.7, minDemandItems: 5,
+     accounts: 150, delivered: 2, recurringCustomers: 2, budgetOwners: 5}
+  mid_market:
+    {interviews: 8, confirmations: 5, rejections: 5, priority: 3, switch: 2, replies: 15, commitments: 2,
+     refusals: 8, exposure: 60, sources: 3, channels: 2, independentShare: 0.7, minDemandItems: 4,
+     accounts: 80, delivered: 2, recurringCustomers: 1, budgetOwners: 4}
+  enterprise:
+    {interviews: 6, confirmations: 4, rejections: 4, priority: 3, switch: 2, replies: 8, commitments: 1,
+     refusals: 6, exposure: 30, sources: 3, channels: 2, independentShare: 0.7, minDemandItems: 3,
+     accounts: 40, delivered: 1, recurringCustomers: 1, budgetOwners: 3}
+
+# Each dimension: conditions on counts of evidence. `support` counts items tagged as supporting the dimension,
+# `contra` items tagged as contradicting it (an interview that does not recognise the problem, a letter of intent
+# offered and declined), `total` both, `any` every item whatever its tags. `levels` and `segment` filter; an item's
+# `count` (default 1) is how many people or instances it stands for. Thresholds are numbers or profile keys, and
+# all conditions in a list must hold. Judgement: met and not met both holding is contested, judged partly (the
+# segment may be too broad); otherwise not met, then met, then partly, else unknown.
+dimensions:
+  - id: DE01
+    title: The problem is real for this segment
+    question: "Do people in the target segment have the problem the product solves, and say so in their own words?"
+    met: "Of at least {interviews} problem interviews with the segment, {confirmations} or more confirm the problem unprompted"
+    partly: "Some interviews confirm it, or only secondary sources describe the problem"
+    notMet: "{rejections} or more interviews with the segment do not recognise the problem"
+    whenMet: [{count: support, levels: [L4], segment: true, atLeast: confirmations},
+              {count: total, levels: [L4], segment: true, atLeast: interviews}]
+    whenPartly: [{count: support, levels: [L1, L3, L4], atLeast: 1}]
+    whenNotMet: [{count: contra, levels: [L4], segment: true, atLeast: rejections}]
+    gatheredBy: [DV01, DV02]
+  - id: DE02
+    title: Solving it is a priority now
+    question: "Do they spend time or money on the problem today, so solving it is worth acting on now?"
+    met: "{priority} or more segment conversations describe current spending or a workaround they want replaced"
+    partly: "At least one such conversation, or secondary evidence of what the problem costs"
+    notMet: "Segment conversations say it can wait"
+    whenMet: [{count: support, levels: [L4, L5], segment: true, atLeast: priority}]
+    whenPartly: [{count: support, levels: [L1, L4], atLeast: 1}]
+    whenNotMet: [{count: contra, levels: [L4], segment: true, atLeast: priority}]
+    gatheredBy: [DV01, DV02]
+  - id: DE03
+    title: Buyers can be reached
+    question: "Can the people who decide be found and reached through a channel at a reasonable effort?"
+    met: "{replies} or more replies or sign-ups from the segment through a stated channel"
+    partly: "A list or channel is identified, or some replies came back"
+    notMet: "Outreach or exposure to {exposure} or more of the segment produced no replies"
+    whenMet: [{count: support, levels: [L3, L4, L5], segment: true, atLeast: replies}]
+    whenPartly: [{count: support, levels: [L1, L2, L3], atLeast: 1}]
+    whenNotMet: [{count: any, levels: [L2], segment: true, atLeast: exposure},
+                 {count: any, levels: [L3, L4, L5, L6, L7], segment: true, atMost: 0}]
+    gatheredBy: [DV09, DV03, DV13]
+  - id: DE04
+    title: Better than what they use today
+    question: "Would the segment switch from its current alternative (an agency, a tool, doing it themselves, or nothing)?"
+    met: "{switch} or more segment conversations or commitments say they would switch, and why"
+    partly: "An analysis of the alternatives shows a gap, or one conversation says so"
+    notMet: "{rejections} or more segment conversations are satisfied with what they use"
+    whenMet: [{count: support, levels: [L4, L5, L6], segment: true, atLeast: switch}]
+    whenPartly: [{count: support, levels: [L1, L4], atLeast: 1}]
+    whenNotMet: [{count: contra, levels: [L4], segment: true, atLeast: rejections}]
+    gatheredBy: [DV01, DV02]
+  - id: DE05
+    title: Interest beyond attention
+    question: "Did the segment act (sign up, reply, ask to talk), not only look or click?"
+    met: "{replies} or more sign-ups, replies or survey answers from the segment; clicks alone never count"
+    partly: "Attention only (visits, clicks), or fewer actions than needed"
+    notMet: "Attention from {exposure} or more of the segment, and no one acted"
+    whenMet: [{count: support, levels: [L3, L4, L5, L6, L7], segment: true, atLeast: replies}]
+    whenPartly: [{count: support, levels: [L2, L3], atLeast: 1}]
+    whenNotMet: [{count: any, levels: [L2], segment: true, atLeast: exposure},
+                 {count: support, levels: [L3, L4, L5, L6, L7], segment: true, atMost: 0}]
+    gatheredBy: [DV03]
+  - id: DE06
+    title: Concrete commitment
+    question: "Did people in the segment commit (letter of intent, deposit, pre-order, signed pilot)?"
+    met: "{commitments} or more commitments from the segment"
+    partly: "At least one commitment"
+    notMet: "A commitment test was offered to the segment and {refusals} or more declined, with none committing"
+    whenMet: [{count: support, levels: [L5, L6, L7], segment: true, atLeast: commitments}]
+    whenPartly: [{count: support, levels: [L5, L6, L7], atLeast: 1}]
+    whenNotMet: [{count: contra, levels: [L5], segment: true, atLeast: refusals},
+                 {count: support, levels: [L5, L6, L7], segment: true, atMost: 0}]
+    gatheredBy: [DV10, DV05]
+  - id: DE07
+    title: Pays a price that works
+    question: "Will they pay at or above the price the offering needs?"
+    met: "{commitments} or more commitments or paid orders at or above the price floor"
+    partly: "Stated willingness to pay at or above the floor, or commitments below it"
+    notMet: "Every commitment or paid order is below the price floor"
+    check: price
+    gatheredBy: [DV06, DV10, DV05, DV04, DV12]
+  - id: DE08
+    title: Evidence is independent and representative
+    question: "Does the evidence come from enough independent sources and channels to trust it?"
+    met: "Demand evidence from {sources} or more sources across {channels} or more channels, at least {independentShare:.0%} independent"
+    partly: "Some independence or variety, but not both"
+    notMet: "Most demand evidence comes from people who are not independent (existing customers, friends, the team)"
+    check: independence
+    gatheredBy: [DV03, DV13, DV02]
+  - id: DE09
+    title: They pay again
+    question: "For an offering bought again and again, do customers who bought once pay for the next period?"
+    met: "{recurringCustomers} or more customers from the segment pay again (renewal or repeat order)"
+    partly: "Customers say they want to continue, or one has paid again"
+    notMet: "{commitments} or more paying customers were offered the next period and none paid again"
+    appliesWhen: recurring
+    whenMet: [{count: support, levels: [L7], segment: true, atLeast: recurringCustomers}]
+    whenPartly: [{count: support, levels: [L3, L4, L5, L6, L7], atLeast: 1}]
+    whenNotMet: [{count: contra, levels: [L6, L7], segment: true, atLeast: commitments},
+                 {count: support, levels: [L7], segment: true, atMost: 0}]
+    gatheredBy: [DV11]
+  - id: DE10
+    title: The buyer who decides and pays is known
+    question: "In the segment, who has the problem, who decides, and who controls the budget for solving it?"
+    met: "{budgetOwners} or more segment conversations or commitments name who approves the spend, and that person took part"
+    partly: "Decision-makers' roles are mapped, or some conversations name who approves the spend"
+    notMet: "{rejections} or more segment conversations say no one with a budget sees the problem as theirs"
+    whenMet: [{count: support, levels: [L4, L5, L6, L7], segment: true, atLeast: budgetOwners}]
+    whenPartly: [{count: support, levels: [L1, L3, L4, L5, L6, L7], atLeast: 1}]
+    whenNotMet: [{count: contra, levels: [L4], segment: true, atLeast: rejections}]
+    gatheredBy: [DV09, DV02, DV10]
+
+# Gates (Blueprint section 05, G2 field exposure, and Appendix E charter). A gate applies once the evidence reaches
+# `appliesFrom` on the ladder; an applicable gate must be confirmed, and one that is false or unconfirmed blocks the
+# decision, whatever the dimensions say (a strong average must not override a critical gate).
+gates:
+  - id: GX1
+    text: "Claims were truthful and contacts consented (Appendix E: seller disclosure, actual availability, claims substantiation, contact permission)"
+    field: truthAndConsent
+    appliesFrom: L2
+  - id: GX2
+    text: "The offering can be supplied as promised to the people who committed"
+    field: supplyFeasible
+    appliesFrom: L5
+  - id: GX3
+    text: "The rubric version and decision rule were recorded before the results were seen"
+    field: rubricRecordedBefore
+    appliesFrom: L2
+
+# Decisions, in order: the first whose conditions all hold. No score; the rubric may abstain. `next` names the
+# Moves to run after this decision; without it, the next Moves are those that gather evidence for the dimensions
+# not yet met, in the order of Line LD1.
+decisions:
+  - id: blocked
+    checkpoint: Fix first
+    text: "Blocked: a gate is not confirmed. Fix it before reading any of this evidence as demand"
+    gateFailed: true
+    next: []
+  - id: disproved
+    checkpoint: Stop or reframe
+    text: "Disproved for this segment: strong evidence that the problem is not felt, or that the segment will not commit or pay a workable price"
+    anyNotMet: [DE01, DE06, DE07]
+    next: [DV08]
+  - id: validated
+    checkpoint: Continue to scale
+    text: "Validated for this segment: the problem is real and a priority, the segment acts, commits and pays at a workable price, on independent evidence"
+    allMet: [DE01, DE02, DE05, DE06, DE07, DE08, DE09]
+    atLeastPartly: [DE03, DE04, DE10]
+    next: [DV08]
+  - id: promising
+    checkpoint: Continue
+    text: "Promising: the problem is real and the segment acts on the offer, but not every demand dimension is shown yet (see what is missing)"
+    allMet: [DE01, DE05]
+    atLeastPartly: [DE02, DE08]
+  - id: problem_confirmed
+    checkpoint: Continue
+    text: "Problem confirmed, demand not yet tested: the segment has the problem but has not yet been asked to act on an offer"
+    allMet: [DE01]
+    allUnknown: [DE05, DE06]
+  - id: abstain
+    checkpoint: Start collecting evidence
+    text: "Abstain: too little evidence from the segment to judge. So far it is simulations, desk research or attention"
+    demandBelowMinimum: true
+    noneNotMet: true
+  - id: not_validated
+    checkpoint: Revise
+    text: "Not validated: there is evidence from the segment, but not enough of it points to demand"
+
+# The demand scorecard (Nov 5 meeting). Each indicator counts evidence from the segment against a profile target,
+# side by side; they are never added up, and reaching them is not the decision (the decision rules above are).
+# Counts are of people or instances, or of distinct channels where `distinct` says so.
+scorecard:
+  - {id: SC01, label: "Accounts mapped with a live buying trigger", types: [trigger_observed], target: accounts, fills: DE03, by: [DV09]}
+  - {id: SC02, label: "Buyer interviews held", types: [problem_interview], target: interviews, fills: DE01, by: [DV02]}
+  - {id: SC03, label: "Raised the problem unprompted", levels: [L4], dimension: DE01, target: confirmations, fills: DE01, by: [DV02]}
+  - {id: SC04, label: "Already spend money or time on it", levels: [L4, L5], dimension: DE02, target: priority, fills: DE02, by: [DV02]}
+  - {id: SC05, label: "See value beyond what they use today", levels: [L4, L5, L6], dimension: DE04, target: switch, fills: DE04, by: [DV02]}
+  - {id: SC06, label: "Acted on the offer (requests, replies, sign-ups)", levels: [L3, L4, L5, L6, L7], dimension: DE05, target: replies, fills: DE05, by: [DV03]}
+  - {id: SC07, label: "Commitments (signed pilots, deposits, pre-orders)", levels: [L5, L6, L7], target: commitments, fills: DE06, by: [DV10, DV05]}
+  - {id: SC08, label: "Paid and delivered", levels: [L6, L7], target: delivered, fills: DE07, by: [DV10, DV04]}
+  - {id: SC09, label: "Paid again", levels: [L7], target: recurringCustomers, fills: DE09, by: [DV11], appliesWhen: recurring}
+  - {id: SC10, label: "Channels bringing qualified buyers", levels: [L3, L4, L5, L6, L7], distinct: channel, target: channels, fills: DE08, by: [DV03, DV13]}
+  - {id: SC11, label: "Budget holders named and taking part", levels: [L4, L5, L6, L7], dimension: DE10, target: budgetOwners, fills: DE10, by: [DV02, DV10]}

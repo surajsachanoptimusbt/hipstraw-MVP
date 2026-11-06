@@ -14,6 +14,9 @@ dependencies = [
     "beautifulsoup4",
     "pydantic>=2",
     "PyYAML",
+    "openpyxl",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
     "python-dotenv",
     "pypdf>=5",
 ]
@@ -42,6 +45,7 @@ testpaths = ["tests"]
 markers = [
     "emulator: requires the Firestore emulator (deselected by default)",
     "viewer: starts the read-only viewer on 127.0.0.1",
+    "api: runs the desk API in-process (its event loop needs loopback sockets)",
 ]
 
 [tool.ruff]
@@ -63,5 +67,5 @@ warn_return_any = true
 warn_unused_configs = true
 
 [[tool.mypy.overrides]]
-module = ["yaml"]
+module = ["yaml", "openpyxl", "openpyxl.*"]
 ignore_missing_imports = true

@@ -1,0 +1,16 @@
+# Lab case (adversarial): the evidence would validate, but nobody confirmed that the claims were truthful and the
+# contacts consented. A strong result must not override a critical gate.
+case: lab-07-gate-not-confirmed
+question: "Do independent physiotherapy clinics want automated no-show recovery?"
+asOf: 2026-11-04
+offering: {name: No-show recovery, description: "Fills cancelled appointments from a waitlist", priceFloor: {amount: 99, currency: USD, per: month}}
+segment: {name: "US independent physiotherapy clinics, 2-30 staff", profile: small_business}
+gates: {supplyFeasible: true, rubricRecordedBefore: true}
+expect:
+  decision: blocked
+  why: "GX1 is not confirmed"
+evidence:
+  - {id: V2, type: problem_interview, summary: "Clinic owners describe no-shows unprompted and pay staff to call the waitlist", source: "clinics, Georgia", channel: interview, segment: true, count: 10, supports: [DE01, DE02, DE04]}
+  - {id: V5, type: signup, summary: "Sign-ups from LinkedIn outreach", source: "linkedin outreach", channel: linkedin, segment: true, count: 22, supports: [DE03, DE05]}
+  - {id: V6, type: signup, summary: "Sign-ups from the shadow offer page", source: "shadow offer page", channel: search, segment: true, count: 17, supports: [DE03, DE05]}
+  - {id: V7, type: deposit, summary: "Deposits at full price", source: "shadow offer page", channel: search, segment: true, count: 4, price: 99, supports: [DE06, DE07]}

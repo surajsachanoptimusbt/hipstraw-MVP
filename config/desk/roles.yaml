@@ -1,0 +1,6 @@
+# Who may do what at the reviewer desk (constitution XIII: a console offers only approved actions, names the acting
+# person and role, and is checked by an authority gate that fails closed). Nov 6 meeting: customers submit
+# requests in their workspace; reviewers approve or return the agent's plan at the reviewer desk.
+roles:
+  customer: [submit_request]
+  reviewer: [submit_request, approve_plan, return_plan]

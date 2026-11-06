@@ -1,0 +1,276 @@
+# Demand validation repertoire: the methods (Moves) and strategies (Lines) that gather the evidence the demand
+# evidence rubric judges (Nov 5 meeting: "for a specific market demand, what are the Lines and what are the Moves";
+# Lines and Moves are strategies and methods; market demand validation, not market discovery).
+#
+# A Line fits a market when every useWhen condition matches and no excludeWhen condition does. The conditions read
+# the hypothesis being tested:
+#   buyer      b2b | b2c
+#   motion     sales_led (a person sells a scoped offer) | self_serve (buyers act on a page)
+#   recurring  true | false (the offering is bought again and again)
+#   problem    none | partial | confirmed | rejected (from the rubric's DE01 on the evidence so far)
+# The walkthrough takes, phase by phase, the first Line that fits, and logs every Line it considered and why.
+# `exit` says when the Line is done and what follows; the checkpoint after it is the rubric's decision.
+#
+# A Move is one method. Effect classes as in the campaign repertoire: E0 internal, E1 reads outside sources, E3
+# contacts people, publishes or spends. An E3 Move needs an approved Shadow Launch charter (Blueprint Appendix E);
+# in G0 people carry it out and Hipstraw records and judges the evidence.
+#   does     what it does for this hypothesis, one sentence
+#   how      the steps, in order
+#   needs    what must exist before it runs
+#   records  the evidence types it records (their rung on the ladder comes from the rubric)
+#   output   what it gives
+#   watchOut the trap to avoid
+#   fills    the scorecard indicators it moves
+# Which rubric questions, and so which demand dimensions, a Move tests is not repeated here: it is the rubric
+# questions whose `gatheredBy` names it.
+# `does`, `how` and `needs` may name {segment}, {offering}, {price}, {triggers}, {buyerRole}, {startingPoint} and
+# any profile threshold, filled in for the hypothesis.
+version: demand-repertoire.v0.3
+
+phases:
+  1: Reach and problem
+  2: Purchase intent and commitment
+  3: Repeat purchase
+  4: Economics and reach
+
+# v0.3 (Nov 6): the demand validation tasks. For each task of each hypothesis one Line is decided (by a model for
+# now; Jev stays deferred, constitution XI), from the Lines of the task's phase, or none when none applies.
+tasks:
+  - id: T1
+    phase: 1
+    name: Confirm the problem and who pays
+    question: "Is the problem real for this segment, and who decides and pays to solve it?"
+  - id: T2
+    phase: 2
+    name: Test purchase
+    question: "Will the segment act on the offer, and commit or pay at a price that works?"
+  - id: T3
+    phase: 3
+    name: Test repeat purchase
+    question: "Do customers who bought once pay for the next period?"
+  - id: T4
+    phase: 4
+    name: Test economics and reach
+    question: "Can customers be won and served at a workable cost, through more than one channel?"
+
+moves:
+  - id: DV01
+    name: Desk scan of the segment and its alternatives
+    effect: E1
+    does: "Collect published evidence on the problem, the size of {segment} and the alternatives buyers use today, with their prices"
+    how:
+      - "Find published studies of how often the problem happens and what it costs"
+      - "List the alternatives buyers use today (an agency, a tool, a consultant, in-house, or nothing) and their prices"
+      - "Mark each source independent or not: a vendor's or marketplace's own survey is not"
+      - "Record each finding as desk evidence, tagged to the rubric question it bears on"
+    needs: "The market thesis"
+    records: [desk_research, competitor_activity, expert_opinion]
+    output: "Desk evidence (rung 1) and a map of alternatives and prices"
+    watchOut: "Says the problem may exist, not that these buyers will act"
+  - id: DV09
+    name: Map reachable buyers with a buying trigger
+    effect: E1
+    fills: [SC01]
+    does: "List {accounts} named organisations in {segment}, recording for each the decision-maker ({buyerRole}), the observable trigger ({triggers}) and where it was seen"
+    how:
+      - "Start from {startingPoint}"
+      - "For each organisation record: fit with the segment, the decision-maker's role, the trigger seen and the source"
+      - "Qualify: keep the accounts with a live trigger and a decision coming up"
+      - "Record roles and companies, never people's names"
+    needs: "The segment and its buying triggers"
+    records: [trigger_observed]
+    output: "An account list, and how many show a live trigger"
+    watchOut: "A list is not demand: count only accounts with a live trigger"
+  - id: DV02
+    name: Buyer interviews about the last time
+    effect: E3
+    fills: [SC02, SC03, SC04, SC05, SC11]
+    does: "Interview {interviews} decision-makers from mapped accounts about what happened last time, before showing the offer: the trigger, what it cost, what they did, what they use today and who approved the spend"
+    how:
+      - "Fix the interview guide and the tagging rules before the first interview"
+      - "Recruit {buyerRole} from accounts with a live trigger"
+      - "Ask about the most recent case: what triggered it, what it cost, what they did about it"
+      - "Ask what they use or pay for today, and what that costs"
+      - "Ask who approved the spend, and what decision is coming next"
+      - "Only then describe the offer, and record whether they ask for a proposal"
+      - "Tag each interview for or against: the problem, its priority, today's alternative, the budget holder"
+    needs: "Mapped accounts with a live trigger (DV09) and an approved charter for contacting them"
+    records: [problem_interview]
+    output: "One interview record each, tagged for or against the problem, its priority, today's alternative and who pays"
+    watchOut: "Compliments and promises about the future mislead; ask about past behaviour"
+  - id: DV03
+    name: Offer page and targeted outreach
+    effect: E3
+    fills: [SC06, SC10]
+    does: "Put a truthful offer for {offering} in front of {segment}: a page with the seller named, and outreach to mapped accounts. Count requests, replies and sign-ups, never clicks alone"
+    how:
+      - "Write one page per offering: who sells it, what is delivered, by when, and that it is scoped and scheduled"
+      - "Send it to the mapped accounts and place it in one channel the segment uses"
+      - "Count requests for a proposal, replies, booked calls and sign-ups, by channel"
+      - "Record visits and clicks as attention only"
+    needs: "An approved charter (truthful claims, contact consent) and mapped accounts (DV09)"
+    records: [outreach_sent, page_visit, outreach_reply, signup, proposal_request]
+    output: "Attention (rung 2) and actions (rung 3), by channel"
+    watchOut: "Do not imply features, availability or results that do not exist"
+  - id: DV10
+    name: Paid pilot offer
+    effect: E3
+    fills: [SC07, SC08, SC11]
+    does: "Offer qualified accounts a real, scoped and quoted {offering} at {price}: scope, evidence needed, deliverable and date. Count signed and paid pilots"
+    how:
+      - "Offer it only to accounts that asked for a proposal or confirmed the problem"
+      - "Write the scope, what the buyer must provide, the deliverable, the date and the price"
+      - "Record who signed, who paid, who declined and why"
+      - "Stop at {commitments} paid pilots: beyond that it is selling, not validating"
+    needs: "Accounts that acted on the offer (DV03), a price, and the ability to deliver (gate GX2)"
+    records: [proposal_request, pilot_signed, paid_order]
+    output: "Commitments (rung 5) and payments (rung 6)"
+    watchOut: "Asking for a proposal is interest, not commitment; only signed or paid counts"
+  - id: DV04
+    name: Deliver the pilot
+    effect: E3
+    fills: [SC08]
+    does: "Deliver what was bought, by hand where needed, and record hours, direct cost and the buyer's acceptance"
+    how:
+      - "Deliver to the agreed scope and date"
+      - "Record delivery hours and direct cost for each pilot"
+      - "Record the buyer's acceptance, and whether they ask what comes next"
+    needs: "Signed or paid pilots (DV10)"
+    records: [paid_order]
+    output: "Paid and delivered (rung 6), with delivery hours and cost"
+    watchOut: "Hand delivery says nothing about cost at scale"
+  - id: DV05
+    name: Commitment test
+    effect: E3
+    fills: [SC07]
+    does: "Ask for a letter of intent, refundable deposit or pre-order for {offering} at {price}"
+    how:
+      - "Ask the people who acted on the page to commit: a letter of intent, a refundable deposit or a pre-order"
+      - "Record who committed and who declined, with the reason"
+      - "Honour or refund every deposit"
+    needs: "People who acted on the offer (DV03) and an approved charter"
+    records: [letter_of_intent, deposit, pre_order]
+    output: "Commitments and refusals (rung 5)"
+    watchOut: "Letters of intent are often non-binding"
+  - id: DV06
+    name: Price test
+    effect: E3
+    does: "Show {offering} at two or more prices to comparable accounts and record which they accept"
+    how:
+      - "Choose two or more prices around {price}"
+      - "Show each to comparable accounts, never two prices to the same account"
+      - "Read acceptance from commitments and payments, not from a plan chosen on a page"
+    needs: "Comparable accounts that acted on the offer"
+    records: [price_test_response]
+    output: "Accepted and refused prices"
+    watchOut: "Choosing a plan is not paying"
+  - id: DV11
+    name: Continuing-service offer
+    effect: E3
+    fills: [SC09]
+    does: "After delivery, offer the next service period of {offering} and count who pays again, not who says they would"
+    how:
+      - "After the first delivery, offer the next period: what continues, how often, at what price"
+      - "Wait one full service period"
+      - "Count who paid for it; record why the others did not"
+    needs: "Delivered pilots (DV04)"
+    records: [renewal, repeat_order]
+    output: "Renewals and repeat orders (rung 7)"
+    watchOut: "Needs at least one full service period; an intention to renew is only rung 3"
+  - id: DV12
+    name: Economics check
+    effect: E0
+    does: "Record acquisition effort, sales hours, delivery hours, direct cost and price for every account served"
+    how:
+      - "For every account served, record outreach effort, sales hours, delivery hours and direct cost"
+      - "Compare the cost to win and serve each account with its price"
+      - "Flag every account served below cost, and set or check the price floor"
+    needs: "Delivered pilots (DV04)"
+    records: []
+    output: "Cost to acquire and to serve each account, against its price"
+    watchOut: "Small samples; use fully loaded costs"
+  - id: DV13
+    name: Second-channel test
+    effect: E3
+    fills: [SC10]
+    does: "Run the same offer through a second channel and record qualified buyers and cost per qualified buyer in each"
+    how:
+      - "Choose a channel different in kind from the first (partners or referrals against direct outreach, say)"
+      - "Run the same offer and page"
+      - "Record qualified buyers, and cost per qualified buyer, in each channel"
+    needs: "One channel already tried (DV03) and an approved charter"
+    records: [outreach_reply, signup, proposal_request]
+    output: "Qualified buyers and cost, by channel"
+    watchOut: "Different channels reach different buyers; compare like with like"
+  - id: DV07
+    name: Assess against the demand evidence rubric
+    effect: E0
+    does: "Judge the evidence: each rubric question met, partly, not met or unknown; the gates; the decision; what is missing"
+    how:
+      - "Tag every new evidence item to the rubric questions it supports or contradicts"
+      - "Run the rubric: each question, the gates, the decision"
+      - "Record what is missing and the next Moves"
+    needs: "The evidence recorded so far"
+    records: []
+    output: "The decision and the next Moves"
+    watchOut: "The rubric is still a candidate"
+  - id: DV08
+    name: Independent review
+    effect: E0
+    does: "A reviewer who did not run the tests reads the evidence and the assessment before any decision to scale, change or stop"
+    how:
+      - "Hand the evidence and the assessment to someone who did not run the tests"
+      - "They accept, correct or reject it, with reasons"
+      - "Only then decide to scale, revise or stop"
+    needs: "An assessment (DV07)"
+    records: []
+    output: "The assessment accepted, corrected or rejected, with reasons"
+    watchOut: "Needs someone independent of the test"
+
+lines:
+  # Phase 1: reach the buyers and test the problem.
+  - id: LD0
+    name: Reframe or stop
+    phase: 1
+    purpose: "The segment has already said the problem is not theirs: review before spending more"
+    useWhen: {problem: [rejected]}
+    endsProgram: true
+    stages: [[DV08]]
+    exit: "Ends the program: the reviewer decides to reframe the segment or the offer, or to stop"
+  - id: LD1
+    name: Problem first
+    phase: 1
+    purpose: "Map buyers with a live trigger and test, in their own words, whether the problem is real and urgent and who pays to solve it"
+    useWhen: {problem: [none, partial]}
+    stages: [[DV01, DV09], [DV02], [DV07]]
+    exit: "Done when the problem and the budget holder are no longer unknown. Problem real: go on to phase 2. Not felt: Reframe or stop. Mixed: narrow the segment and repeat"
+  # Phase 2: test purchase intent and commitment.
+  - id: LD2
+    name: Paid pilot
+    phase: 2
+    purpose: "Sales-led B2B: a named buyer can be offered a scoped, quoted pilot; paying is the test"
+    useWhen: {buyer: [b2b], motion: [sales_led]}
+    stages: [[DV03], [DV07], [DV10, DV06], [DV04], [DV07]]
+    exit: "Done when the pilots are delivered and judged. Paid at a price that works: go on. Asked but did not pay: revise the offer or the price"
+  - id: LD3
+    name: Shadow offer
+    phase: 2
+    purpose: "Self-serve products: buyers act on a page, then commit with a deposit or pre-order"
+    useWhen: {motion: [self_serve]}
+    stages: [[DV03], [DV07], [DV05, DV06], [DV07]]
+    exit: "Done when the commitment test is judged. Committed at a price that works: go on. Acted but did not commit: revise the offer or the price"
+  # Phase 3: test that customers pay again.
+  - id: LD4
+    name: Recurring conversion
+    phase: 3
+    purpose: "Offerings bought again and again: one sale is not recurring demand until customers pay for the next period"
+    useWhen: {recurring: ["true"]}
+    stages: [[DV11], [DV07]]
+    exit: "Done after one full service period: customers who paid again count, intentions do not"
+  # Phase 4: test the economics and that demand can be reached repeatably.
+  - id: LD5
+    name: Economics and reach
+    phase: 4
+    purpose: "Cost to win and serve each customer, and a second channel, before any decision to scale"
+    stages: [[DV12, DV13], [DV07], [DV08]]
+    exit: "Done when an independent reviewer has accepted the assessment: continue to scale, revise, or stop"

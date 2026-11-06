@@ -1,0 +1,14 @@
+# Lab case: most interviews do not recognise the problem. Strong evidence against, so disproved for this segment.
+case: lab-05-problem-not-felt
+question: "Do small hardware stores want an AI shelf-planning tool?"
+asOf: 2026-11-04
+offering: {name: Shelf planner, description: "Suggests shelf layouts from sales data", priceFloor: {amount: 89, currency: USD, per: month}}
+segment: {name: "US independent hardware stores, 3-40 staff", profile: small_business}
+gates: {truthAndConsent: true, rubricRecordedBefore: true}
+expect:
+  decision: disproved
+  dimensions: {DE01: not_met}
+  why: "Seven of ten owners say their layout is settled and not a problem"
+evidence:
+  - {id: H1, type: problem_interview, summary: "Owners say their layout has not changed in years and works", source: "stores, Midwest", channel: interview, segment: true, count: 7, contradicts: [DE01, DE02]}
+  - {id: H2, type: problem_interview, summary: "Owners mention seasonal reshuffles as a chore", source: "stores, Southeast", channel: interview, segment: true, count: 3, supports: [DE01]}

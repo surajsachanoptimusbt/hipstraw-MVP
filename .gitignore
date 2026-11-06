@@ -23,6 +23,7 @@ keys/
 .runs/
 reports/*.md
 reports/*_routing.json
+reports/demand/
 
 # Firebase emulator
 emulator-data/

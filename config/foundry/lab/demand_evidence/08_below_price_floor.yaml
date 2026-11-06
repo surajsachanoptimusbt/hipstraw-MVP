@@ -1,0 +1,15 @@
+# Lab case: real commitments, but every one below the price the offering needs.
+case: lab-08-below-price-floor
+question: "Do small fitness studios want a managed member-referral program?"
+asOf: 2026-11-04
+offering: {name: Managed referral program, description: "Runs member referral campaigns end to end", priceFloor: {amount: 300, currency: USD, per: month}}
+segment: {name: "US fitness studios, 2-20 staff", profile: small_business}
+gates: {truthAndConsent: true, supplyFeasible: true, rubricRecordedBefore: true}
+expect:
+  decision: disproved
+  dimensions: {DE06: met, DE07: not_met}
+  why: "Five studios pre-ordered, all at the $49 introductory price; none at the $300 the service needs"
+evidence:
+  - {id: P1, type: problem_interview, summary: "Studio owners say referrals are their best channel and they run them by hand", source: "studios, California", channel: interview, segment: true, count: 10, supports: [DE01, DE02]}
+  - {id: P2, type: signup, summary: "Waitlist sign-ups from Instagram and email", source: "shadow offer page", channel: instagram, segment: true, count: 28, supports: [DE03, DE05]}
+  - {id: P3, type: pre_order, summary: "Pre-orders at the $49 introductory price", source: "shadow offer page", channel: email, segment: true, count: 5, price: 49, supports: [DE06]}

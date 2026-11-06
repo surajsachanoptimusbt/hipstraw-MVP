@@ -1,0 +1,118 @@
+# Market thesis: Zimplii, Independent Technical Service Assurance (Nov 5 meeting example). The thesis and its three
+# demand hypotheses come from a market discovery output reviewed in that meeting. Hipstraw does not choose the market
+# again; it plans how to validate demand for each hypothesis.
+#
+# The figures below are cited by that discovery output and have not yet been checked by Hipstraw; they are desk
+# evidence (rung 1) either way. Sources are organisations, never people.
+thesis: zimplii-technical-assurance
+product: Zimplii
+statement: >-
+  Zimplii serves businesses that depend on external technology service providers but lack independent assurance
+  over provider capabilities, requirements, delivery quality and contractual commitments. Through
+  technology-enabled, human-supervised verification and ongoing assurance, Zimplii helps customers make better
+  decisions, protect their technology investments and hold service providers accountable for agreed outcomes.
+market: Independent Technical Service Assurance
+geography: Metro Atlanta first, then the wider US
+source: "Market discovery output reviewed on 5 Nov 2026 (market position: pursue narrowly; evidence moderate for the problem, low for willingness to pay)"
+startingPoint: "the existing Metro Atlanta market plan and its account list, not a new audience designed from scratch"
+asOf: 2026-11-05
+buyer: b2b
+motion: sales_led
+movesRun: [DV01]  # the discovery output's desk research is the desk scan
+
+# Shared by every hypothesis.
+evidence:
+  - id: Z01
+    type: desk_research
+    summary: "34% of surveyed small businesses use external technology partners: 21% hybrid internal and external, 13% fully external (cited, not yet checked)"
+    source: Clutch small-business technology research (Dec 2025)
+    channel: desk
+    segment: false
+    independent: false  # a service-provider marketplace: industry context, not independent validation
+  - id: Z02
+    type: desk_research
+    summary: "26% cite limited internal technical expertise as a barrier to technology investments (cited, not yet checked)"
+    source: Clutch small-business technology research (Dec 2025)
+    channel: desk
+    segment: false
+    independent: false
+    supports: [DE01]
+  - id: Z03
+    type: desk_research
+    summary: "About one third of complex projects fail; general project evidence, not specific to outsourced small-business software (cited, not yet checked)"
+    source: PMI research (May 2026)
+    channel: desk
+    segment: false
+    supports: [DE01]
+  - id: Z04
+    type: desk_research
+    summary: "149 active portfolio startups in Atlanta's ATDC in 2025: a reachable founder network, not a count of qualified buyers (cited, not yet checked)"
+    source: Georgia Tech ATDC (2025)
+    channel: desk
+    segment: false
+    supports: [DE03]
+
+openQuestions:
+  - "Interviews: the discovery plan proposes 18 across four buyer types (7, 5, 4 and 2); the rubric asks for 10 per hypothesis, 30 across H1 to H3. Which?"
+  - "H2 is planned as a fixed-price check bought from a page (self-serve). Confirm, or it follows the paid-pilot Line like H1"
+  - "Recurring price: 5,000 to 15,000 USD a year is a hypothesis from the thesis, not a validated price"
+
+hypotheses:
+  - id: H1
+    name: Active-project assurance
+    priority: 1
+    demand: "Owners with an outsourced software build underway will pay for an independent review of milestones, requirements and deliverables, then for ongoing assurance"
+    segment:
+      name: "Owner-led Metro Atlanta businesses, 5-50 staff, with an active outsourced software build"
+      profile: small_business
+    offering:
+      name: Independent Technical Engagement Assessment, leading to Managed Technical Service Assurance
+      description: "A scoped, quoted assessment of one engagement, then monthly managed assurance"
+      recurring: true
+    triggers: [a new provider, a delayed milestone, a disputed deliverable, a pending acceptance or payment]
+    buyerRole: "the owner or founder who approves the provider's milestones and payments"
+
+  - id: H2
+    name: Pre-engagement verification
+    priority: 2
+    demand: "Businesses choosing a software provider will pay to verify it before signing or making a first payment"
+    segment:
+      name: "Metro Atlanta businesses, 5-50 staff, choosing a software development provider"
+      profile: small_business
+    offering:
+      name: Pre-engagement provider verification
+      description: "A fixed-price check of a provider's identity, competence, team and claims"
+    motion: self_serve
+    motionWhy: "assumed: a fixed-price check a buyer can order from a page (open question)"
+    triggers: [a provider shortlist, a statement of work about to be signed, a first payment due]
+    buyerRole: "the owner or manager choosing the provider and signing the statement of work"
+    evidence:
+      - id: Z05
+        type: competitor_activity
+        summary: "Clutch already offers business verification, credit checks and verified client reviews: a cheap alternative for checking who a provider is (cited, not yet checked)"
+        source: Clutch help pages
+        channel: desk
+        segment: false
+        contradicts: [DE04]
+
+  - id: H3
+    name: Continuous service assurance
+    priority: 3
+    demand: "Businesses relying on an external technical support provider will pay every year for ongoing monitoring, obligation reviews and issue identification"
+    segment:
+      name: "Metro Atlanta e-commerce and service businesses, 5-50 staff, relying on an external technical support provider"
+      profile: small_business
+    offering:
+      name: Managed Technical Service Assurance
+      description: "Weekly evidence collection, obligation tracking, deliverable reviews and a monthly report"
+      recurring: true
+      priceFloor: {amount: 5000, currency: USD, per: year}
+    triggers: [a contract renewal, repeated outages or missed service levels, a change of provider]
+    buyerRole: "the owner or operations lead who holds the support contract"
+    evidence:
+      - id: Z06
+        type: competitor_activity
+        summary: "Vanta supports vendor assessments, risk tracking and ongoing monitoring, aimed at security compliance rather than delivery (cited, not yet checked)"
+        source: Vanta product pages
+        channel: desk
+        segment: false

@@ -1,0 +1,14 @@
+# Lab case: the segment splits. The evidence meets both the met and the not-met anchors, so it is contested.
+case: lab-06-contested
+question: "Do small restaurants want a staff scheduling app?"
+asOf: 2026-11-04
+offering: {name: Shift scheduler, description: "Builds weekly rotas from availability", priceFloor: {amount: 39, currency: USD, per: month}}
+segment: {name: "US restaurants, 5-50 staff", profile: small_business}
+gates: {truthAndConsent: true, rubricRecordedBefore: true}
+expect:
+  decision: not_validated
+  dimensions: {DE01: partly}
+  why: "Full-service restaurants confirm, counter-service ones do not; split the segment rather than average it"
+evidence:
+  - {id: R1, type: problem_interview, summary: "Full-service owners describe rota changes every week", source: "full-service restaurants", channel: interview, segment: true, count: 7, supports: [DE01]}
+  - {id: R2, type: problem_interview, summary: "Counter-service owners use a fixed rota and a group chat", source: "counter-service restaurants", channel: interview, segment: true, count: 6, contradicts: [DE01]}

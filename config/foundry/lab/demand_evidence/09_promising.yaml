@@ -1,0 +1,16 @@
+# Lab case: the problem is real and the segment acts, but nobody has been asked to commit or pay yet.
+case: lab-09-promising
+question: "Do small dental practices want automated recall reminders?"
+asOf: 2026-11-04
+offering: {name: Recall reminders, description: "Reminds patients when their check-up is due", priceFloor: {amount: 79, currency: USD, per: month}}
+segment: {name: "US dental practices, 2-25 staff", profile: small_business}
+gates: {truthAndConsent: true, rubricRecordedBefore: true}
+expect:
+  decision: promising
+  dimensions: {DE01: met, DE05: met, DE06: unknown, DE07: unknown}
+  why: "Interviews and sign-ups are strong; a commitment test comes next"
+evidence:
+  - {id: D1, type: problem_interview, summary: "Practice managers say recall calls take hours each week", source: "practices, Atlanta", channel: interview, segment: true, count: 6, supports: [DE01, DE02]}
+  - {id: D2, type: problem_interview, summary: "Practice managers confirm recall gaps", source: "practices, Charlotte", channel: interview, segment: true, count: 4, supports: [DE01]}
+  - {id: D3, type: signup, summary: "Sign-ups from email outreach", source: "email outreach", channel: email, segment: true, count: 18, supports: [DE03, DE05]}
+  - {id: D4, type: signup, summary: "Sign-ups from the shadow offer page", source: "shadow offer page", channel: search, segment: true, count: 11, supports: [DE03, DE05]}

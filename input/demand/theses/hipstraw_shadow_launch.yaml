@@ -1,0 +1,44 @@
+# Market thesis: Hipstraw itself (Blueprint v0.1, section 10, Stage A). The first hypothesis shares the evidence of
+# the desk scan already done (input/demand/hipstraw_small_business_shadow_launch.yaml); the second tests whether
+# customers keep paying for continuing work (Blueprint Stage D, portfolio renewal).
+thesis: hipstraw-shadow-launch
+product: Hipstraw
+statement: >-
+  Hipstraw helps companies make and carry out better market decisions: managed, low-visibility Shadow Launch trials
+  in the real market, judged against versioned rubrics, ending in a reviewed decision to proceed, reframe or stop.
+market: Managed market demand validation (Shadow Launch)
+geography: US, starting with Atlanta
+source: "Hipstraw Strategic & Operating Blueprint v0.1 (4 Nov 2026), commercial wedge and Stage A"
+asOf: 2026-11-05
+buyer: b2b
+motion: sales_led
+
+openQuestions:
+  - "Brand: show Hipstraw on the test offer, or a neutral name with the seller disclosed where material?"
+
+hypotheses:
+  - id: H1
+    name: Shadow Launch trial
+    priority: 1
+    demand: "Small B2B service and software firms planning a new offering will pay for a managed Shadow Launch trial"
+    segment:
+      name: "US B2B professional-service and software companies, 10-100 staff, planning a new offering or market in the next 12 months"
+      profile: small_business
+    offering:
+      name: Hipstraw Shadow Launch
+      description: "A managed, low-visibility trial of a new offering in the real market, ending in a reviewed decision"
+    triggers: [a new offering planned within 12 months, a launch budget approved, a failed or stalled launch]
+    evidenceFrom: input/demand/hipstraw_small_business_shadow_launch.yaml
+
+  - id: H2
+    name: Shadow Portfolio renewal
+    priority: 2
+    demand: "Firms that bought a trial will fund continuing experiments from a prepaid account"
+    segment:
+      name: "US B2B professional-service and software companies, 10-100 staff, that have completed a Shadow Launch"
+      profile: small_business
+    offering:
+      name: Hipstraw Shadow Portfolio
+      description: "Continuing managed experimentation funded from a prepaid service-credit account"
+      recurring: true
+    triggers: [a completed Shadow Launch with a proceed decision, a second offering to test]

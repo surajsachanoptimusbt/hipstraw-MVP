@@ -1,0 +1,15 @@
+# Lab case (adversarial): plenty of attention, no one acts. The critical failure to detect is equating clicks
+# with willingness to buy (Blueprint section 07).
+case: lab-02-clicks-only
+question: "Do small landscaping firms want automated quote follow-up?"
+asOf: 2026-11-04
+offering: {name: Quote follow-up service, description: "Texts and emails clients who received a quote", priceFloor: {amount: 79, currency: USD, per: month}}
+segment: {name: "US landscaping firms, 2-25 staff", profile: small_business}
+gates: {truthAndConsent: true, rubricRecordedBefore: true}
+expect:
+  decision: not_validated
+  dimensions: {DE03: not_met, DE05: not_met, DE06: unknown}
+  why: "1,400 clicks and visits with no sign-up is evidence against interest in this offer, not for it"
+evidence:
+  - {id: A1, type: ad_click, summary: "Meta ads to landscaping owners: 620 clicks at 3.1% CTR", source: "shadow offer ads", channel: meta, segment: true, count: 620}
+  - {id: A2, type: page_visit, summary: "Landing page visits from the ads and a trade forum; no sign-ups", source: "shadow offer page", channel: landing page, segment: true, count: 780, contradicts: [DE05]}

@@ -1,0 +1,15 @@
+# Lab case (adversarial): synthetic buyers say yes. Simulations generate hypotheses; they never count as demand.
+case: lab-01-simulation-only
+question: "Do independent bakeries want a pre-order app?"
+asOf: 2026-11-04
+offering: {name: Bakery pre-order app, description: "Customers order and pay ahead for pickup", priceFloor: {amount: 49, currency: USD, per: month}}
+segment: {name: "US independent bakeries, 1-20 staff", profile: small_business}
+gates: {}
+expect:
+  decision: abstain
+  dimensions: {DE01: partly, DE05: unknown, DE06: unknown, DE08: unknown}
+  why: "200 simulated personas saying they would buy is not one bakery acting"
+evidence:
+  - {id: S1, type: simulation, summary: "200 synthetic bakery-owner personas; 71% say they would subscribe", source: "persona model", segment: true, count: 200, supports: [DE01, DE05, DE06]}
+  - {id: S2, type: model_estimate, summary: "Model estimates 12% adoption in year one", source: "forecast model", segment: true, supports: [DE06]}
+  - {id: D1, type: desk_research, summary: "Trade article: bakeries lose 8-15% of baked goods to waste", source: "trade press", channel: desk, segment: false, supports: [DE01]}

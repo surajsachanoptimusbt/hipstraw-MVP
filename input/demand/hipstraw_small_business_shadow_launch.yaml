@@ -1,0 +1,250 @@
+# Demand case: do small businesses need a Shadow Launch service? (Nov 4 meeting: validate whether a specific market
+# demands a specific product; the worked example is Hipstraw itself, Blueprint v0.1 section 10, Stage A.)
+#
+# The segment follows the Blueprint's commercial wedge (section 03: "B2B professional services, workflow software and
+# software-enabled services with clear buyer identification and narrow pilot delivery") and the Nov 2 focus on
+# Atlanta IT services. Ashish's wider "small businesses" should be tested as separate segments, not averaged.
+#
+# Evidence so far is the desk scan (Move DV01, checked 2026-11-04): secondary sources and ten companies' launch
+# stories. Desk evidence says the problem may exist; it cannot show that this segment will act, so the rubric is
+# expected to abstain and name the field Moves to run next. No personal names: sources are companies and reports.
+case: hipstraw-smb-shadow-launch
+question: "Do small B2B service and software companies need a managed Shadow Launch service?"
+asOf: 2026-11-04
+offering:
+  name: Hipstraw Shadow Launch
+  description: >-
+    A managed, low-visibility trial of a new offering in the real market: a truthful offer page and outreach to a
+    named segment, interviews, a commitment test, and a reviewed decision to proceed, reframe or stop
+  # No price floor yet: the price the service needs is an open decision (Blueprint section 08 proposes 1 HT = US$1
+  # but no rate card; Appendix F illustrates 8,000 HT reserved for one Shadow Launch). Until it is set, DE07 stays
+  # unknown.
+segment:
+  name: "US B2B professional-service and software companies, 10-100 staff, planning a new offering or market in the next 12 months"
+  profile: small_business
+gates:
+  truthAndConsent: null  # applies from the first field exposure (DV02 or DV03)
+  supplyFeasible: null  # applies from the first commitment
+  rubricRecordedBefore: null  # set true when demand-evidence.v0.1 is committed before any field result
+movesRun: [DV01]
+notes: >-
+  Survivorship: the ten companies are well-known successes, plus one soft launch that was stopped. Firms that tested
+  and quietly dropped an idea are rarely written up. None of the ten is in the target segment, so they count only
+  toward "partly".
+evidence:
+  # The problem: launching without knowing demand is costly, and founders are often sure anyway.
+  - id: E01
+    type: desk_research
+    summary: "Of venture-backed shutdowns since 2023 with an identifiable reason, 43% cited poor product-market fit; two-thirds of those never found a market"
+    source: CB Insights (Mar 2026)
+    channel: desk
+    segment: false
+    supports: [DE01, DE02]
+    url: https://www.cbinsights.com/research/report/startup-failure-reasons-top/
+  - id: E02
+    type: desk_research
+    summary: "Survey of 160 early-stage owners: 83% confident in their idea; 69% of pre-revenue owners confident estimating demand. Most do not feel the uncertainty"
+    source: LivePlan survey (2023)
+    channel: desk
+    segment: false
+    contradicts: [DE02]
+    url: https://www.liveplan.com/blog/starting/optimism-uncertainty-2023-survey-of-early-stage-small-business-owners
+  - id: E03
+    type: desk_research
+    summary: "Fewer than a fifth of 35,000+ tech startups used A/B testing (13% of early-stage); those that did grew page views 30-100% within a year"
+    source: Koning et al., via Duke Fuqua (2021)
+    channel: desk
+    segment: false
+    supports: [DE04]
+    contradicts: [DE02]
+    url: https://www.fuqua.duke.edu/duke-fuqua-insights/sharique-hasan-scientific-approach-testing-ideas-helps-startups-fail-and-scale
+  - id: E04
+    type: desk_research
+    summary: "Randomised trial, 116 startups taught to test ideas scientifically: they pivoted more; the write-up reports higher revenue and more early closures"
+    source: Management Science (2020)
+    channel: desk
+    segment: false
+    supports: [DE04]
+    url: https://pubsonline.informs.org/doi/10.1287/mnsc.2018.3249
+  # The segment: large, and launches are common. Sizing only; it says nothing about demand for this service.
+  - id: E05
+    type: desk_research
+    summary: "46% of 1,000 US small-business owners plan to launch a new product or service in the next 12 months"
+    source: U.S. Bank small business survey (2026)
+    channel: desk
+    segment: false
+    url: https://www.usbank.com/business-banking/business-resource-center/small-business-survey.html
+  - id: E06
+    type: desk_research
+    summary: "36.2M US small businesses (under 500 staff); 5.67M business applications in 2025, 1.71M of them high-propensity"
+    source: SBA Office of Advocacy (Feb 2026); Census Business Formation Statistics (2025)
+    channel: desk
+    segment: false
+    url: https://fred.stlouisfed.org/series/BABATOTALNSAUS
+  - id: E07
+    type: desk_research
+    summary: "52% of small businesses spend under $1,000 a month on all marketing, so a managed test at several thousand dollars is months of budget"
+    source: LocaliQ small business marketing report (2026)
+    channel: desk
+    segment: false
+    contradicts: [DE07]
+    url: https://localiq.com/blog/small-business-marketing-trends-report-2026/
+  # The alternatives (DE04): what the segment can use today, and at what price.
+  - id: E08
+    type: competitor_activity
+    summary: "Managed validation sprint from $4,500 over 2-4 weeks: 3-5 demand experiments, landing pages and ads, go/no-go call. Its own comparison: DIY $500-2,000, freelance $3,000-8,000, agency $15,000-50,000"
+    source: Proof Engine (Apr 2026)
+    channel: desk
+    segment: false
+    supports: [DE01]
+    url: https://blog.proofengine.studio/startup-idea-validation-cost/
+  - id: E09
+    type: competitor_activity
+    summary: "Fixed-price 14-day SaaS validation with a prototype and 8-12 user tests, EUR 8,000"
+    source: JAK Solutions
+    channel: desk
+    segment: false
+    supports: [DE01]
+    url: https://www.jak.solutions/service/web-application-development/validation-saas
+  - id: E10
+    type: competitor_activity
+    summary: "Ads to landing pages, paid reservation deposits, surveys and an AI interviewer, self-serve or full concierge; the closest match to a Shadow Launch. No public prices"
+    source: Prelaunch.com
+    channel: desk
+    segment: false
+    supports: [DE01]
+    url: https://prelaunch.com/
+  - id: E11
+    type: competitor_activity
+    summary: "Full-service reservation funnel with a $1 deposit and Meta ads, mainly for crowdfunded consumer products"
+    source: LaunchBoom
+    channel: desk
+    segment: false
+    supports: [DE01]
+    url: https://www.launchboom.com/blog/how-to-build-a-pre-launch-email-list-that-is-30x-more-likely-to-buy/
+  - id: E12
+    type: competitor_activity
+    summary: "Do-it-yourself test pages are cheap: Carrd $9-49 a year, Unbounce $29-149 a month, LaunchList from $9 a month"
+    source: Carrd, Unbounce, LaunchList pricing pages
+    channel: desk
+    segment: false
+    contradicts: [DE04]
+    url: https://unbounce.com/pricing/
+  - id: E13
+    type: competitor_activity
+    summary: "AI idea-validation reports from free to $179 (ValidatorAI, IdeaProof, DimeADozen); one sells a $149 launch kit with page copy and outreach messages. They produce desk and simulated evidence, not commitments"
+    source: ValidatorAI, IdeaProof, DimeADozen pricing pages
+    channel: desk
+    segment: false
+    contradicts: [DE04]
+    url: https://www.dimeadozen.ai/pricing
+  - id: E14
+    type: competitor_activity
+    summary: "Enterprise message testing and research: Wynter $20,000-100,000 a year; UserTesting median $41,200 a year. Out of reach for the segment"
+    source: Wynter pricing; Vendr (Feb 2026)
+    channel: desk
+    segment: false
+    url: https://www.wynter.com/pricing
+  - id: E15
+    type: competitor_activity
+    summary: "Venture money is going into AI interviews and simulated customers for large companies (Listen Labs $69M, Simile $100M, Outset $30M, Aaru); they could move downmarket, but none produces real commitments"
+    source: company announcements (Dec 2025 - Feb 2026)
+    channel: desk
+    segment: false
+    url: https://simile.ai/blog/the-simulation-company
+  - id: E16
+    type: desk_research
+    summary: "Hipstraw's own analysis of E08-E14 (reasoning, not a fact): self-serve tools cost $9-300, managed sprints $4,500-8,000, enterprise research $20,000+; a managed service near $1,000-3,000 looks thinly served"
+    source: Hipstraw desk scan
+    channel: desk
+    segment: false
+    supports: [DE04]
+  # Ashish's question: how did small companies launch, and did they use blind or shadow launches?
+  - id: E21
+    type: desk_research
+    summary: "Buffer (solo founder): two-page fake door, then a pricing page; a few clicked paid plans; first paying customer within 4 days of launch"
+    source: Buffer (2011)
+    channel: desk
+    segment: false
+    supports: [DE01]
+    url: https://buffer.com/resources/idea-to-paying-customers-in-7-weeks-how-we-did-it/
+  - id: E22
+    type: desk_research
+    summary: "Dropbox (pre-launch): demo video drove 75,000 waitlist sign-ups in a day against 15,000 expected"
+    source: Dropbox, via TechCrunch (2011)
+    channel: desk
+    segment: false
+    supports: [DE01]
+    url: https://techcrunch.com/2011/11/01/founder-storie-how-dropbox-got-its-first-10-million-users/
+  - id: E23
+    type: desk_research
+    summary: "Zappos (solo founder, 1999): photographed local shoe stores' stock, bought pairs at full price when ordered; real orders before any inventory"
+    source: Zappos, via Fortune (2012)
+    channel: desk
+    segment: false
+    supports: [DE01]
+    url: https://fortune.com/2012/09/05/nick-swinmurn-zappos-silent-founder/
+  - id: E24
+    type: desk_research
+    summary: "Groupon (small team, 2008): a blog and coupons sent as PDFs by script; up to 500 coupons sold in a day before a platform was built"
+    source: Groupon, via AllTopStartups (2010)
+    channel: desk
+    segment: false
+    supports: [DE01]
+    url: https://alltopstartups.com/2010/12/04/groupon-the-5bn-company-that-started-as-a-blog/
+  - id: E25
+    type: desk_research
+    summary: "DoorDash, as Palo Alto Delivery (4 students, 2013): one-day prototype to gauge demand; first order in 30 minutes; founders made the first 200 deliveries"
+    source: DoorDash, via TechCrunch (2013)
+    channel: desk
+    segment: false
+    supports: [DE01]
+    url: https://techcrunch.com/2013/07/26/y-combinator-backed-doordash-delivers-food-quickly-in-south-bay-hopes-to-expand-beyond-food/
+  - id: E26
+    type: desk_research
+    summary: "Food on the Table (early startup): concierge service delivered by hand after 150+ customer conversations; dropped as not cost-effective"
+    source: Food on the Table, conference slides
+    channel: desk
+    segment: false
+    supports: [DE01]
+    url: https://www.slideshare.net/slideshow/manuel-rosso-food-on-the-table/7239850
+  - id: E27
+    type: desk_research
+    summary: "Innocent Drinks (3 founders, side project): festival stall where buyers voted with empty bottles on whether the founders should quit their jobs"
+    source: Innocent Drinks, via Irish Times (2008)
+    channel: desk
+    segment: false
+    supports: [DE01]
+    url: https://www.irishtimes.com/business/smooth-operators-1.913075
+  - id: E28
+    type: desk_research
+    summary: "Three Over Seven, later Allbirds (solo founder, 2014): Kickstarter pre-orders under a different name; $30,000 target hit in about a day. The name change is not documented as a deliberate shadow tactic"
+    source: Allbirds, via NZ Herald (2014)
+    channel: desk
+    segment: false
+    supports: [DE01]
+    url: https://nzherald.co.nz/business/kickstarter-has-shoe-up-and-running/5JI365ICRWR56Z7A67OZ4TZUE4
+  - id: E29
+    type: desk_research
+    summary: "Harry's (pre-launch brand): referral waitlist collected 100,000 emails in 7 days, 77% from referrals, about 85,000 valid"
+    source: Harry's, via tim.blog (2014)
+    channel: desk
+    segment: false
+    supports: [DE01]
+    url: https://tim.blog/2014/07/21/harrys-prelaunchr-email/
+  - id: E30
+    type: desk_research
+    summary: "Supercell, Spooky Pop (mid-size studio): soft launch in Canada and Australia; too few players, pulled after two months; 30+ games stopped this way"
+    source: Supercell, via PocketGamer.biz (2015)
+    channel: desk
+    segment: false
+    supports: [DE01]
+    url: https://www.pocketgamer.biz/supercell-pulls-plug-on-spooky-pop/
+  - id: E31
+    type: desk_research
+    summary: "Across E21-E30: all ten tested in the real market at small scale before a full launch, and all ran the test themselves; one used a different name, not as a documented tactic. Deliberate neutral-brand tests are documented at large companies (Starbucks' 15th Avenue Coffee and Tea; Facebook's NPE Team, shown as from Facebook)"
+    source: Hipstraw desk scan
+    channel: desk
+    segment: false
+    contradicts: [DE04]
+    url: https://kromatic.com/real-startup-book/5-out-of-the-box/off-brand-testing/

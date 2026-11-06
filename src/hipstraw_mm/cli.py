@@ -239,6 +239,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     register_campaign(sub, common, common_after, _Parser)
 
+    # --- Foundry: demand evidence rubric (Blueprint v0.1 section 07) ---
+    from hipstraw_mm.foundry.cli import register as register_demand
+
+    register_demand(sub, common, common_after, _Parser)
+
+    # --- The reviewer desk: requests, the agent's plans, approvals (Nov 6 meeting) ---
+    from hipstraw_mm.desk.cli import register as register_desk
+
+    register_desk(sub, common, common_after, _Parser)
+
     return parser
 
 
@@ -694,6 +704,14 @@ def main(
             from hipstraw_mm.campaign.cli import dispatch as dispatch_campaign
 
             result = dispatch_campaign(args)
+        elif command == "demand":
+            from hipstraw_mm.foundry.cli import dispatch as dispatch_demand
+
+            result = dispatch_demand(args)
+        elif command == "desk":
+            from hipstraw_mm.desk.cli import dispatch as dispatch_desk
+
+            result = dispatch_desk(args)
         else:
             factory = build_memory_context if args.memory else context_factory
             ctx = factory(load_config(Path(args.config_dir)))

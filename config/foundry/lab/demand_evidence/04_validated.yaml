@@ -1,0 +1,20 @@
+# Lab case: the evidence climbs the ladder from independent sources, and the gates are confirmed.
+case: lab-04-validated
+question: "Do independent physiotherapy clinics want automated no-show recovery?"
+asOf: 2026-11-04
+offering: {name: No-show recovery, description: "Fills cancelled appointments from a waitlist", priceFloor: {amount: 99, currency: USD, per: month}}
+segment: {name: "US independent physiotherapy clinics, 2-30 staff", profile: small_business}
+gates: {truthAndConsent: true, supplyFeasible: true, rubricRecordedBefore: true}
+expect:
+  decision: validated
+  dimensions: {DE01: met, DE02: met, DE05: met, DE06: met, DE07: met, DE08: met, DE10: met}
+  why: "Problem confirmed in interviews, acted on through two channels, committed to at the price, by independent clinics"
+evidence:
+  - {id: V1, type: desk_research, summary: "Industry survey: outpatient no-show rates of 10-20%", source: "industry survey", channel: desk, segment: false, supports: [DE01, DE02]}
+  - {id: V2, type: problem_interview, summary: "Clinic owners in Georgia describe no-shows unprompted; 3 pay a receptionist to call the waitlist, and the owners approve that spend", source: "clinics, Georgia", channel: interview, segment: true, count: 5, supports: [DE01, DE02, DE04, DE10]}
+  - {id: V3, type: problem_interview, summary: "Clinic owners in Texas describe no-shows unprompted", source: "clinics, Texas", channel: interview, segment: true, count: 4, supports: [DE01, DE02]}
+  - {id: V4, type: problem_interview, summary: "Clinic owners in Ohio: no-shows are a minor issue for them", source: "clinics, Ohio", channel: interview, segment: true, count: 3, contradicts: [DE01]}
+  - {id: V5, type: signup, summary: "Early-access sign-ups from LinkedIn outreach to clinic owners", source: "linkedin outreach", channel: linkedin, segment: true, count: 22, supports: [DE03, DE05]}
+  - {id: V6, type: signup, summary: "Early-access sign-ups from the shadow offer page via search ads", source: "shadow offer page", channel: search, segment: true, count: 17, supports: [DE03, DE05]}
+  - {id: V7, type: deposit, summary: "Refundable deposits of the first month at full price", source: "shadow offer page", channel: search, segment: true, count: 4, price: 99, supports: [DE06, DE07]}
+  - {id: V8, type: letter_of_intent, summary: "Letters of intent for a three-month pilot, replacing the receptionist calls", source: "clinics, Georgia", channel: interview, segment: true, count: 2, price: 99, supports: [DE04, DE06, DE07]}

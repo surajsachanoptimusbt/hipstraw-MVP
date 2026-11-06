@@ -1,0 +1,17 @@
+# Lab case (adversarial): strong numbers, nearly all from the founders' own network. Not independent, so not
+# validated.
+case: lab-03-friends-and-family
+question: "Do small accounting practices want a client document portal?"
+asOf: 2026-11-04
+offering: {name: Client document portal, description: "Clients upload tax documents to a checklist", priceFloor: {amount: 60, currency: USD, per: month}}
+segment: {name: "US accounting practices, 1-15 staff", profile: small_business}
+gates: {truthAndConsent: true, supplyFeasible: true, rubricRecordedBefore: true}
+expect:
+  decision: not_validated
+  dimensions: {DE01: met, DE06: met, DE08: not_met}
+  why: "Every commitment came from people who know the founders; volume must not hide that"
+evidence:
+  - {id: F1, type: problem_interview, summary: "Interviews with practices run by former colleagues; all describe chasing documents", source: "former colleagues", channel: interview, segment: true, independent: false, count: 10, supports: [DE01, DE02, DE04]}
+  - {id: F2, type: signup, summary: "Early-access sign-ups after a post to the founders' personal network", source: "founders' network", channel: linkedin, segment: true, independent: false, count: 34, supports: [DE03, DE05]}
+  - {id: F3, type: deposit, summary: "Deposits of one month's fee from friends' practices", source: "friends' practices", channel: email, segment: true, independent: false, count: 4, price: 60, supports: [DE06, DE07]}
+  - {id: F4, type: signup, summary: "Sign-ups from an accountants' forum", source: "accountants' forum", channel: forum, segment: true, count: 3, supports: [DE05]}
